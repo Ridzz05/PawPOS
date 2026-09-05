@@ -110,7 +110,8 @@ function readErrorEnvelope(value: unknown): {
 }
 
 export async function getStockBalances(locationId?: string, signal?: AbortSignal): Promise<ProductStockSummary[]> {
-  const url = new URL(`${apiBase}/api/v1/inventory/stocks`)
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+  const url = new URL(`${apiBase}/api/v1/inventory/stocks`, origin)
   if (locationId) {
     url.searchParams.set('location_id', locationId)
   }
@@ -219,7 +220,8 @@ export async function getStockMovements(
   params?: MovementFilterParams,
   signal?: AbortSignal
 ): Promise<StockMovementItem[]> {
-  const url = new URL(`${apiBase}/api/v1/inventory/movements`)
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+  const url = new URL(`${apiBase}/api/v1/inventory/movements`, origin)
   if (params?.product_id) url.searchParams.set('product_id', params.product_id)
   if (params?.location_id) url.searchParams.set('location_id', params.location_id)
   if (params?.movement_type) url.searchParams.set('movement_type', params.movement_type)

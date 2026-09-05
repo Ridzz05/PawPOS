@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"log/slog"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -63,6 +66,19 @@ func NewRouterWithAllRepos(log *slog.Logger, ready health.Check, productRepo pro
 	router.Use(middleware.Recoverer)
 	router.Use(cors)
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		if cfg.WebDir != "" && !strings.HasPrefix(r.URL.Path, "/api") && !strings.HasPrefix(r.URL.Path, "/health") && !strings.HasPrefix(r.URL.Path, "/uploads") {
+			cleanPath := filepath.Clean(strings.TrimPrefix(r.URL.Path, "/"))
+			targetFile := filepath.Join(cfg.WebDir, cleanPath)
+			if fi, err := os.Stat(targetFile); err == nil && !fi.IsDir() {
+				http.ServeFile(w, r, targetFile)
+				return
+			}
+			indexPath := filepath.Join(cfg.WebDir, "index.html")
+			if _, err := os.Stat(indexPath); err == nil {
+				http.ServeFile(w, r, indexPath)
+				return
+			}
+		}
 		envelope.WriteError(w, r, http.StatusNotFound, "NOT_FOUND", "The requested route does not exist.", nil)
 	})
 	router.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
@@ -109,6 +125,16 @@ func NewRouterWithAllRepos(log *slog.Logger, ready health.Check, productRepo pro
 
 	router.Get("/health/live", healthHandler.Live)
 	router.Get("/health/ready", healthHandler.Ready)
+	if cfg.WebDir != "" {
+		router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			indexPath := filepath.Join(cfg.WebDir, "index.html")
+			if _, err := os.Stat(indexPath); err == nil {
+				http.ServeFile(w, r, indexPath)
+				return
+			}
+			envelope.Write(w, r, http.StatusOK, map[string]string{"service": "pawpos", "status": "ok"})
+		})
+	}
 	router.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Get("/ping", func(w http.ResponseWriter, req *http.Request) {
@@ -170,9 +196,11 @@ func tenantMiddleware(next http.Handler) http.Handler {
 func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
-		if origin == "http://localhost:5173" || origin == "http://127.0.0.1:5173" {
+		if origin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Add("Vary", "Origin")
+		} else {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 		}
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-Request-ID, X-Tenant-ID, Authorization")

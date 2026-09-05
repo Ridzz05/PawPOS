@@ -91,7 +91,8 @@ export async function createOrder(input: CreateOrderInput, signal?: AbortSignal)
 }
 
 export async function getOrders(locationId?: string, signal?: AbortSignal): Promise<Order[]> {
-  const url = new URL(`${apiBase}/api/v1/orders`)
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+  const url = new URL(`${apiBase}/api/v1/orders`, origin)
   if (locationId) {
     url.searchParams.set('location_id', locationId)
   }

@@ -20,7 +20,7 @@ func main() {
 	cfg := config.Load()
 	log := logger.New(cfg.LogLevel)
 	var db *sql.DB
-	if cfg.DatabaseURL != "" {
+	if cfg.DatabaseURL != "" && cfg.DatabaseURL != "none" && cfg.DatabaseURL != "memory" {
 		var err error
 		db, err = sql.Open("pgx", cfg.DatabaseURL)
 		if err != nil {
@@ -36,6 +36,8 @@ func main() {
 			}
 			cancel()
 		}
+	} else {
+		log.Info("starting in standalone in-memory persistence mode")
 	}
 
 	readyCheck := health.Check(nil)

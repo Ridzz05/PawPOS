@@ -21,6 +21,7 @@ type Config struct {
 	ElevenLabsAPIKey  string
 	ElevenLabsVoiceID string
 	ElevenLabsModel   string
+	WebDir            string
 }
 
 func Load() Config {
@@ -39,6 +40,7 @@ func Load() Config {
 		ElevenLabsAPIKey:  os.Getenv("ELEVENLABS_API_KEY"),
 		ElevenLabsVoiceID: value("ELEVENLABS_VOICE_ID", "Xb7hH8MSUJpSbSDYk0k2"),
 		ElevenLabsModel:   value("ELEVENLABS_MODEL", "eleven_multilingual_v2"),
+		WebDir:            value("WEB_DIR", ""),
 	}
 }
 

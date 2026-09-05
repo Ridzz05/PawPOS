@@ -11,3 +11,5 @@ apps/api/bin/
 apps/api/internal/generated/
 .idea/
 .vscode/
+pawpos-server
+apps/api/pawpos-server

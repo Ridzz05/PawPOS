@@ -1,0 +1,21 @@
+[Unit]
+Description=PawPOS AI Operational POS & SaaS Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/pawpos
+ExecStart=/opt/pawpos/bin/pawpos-server
+Restart=always
+RestartSec=3s
+LimitNOFILE=65535
+
+EnvironmentFile=/opt/pawpos/.env
+Environment=" API_ADDRESS=:8085\
+Environment=\APP_ENV=production\
+Environment=\LOG_LEVEL=info\
+Environment=\WEB_DIR=/opt/pawpos/web\
+
+[Install]
+WantedBy=multi-user.target
