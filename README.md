@@ -205,13 +205,20 @@ npx --yes @redocly/cli lint packages/api-contract/openapi.yaml
 
 ---
 
-## 📚 Second Brain & Dokumentasi Mendalam
+## 📚 Second Brain & Obsidian Vault
 
-Untuk pemahaman mendalam tentang pola perancangan, guardrails operasional, dan peta kognitif Agentic AI, silakan telusuri:
+Seluruh arsitektur, diagram aliran data, mesin transaksi, dan interaksi komponen sistem didokumentasikan dalam format **Obsidian Vault** yang saling terhubung menggunakan *bidirectional wikilinks (`[[...]]`)*:
 
-- 🧠 [**OBSIDIAN.md**](file:///c:/Users/muhri/Documents/ai-operational-pos/OBSIDIAN.md) — *Second Brain Knowledge Graph*: Arsitektur komprehensif, data lifecycle, state machine, dan panduan interoperabilitas AI.
-- 🎨 [**DESIGN.md**](file:///c:/Users/muhri/Documents/ai-operational-pos/DESIGN.md) — *Design System Specification*: Standar palet warna Warm Orange `#FF6B00`, Deep Slate, tipografi Inter/Plus Jakarta Sans, dan tata letak responsive.
-- 📖 [**RUNBOOK.md**](file:///c:/Users/muhri/Documents/ai-operational-pos/RUNBOOK.md) — *Engineering Runbook*: Panduan operasional teknis, pemulihan insiden, dan backup data.
+- 🗂️ [**`vault/`**](file:///c:/Users/muhri/Documents/ai-operational-pos/vault) — Direktori **Obsidian Vault** resmi. Buka folder ini langsung di aplikasi [Obsidian](https://obsidian.md/) untuk melihat **Interactive Graph View** sistem.
+  - 🗺️ [`vault/00 - PawPOS Second Brain MOC.md`](file:///c:/Users/muhri/Documents/ai-operational-pos/vault/00%20-%20PawPOS%20Second%20Brain%20MOC.md) — Master Map of Content (pintu masuk utama).
+  - 🏛️ [`vault/01 - Architecture/`](file:///c:/Users/muhri/Documents/ai-operational-pos/vault/01%20-%20Architecture) — Topologi, Dual Persistence, Multi-Tenancy.
+  - ⚙️ [`vault/02 - Backend/`](file:///c:/Users/muhri/Documents/ai-operational-pos/vault/02%20-%20Backend) — Go Clean Architecture, Orders, Shifts, Inventory, Database DDL.
+  - 💻 [`vault/03 - Frontend/`](file:///c:/Users/muhri/Documents/ai-operational-pos/vault/03%20-%20Frontend) — React 19, POS Cart State Machine, Denomination Calculator, Safe Area.
+  - 🔄 [`vault/04 - Workflows/`](file:///c:/Users/muhri/Documents/ai-operational-pos/vault/04%20-%20Workflows) — POS Checkout Flow, Shift Z-Report Lifecycle, Multi-Tender Split.
+  - 🤖 [`vault/05 - AI Copilot/`](file:///c:/Users/muhri/Documents/ai-operational-pos/vault/05%20-%20AI%20Copilot) — Pipeline Suara Hands-Free, Groq 120B & Whisper, ElevenLabs v2.
+  - 🚀 [`vault/06 - DevOps & Deployment/`](file:///c:/Users/muhri/Documents/ai-operational-pos/vault/06%20-%20DevOps%20&%20Deployment) — Runbook lokal, deployment Railway & VPS, mitigasi offline.
+- 🎨 [**DESIGN.md**](file:///c:/Users/muhri/Documents/ai-operational-pos/DESIGN.md) — *Design System*: Standar palet warna Warm Orange `#FF6B00`, Deep Slate, dan tipografi.
+- 📖 [**RUNBOOK.md**](file:///c:/Users/muhri/Documents/ai-operational-pos/RUNBOOK.md) — *Engineering Runbook*: Panduan operasional teknis dan pemulihan insiden.
 
 ---
 
