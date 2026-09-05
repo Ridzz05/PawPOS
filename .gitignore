@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+*.tmp
+apps/api/.air/
+apps/api/bin/
+apps/api/internal/generated/
+.idea/
+.vscode/

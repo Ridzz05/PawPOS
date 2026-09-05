@@ -1,0 +1,254 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+:root {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-width: 320px;
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f8f9fa;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+#root {
+  min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   FLAT OPERATIONAL DESIGN UTILITIES (PurrCoffee POS Spec)
+   No floating cards, no heavy shadows, no card bounce/jump, 120ms transitions
+   ========================================================================== */
+
+/* Flat Terminal Card */
+.terminal-card,
+.purr-card,
+.clay-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: none !important;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+/* Product Card Interactive Feedback (NO translateY / NO jumping) */
+.terminal-card-hover,
+.purr-card-interactive,
+.clay-card-interactive,
+.stripe-card-interactive {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: none !important;
+  transform: none !important; /* Strictly no translateY (Section 9) */
+  transition: border-color 120ms ease, background-color 120ms ease !important;
+}
+
+.terminal-card-hover:hover,
+.purr-card-interactive:hover,
+.clay-card-interactive:hover,
+.stripe-card-interactive:hover {
+  border-color: #cbd5e1 !important;
+  background-color: #fafbfc !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* In-Cart / Selected State */
+.terminal-selected {
+  border-color: #ff8042 !important;
+  background-color: #fff9f6 !important;
+}
+
+/* Category Underline Navigation (Section 7) */
+.terminal-cat-btn {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2.5px solid transparent !important;
+  border-radius: 0 !important;
+  padding: 8px 14px !important;
+  font-weight: 600 !important;
+  font-size: 0.88rem !important;
+  color: #64748d !important;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+
+.terminal-cat-btn:hover {
+  color: #1e293b !important;
+}
+
+.terminal-cat-btn.active,
+.purr-pill-active {
+  color: #ff8042 !important;
+  border-bottom-color: #ff8042 !important;
+  font-weight: 700 !important;
+}
+
+/* Inset / Muted Surface */
+.terminal-inset,
+.clay-inset,
+.purr-inset {
+  background-color: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Stepper Component */
+.terminal-stepper,
+.purr-stepper {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 4px;
+}
+
+/* Topbar flat layout (Section 5: height 64-72px, border-bottom 1px, shadow none) */
+.terminal-topbar,
+.stripe-glass-header,
+.clay-header {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 0 !important;
+}
+
+/* Tabular Numbers */
+.tnum {
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Minimal Pulse for Live Status */
+@keyframes pulse-dot {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+.status-dot-active {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+  display: inline-block;
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+/* Loading Spinner */
+.loading-icon {
+  color: #ff8042;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-icon,
+  .status-dot-active {
+    animation: none;
+  }
+
+  .MuiDialog-paper,
+  .MuiBackdrop-root,
+  .modal-card,
+  .modal-backdrop {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* Modal Professional Directional Slide & Independent Backdrop Fade */
+.modal-backdrop,
+.MuiBackdrop-root {
+  transition: opacity 180ms ease !important;
+}
+
+/* Modern Minimalist Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+@media (max-width: 599px) {
+  .MuiDrawer-paper {
+    width: min(86vw, 300px);
+  }
+}
+
+/* Eye-Catching Typography & Number Accents */
+.tabular-nums {
+  font-feature-settings: 'tnum' !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.price-text {
+  font-feature-settings: 'tnum' !important;
+  font-variant-numeric: tabular-nums !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.heading-tight {
+  letter-spacing: -0.035em !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}

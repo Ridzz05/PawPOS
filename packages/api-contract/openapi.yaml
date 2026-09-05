@@ -1,0 +1,866 @@
+openapi: 3.1.0
+info:
+  title: AI Operational POS API
+  version: 0.1.0
+  license:
+    name: Proprietary
+    identifier: LicenseRef-UNLICENSED
+  description: Phase 0 foundation contract with the backend voice transcription slice. Product, auth, sales, inventory, and intent handlers are not declared until implemented.
+servers:
+  - url: http://127.0.0.1:8080
+security: []
+paths:
+  /health/live:
+    get:
+      operationId: getLiveHealth
+      summary: Check whether the API process is running
+      responses:
+        '200':
+          description: API process is live
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessHealth'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /health/ready:
+    get:
+      operationId: getReadyHealth
+      summary: Check whether API dependencies are available
+      responses:
+        '200':
+          description: API and configured dependencies are ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadyHealth'
+        '503':
+          description: A dependency is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/ping:
+    get:
+      operationId: pingApi
+      summary: Verify the versioned API router
+      responses:
+        '200':
+          description: Versioned API responds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPing'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/assistant/transcriptions:
+    post:
+      operationId: createAssistantTranscription
+      summary: Transcribe an uploaded audio clip
+      description: Transcribes audio in memory through the configured speech-to-text provider. Audio is not persisted.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TranscriptionRequest'
+      responses:
+        '200':
+          description: Audio was transcribed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessTranscription'
+        '400':
+          description: The multipart request or duration field is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: The audio exceeds the request size or duration limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: The audio MIME type or extension is unsupported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: The transcription provider failed or returned an invalid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/uploads:
+    post:
+      operationId: uploadImage
+      summary: Upload a product image
+      description: Uploads a WebP, PNG, or JPEG product image and stores it on disk.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Product image file (webp, png, jpeg).
+      responses:
+        '201':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessUpload'
+        '400':
+          description: Missing file or file too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unsupported file format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/products:
+    get:
+      operationId: listProducts
+      summary: List all active products
+      description: Returns all active products in the catalog ordered alphabetically by name.
+      responses:
+        '200':
+          description: List of active products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessProductList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal database error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: createProduct
+      summary: Create a new product in the catalog
+      description: Validates and creates a new product with unique SKU and non-negative pricing.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Product successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessProductCreated'
+        '400':
+          description: Validation error in request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Product with this SKU already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Voice transcription is disabled or not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/inventory/locations:
+    get:
+      operationId: listInventoryLocations
+      summary: List all active inventory locations
+      description: Returns active storage locations (e.g., Toko Utama, Gudang).
+      responses:
+        '200':
+          description: List of inventory locations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessLocationList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal database error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/inventory/stocks:
+    get:
+      operationId: listStocks
+      summary: List current stock balances
+      description: Returns stock balances per product and inventory location.
+      parameters:
+        - name: location_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional filter by inventory location UUID.
+      responses:
+        '200':
+          description: List of stock balances
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessStockList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal database error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/inventory/movements:
+    post:
+      operationId: createStockMovement
+      summary: Record an inventory stock movement
+      description: Appends a stock movement entry and updates the product stock balance atomically.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordMovementRequest'
+      responses:
+        '201':
+          description: Stock movement recorded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMovementRecorded'
+        '400':
+          description: Invalid movement data or insufficient stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/orders:
+    get:
+      operationId: listOrders
+      summary: List past orders
+      description: Returns a list of orders optionally filtered by location.
+      parameters:
+        - name: location_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional filter by inventory location UUID.
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessOrderList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: createOrder
+      summary: Create and complete a POS order
+      description: Persists order and items, deducts inventory stock atomically, and appends sale stock movement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order created and processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessOrderDetail'
+        '409':
+          description: Insufficient inventory stock for order items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error or insufficient payment amount
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/orders/{id}:
+    get:
+      operationId: getOrderById
+      summary: Get order details and items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Order UUID or human-readable order number.
+      responses:
+        '200':
+          description: Detailed order with items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessOrderDetail'
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    SuccessHealth:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: object
+          required: [status]
+          properties:
+            status:
+              type: string
+              const: ok
+        request_id:
+          type: string
+    ReadyHealth:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: object
+          required: [status, dependencies]
+          properties:
+            status:
+              type: string
+              const: ready
+            dependencies:
+              type: object
+              required: [database]
+              properties:
+                database:
+                  type: string
+                  const: ok
+        request_id:
+          type: string
+    SuccessPing:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: object
+          required: [service, status]
+          properties:
+            service:
+              type: string
+              const: api
+            status:
+              type: string
+              const: ok
+        request_id:
+          type: string
+    TranscriptionRequest:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+          description: Audio file with a supported extension and matching MIME type.
+        duration_seconds:
+          type: number
+          format: double
+          minimum: 0
+          description: Optional client-observed duration used for an early duration-limit check.
+    SuccessTranscription:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: object
+          required: [text, provider, model]
+          properties:
+            text:
+              type: string
+            provider:
+              type: string
+              const: groq
+            model:
+              type: string
+              description: Configured speech-to-text model identifier.
+        request_id:
+          type: string
+    ErrorResponse:
+      type: object
+      required: [error, request_id]
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorBody'
+        request_id:
+          type: string
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          description: Optional machine-readable context for the error.
+    Product:
+      type: object
+      required: [id, sku, name, purchase_price_idr, selling_price_idr, base_unit, minimum_stock, is_active, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          description: Unique product identifier (UUID).
+        category_id:
+          type: [string, "null"]
+          description: Associated category UUID if any.
+        sku:
+          type: string
+          description: Stock keeping unit code.
+        name:
+          type: string
+          description: Display name of the product.
+        purchase_price_idr:
+          type: integer
+          minimum: 0
+          description: Purchase/cost price in Rupiah.
+        selling_price_idr:
+          type: integer
+          minimum: 0
+          description: Retail selling price in Rupiah.
+        base_unit:
+          type: string
+          description: Unit of measure (e.g. pcs, porsi, cup, kg).
+        minimum_stock:
+          type: number
+          minimum: 0
+          description: Threshold for minimum inventory alerts.
+        image_url:
+          type: [string, "null"]
+          description: Optional URL of product image.
+        is_active:
+          type: boolean
+          description: Product availability status.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateProductRequest:
+      type: object
+      required: [sku, name, purchase_price_idr, selling_price_idr, base_unit]
+      properties:
+        category_id:
+          type: [string, "null"]
+          description: Optional category UUID.
+        sku:
+          type: string
+          minLength: 1
+          description: Unique SKU identifier.
+        name:
+          type: string
+          minLength: 1
+          description: Product name.
+        purchase_price_idr:
+          type: integer
+          minimum: 0
+          description: Cost price in Rupiah.
+        selling_price_idr:
+          type: integer
+          minimum: 0
+          description: Selling price in Rupiah.
+        base_unit:
+          type: string
+          minLength: 1
+          description: Unit of measurement (e.g. pcs, cup, box).
+        minimum_stock:
+          type: number
+          minimum: 0
+          default: 0
+          description: Minimum stock threshold.
+        image_url:
+          type: [string, "null"]
+          description: Optional URL of uploaded product image.
+    SuccessProductList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        request_id:
+          type: string
+    SuccessProductCreated:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/Product'
+        request_id:
+          type: string
+    InventoryLocation:
+      type: object
+      required: [id, name, code, is_active, created_at]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    ProductStockSummary:
+      type: object
+      required: [product_id, sku, product_name, base_unit, minimum_stock, location_id, location_name, quantity, updated_at]
+      properties:
+        product_id:
+          type: string
+        sku:
+          type: string
+        product_name:
+          type: string
+        base_unit:
+          type: string
+        minimum_stock:
+          type: number
+        location_id:
+          type: string
+        location_name:
+          type: string
+        quantity:
+          type: number
+        updated_at:
+          type: string
+          format: date-time
+    StockMovement:
+      type: object
+      required: [id, product_id, location_id, quantity_delta, movement_type, created_at]
+      properties:
+        id:
+          type: string
+        product_id:
+          type: string
+        location_id:
+          type: string
+        quantity_delta:
+          type: number
+        movement_type:
+          type: string
+          enum: [opening, purchase_receipt, sale, adjustment, return]
+        reference_type:
+          type: [string, "null"]
+        reference_id:
+          type: [string, "null"]
+        reason:
+          type: [string, "null"]
+        created_at:
+          type: string
+          format: date-time
+    RecordMovementRequest:
+      type: object
+      required: [product_id, location_id, quantity_delta, movement_type]
+      properties:
+        product_id:
+          type: string
+        location_id:
+          type: string
+        quantity_delta:
+          type: number
+        movement_type:
+          type: string
+          enum: [opening, purchase_receipt, sale, adjustment, return]
+        reason:
+          type: [string, "null"]
+        reference_type:
+          type: [string, "null"]
+    SuccessLocationList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/InventoryLocation'
+        request_id:
+          type: string
+    SuccessStockList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductStockSummary'
+        request_id:
+          type: string
+    SuccessMovementRecorded:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/StockMovement'
+        request_id:
+          type: string
+    Order:
+      type: object
+      required:
+        - id
+        - order_number
+        - location_id
+        - status
+        - payment_method
+        - subtotal_idr
+        - tax_idr
+        - discount_idr
+        - total_idr
+        - paid_amount_idr
+        - change_amount_idr
+        - created_at
+      properties:
+        id:
+          type: string
+        order_number:
+          type: string
+        location_id:
+          type: string
+        status:
+          type: string
+          enum: [completed, cancelled, draft]
+        payment_method:
+          type: string
+          enum: [cash, qris, debit_card, credit_card]
+        subtotal_idr:
+          type: integer
+        tax_idr:
+          type: integer
+        discount_idr:
+          type: integer
+        total_idr:
+          type: integer
+        paid_amount_idr:
+          type: integer
+        change_amount_idr:
+          type: integer
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    OrderItem:
+      type: object
+      required:
+        - id
+        - order_id
+        - product_id
+        - product_name
+        - sku
+        - unit_price_idr
+        - quantity
+        - subtotal_idr
+      properties:
+        id:
+          type: string
+        order_id:
+          type: string
+        product_id:
+          type: string
+        product_name:
+          type: string
+        sku:
+          type: string
+        unit_price_idr:
+          type: integer
+        quantity:
+          type: number
+        subtotal_idr:
+          type: integer
+    OrderDetail:
+      allOf:
+        - $ref: '#/components/schemas/Order'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrderItem'
+    CreateOrderItemRequest:
+      type: object
+      required:
+        - product_id
+        - product_name
+        - sku
+        - unit_price_idr
+        - quantity
+      properties:
+        product_id:
+          type: string
+        product_name:
+          type: string
+        sku:
+          type: string
+        unit_price_idr:
+          type: integer
+          minimum: 0
+        quantity:
+          type: number
+          exclusiveMinimum: 0
+    CreateOrderRequest:
+      type: object
+      required:
+        - location_id
+        - payment_method
+        - paid_amount_idr
+        - items
+      properties:
+        location_id:
+          type: string
+        payment_method:
+          type: string
+          enum: [cash, qris, debit_card, credit_card]
+        paid_amount_idr:
+          type: integer
+          minimum: 0
+        tax_idr:
+          type: [integer, "null"]
+        discount_idr:
+          type: [integer, "null"]
+        notes:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateOrderItemRequest'
+    SuccessOrderList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+        request_id:
+          type: string
+    SuccessOrderDetail:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/OrderDetail'
+        request_id:
+          type: string
+    SuccessUpload:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: object
+          required: [url, filename, size, content_type]
+          properties:
+            url:
+              type: string
+            filename:
+              type: string
+            size:
+              type: integer
+            content_type:
+              type: string
+        request_id:
+          type: string
+
+
+
+

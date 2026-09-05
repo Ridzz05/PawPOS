@@ -1,0 +1,18 @@
+{
+  "name": "PawPOS - Point of Sale & Retail SaaS",
+  "short_name": "PawPOS",
+  "start_url": "/pos",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#ff8042",
+  "description": "Terminal Kasir dan Manajemen Operasional SaaS Multi-Merchant PawPOS",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

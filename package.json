@@ -1,0 +1,14 @@
+{
+  "name": "ai-operational-pos",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["apps/web"],
+  "scripts": {
+    "dev": "npm --workspace apps/web run dev",
+    "api": "go run ./apps/api/cmd/server",
+    "build": "npm --workspace apps/web run build",
+    "test": "npm --workspace apps/web run test",
+    "test:run": "npm --workspace apps/web run test:run",
+    "format": "gofmt -w apps/api/cmd apps/api/internal"
+  }
+}
