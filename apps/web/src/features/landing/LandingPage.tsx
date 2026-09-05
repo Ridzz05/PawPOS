@@ -233,11 +233,11 @@ export function LandingPage() {
               fullWidth
               onClick={() => {
                 setMobileMenuOpen(false)
-                navigate('/pos')
+                navigate('/login')
               }}
               sx={{ bgcolor: '#FF8A3D', color: '#fff', fontWeight: 800, borderRadius: '999px', textTransform: 'none', py: 1 }}
             >
-              Buka Terminal Kasir POS
+              Buka Demo Trial Kasir POS
             </Button>
           </Stack>
         </Drawer>

@@ -297,5 +297,6 @@ export function NotFoundPage() {
 
 export { OrdersPage } from './features/orders/OrdersPage'
 export { LandingPage } from './features/landing/LandingPage'
+export { LoginPage } from './features/auth/LoginPage'
 
 

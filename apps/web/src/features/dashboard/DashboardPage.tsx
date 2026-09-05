@@ -40,7 +40,7 @@ import {
   Typography,
 } from '@mui/material'
 import { getActiveTenant } from '../tenant/tenantApi'
-import { getActiveStaff } from '../../components/StaffSwitcher'
+import { getActiveStaff } from '../auth/rbac'
 import { getOrders, type Order } from '../pos/ordersApi'
 import { getCurrentShift, type Shift } from '../shifts/shiftsApi'
 import { getProducts, type Product } from '../products/productsApi'

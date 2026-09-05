@@ -83,9 +83,9 @@ describe('LandingPage component', () => {
     expect(heroImg).toHaveAttribute('src', '/branding/landing-hero-3d.png')
 
     // Floating badges in Hero
-    expect(screen.getByText('Split Payment Sukses')).toBeInTheDocument()
-    expect(screen.getByText(/Rp 45.000 • Tunai \+ QRIS/i)).toBeInTheDocument()
-    expect(screen.getByText(/AI Copilot \(ElevenLabs\)/i)).toBeInTheDocument()
+    expect(screen.getAllByText('Split Payment Sukses')[0]).toBeInTheDocument()
+    expect(screen.getAllByText(/Rp 45.000 • Tunai \+ QRIS/i)[0]).toBeInTheDocument()
+    expect(screen.getAllByText(/AI Copilot \(ElevenLabs\)/i)[0]).toBeInTheDocument()
   })
 
   it('renders key metrics bar correctly', () => {

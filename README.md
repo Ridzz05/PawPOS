@@ -29,6 +29,27 @@ Dibangun dengan arsitektur monorepo berkinerja tinggi (**Go Clean Architecture**
 
 ---
 
+## 🌐 Live Production Demo & Akun Uji Coba (Trial Mode)
+
+Aplikasi PawPOS telah aktif dan dapat diakses secara publik pada domain resmi:
+- **URL Resmi (HTTPS)**: [**https://pawpos.my.id**](https://pawpos.my.id)
+- **Direct IP VPS Service**: `http://202.10.38.50:8085`
+
+### 🔑 Kredensial Akun Demo (1-Klik Masuk atau Input Manual)
+
+Sistem mengimplementasikan **Role Isolation Enforced** yang ketat. Pengguna tidak dapat berpindah peran sembarangan melalui sidebar, melainkan harus login menggunakan akun masing-masing atau menggunakan tombol **1-Klik Masuk** pada halaman login:
+
+| Peran (Role) | Email Login | Kata Sandi | Halaman Utama | Cakupan Akses & Batasan Peran |
+| :--- | :--- | :--- | :--- | :--- |
+| 👑 **Owner / Pemilik** | `owner@pawpos.id` | `pawpos123` | `/dashboard` | **Akses Penuh**: Dashboard finansial, kasir POS, katalog produk, stok inventori, sesi shift, dan pengaturan workspace. |
+| 💳 **Kasir Operasional** | `kasir@pawpos.id` | `kasir123` | `/pos` | **Fokus Kasir**: Terminal POS responsif, split payment multi-tender, cetak struk, dan buka/tutup shift kasir. *Menu analitik & inventori dibatasi*. |
+| 📦 **Staf Gudang & Logistik** | `gudang@pawpos.id` | `gudang123` | `/inventory/stocks` | **Logistik & Saldo**: Penerimaan barang masuk (*inbound*), pencatatan mutasi keluar rusak/expired, monitoring stok kritis. *Menu kasir dibatasi*. |
+| 📋 **Manajer Toko** | `manager@pawpos.id` | `manager123` | `/dashboard` | **Supervisi Operasional**: Monitoring mutasi harian, audit kasir & laci kas, penyesuaian master katalog produk. |
+
+> 🔒 **Audit Security Rule:** Demi integritas audit keuangan kasir, pergantian role secara langsung via *sidebar dropdown* telah ditiadakan. Setiap staf wajib melakukan **Logout (Keluar Sesi)** melalui kartu profil di sidebar untuk berganti akun.
+
+---
+
 ## 📸 Visual Showcase (Playwright High-DPI Capture)
 
 Semua screenshot di bawah ini ditangkap secara otomatis menggunakan skrip automasi **Playwright Retina High-DPI** langsung dari runtime sistem aktif:
@@ -41,7 +62,19 @@ Halaman utama SaaS yang responsif, modern, dan dilengkapi 3D visual showcase unt
 
 ---
 
-### 2. High-Speed POS Terminal (Live Cart & Active Shift)
+### 2. Login & Demo Trial Mode (Role Isolation)
+Halaman login terproteksi dengan pemilih persona 1-Klik Masuk untuk Owner, Kasir, Gudang, dan Manajer. Sidebar mengisolasi menu operasional kasir dan membatasi akses modul manajemen dengan perlindungan RBAC ketat.
+<p align="center">
+  <img src="docs/screenshots/01_login_page.png" alt="PawPOS Demo Trial Login Page" width="100%" />
+</p>
+
+| Kasir POS & Sidebar Terisolasi | Akses Halaman Dibatasi (RBAC Guard) |
+| :---: | :---: |
+| <img src="docs/screenshots/02_kasir_pos_terminal.png" alt="Kasir POS Terminal" width="480" /> | <img src="docs/screenshots/03_kasir_restricted_access.png" alt="Akses Halaman Dibatasi" width="480" /> |
+
+---
+
+### 3. High-Speed POS Terminal (Live Cart & Active Shift)
 Register penjualan instan dengan pencarian SKU cepat, kartu produk interaktif, live cart calculation, status shift kasir realtime, serta tombol pembayaran multi-tender.
 <p align="center">
   <img src="docs/screenshots/02_pos_terminal.png" alt="PawPOS Terminal Kasir POS" width="100%" />

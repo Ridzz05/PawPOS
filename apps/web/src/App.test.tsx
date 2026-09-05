@@ -2,12 +2,27 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
-import { setActiveStaff, DEFAULT_STAFF } from './components/StaffSwitcher'
+import { setActiveStaff, DEFAULT_STAFF, type StaffUser } from './components/StaffSwitcher'
+
+function setTestAuthStaff(staff: StaffUser) {
+  localStorage.setItem(
+    'pawpos_auth_user',
+    JSON.stringify({
+      id: staff.id,
+      email: `${staff.role}@pawpos.id`,
+      name: staff.name,
+      role: staff.role,
+      roleTitle: staff.role,
+      avatar: '👤',
+    })
+  )
+  setActiveStaff(staff)
+}
 
 describe('app shell', () => {
   beforeEach(() => {
     localStorage.clear()
-    setActiveStaff(DEFAULT_STAFF)
+    setTestAuthStaff(DEFAULT_STAFF)
     vi.restoreAllMocks()
   })
 
@@ -29,7 +44,7 @@ describe('app shell', () => {
   })
 
   it('enforces RBAC and displays Access Denied when cashier visits restricted /settings page', async () => {
-    setActiveStaff({
+    setTestAuthStaff({
       id: 'staff-cashier-1',
       name: 'Kasir Siti',
       role: 'cashier',
@@ -44,7 +59,7 @@ describe('app shell', () => {
   })
 
   it('enforces RBAC and displays Access Denied when warehouse staff visits restricted /pos page', async () => {
-    setActiveStaff({
+    setTestAuthStaff({
       id: 'staff-wh-1',
       name: 'Budi Gudang',
       role: 'warehouse',

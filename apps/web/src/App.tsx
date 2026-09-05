@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import {
   DashboardOutlined,
   Inventory2Outlined,
@@ -34,12 +34,13 @@ import {
 } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 import { theme } from './theme'
-import { DashboardPage, LandingPage, NotFoundPage, OrdersPage, PosPage, ProductsPage, SettingsPage, ShiftsPage, StocksPage } from './pages'
+import { DashboardPage, LandingPage, LoginPage, NotFoundPage, OrdersPage, PosPage, ProductsPage, SettingsPage, ShiftsPage, StocksPage } from './pages'
 import { VoiceRecorder } from './features/ai-assistant/VoiceRecorder'
 import { CsAssistantWidget } from './features/ai-assistant/CsAssistantWidget'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { StoreSwitcher } from './components/StoreSwitcher'
-import { StaffSwitcher } from './components/StaffSwitcher'
+import { UserProfileCard } from './components/UserProfileCard'
+import { AuthProvider, useAuth } from './features/auth/authContext'
 import { useRbac, type Permission } from './features/auth/rbac'
 import { PawLogo } from './components/PawLogo'
 
@@ -88,20 +89,27 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="*" element={<AppShell />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="*" element={<AppShell />} />
+        </Routes>
+      </AuthProvider>
     </ThemeProvider>
   )
 }
 
 function AppShell() {
+  const { isAuthenticated } = useAuth()
   const location = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const pageMeta = pageNames[location.pathname] ?? { title: 'Dashboard', subtitle: 'Sistem operasional POS' }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', bgcolor: 'background.default' }}>
@@ -404,11 +412,11 @@ function Navigation({ onNavigate }: { onNavigate: () => void }) {
         <PawLogo variant="horizontal" size="medium" tagline="Smart POS for Pet Business" />
       </Box>
 
-      {/* Active Merchant & Role Switchers in Sidebar */}
+      {/* Active Merchant & User Profile in Sidebar */}
       <Box sx={{ px: 0.5, mb: 1.5 }}>
         <Stack spacing={0.75}>
           <StoreSwitcher fullWidth />
-          <StaffSwitcher fullWidth />
+          <UserProfileCard fullWidth />
         </Stack>
       </Box>
 
@@ -443,7 +451,13 @@ function Navigation({ onNavigate }: { onNavigate: () => void }) {
                     key={item.to}
                     component={NavLink}
                     to={item.to}
-                    onClick={onNavigate}
+                    onClick={(e) => {
+                      if (!isAllowed) {
+                        e.preventDefault()
+                        return
+                      }
+                      onNavigate()
+                    }}
                     sx={{
                       minHeight: 36,
                       borderRadius: '8px',
@@ -577,45 +591,3 @@ function MobileNavItem({ to, label, icon: Icon }: { to: string; label: string; i
   )
 }
 
-function LoginPage() {
-  const navigate = useNavigate()
-  return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        p: 3,
-        bgcolor: 'background.default',
-      }}
-    >
-      <Paper
-        sx={{
-          p: 4,
-          maxWidth: 360,
-          width: '100%',
-          textAlign: 'center',
-          borderRadius: '16px',
-          border: '1px solid #e2e8f0',
-        }}
-      >
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-          <PawLogo variant="vertical" size="large" tagline="Smart POS for Pet Business" />
-        </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, fontSize: '0.84rem' }}>
-          Terminal register kasir dan manajemen operasional.
-        </Typography>
-        <Button
-          variant="contained"
-          fullWidth
-          size="medium"
-          onClick={() => navigate('/dashboard')}
-          sx={{ borderRadius: '10px' }}
-        >
-          Masuk Terminal
-        </Button>
-      </Paper>
-    </Box>
-  )
-}
