@@ -42,6 +42,7 @@ Implementasi backend berkecepatan tinggi dengan Clean Architecture dan modul dom
 ### 💻 3. Frontend Application (React 19 + TypeScript + Vite)
 Antarmuka kasir operasional modern dengan Material-UI v7 dan optimasi kecepatan checkout.
 - [[React 19 Frontend Architecture]] — Desain antarmuka, routing, state transitions, dan client API contracts.
+- [[Demo Trial & Role Isolation Architecture]] — Sistem uji coba 1-klik, kredensial persona demo, dan isolasi peran kasir tanpa role switcher sidebar.
 - [[POS Terminal & Cart State]] — State machine keranjang belanja, kalkulasi diskon/pajak, dan settlement instan.
 - [[Cash Denomination Calculator]] — Kalkulator interaktif lembaran uang rupiah untuk audit kasir tanpa salah hitung.
 - [[Mobile-First & Safe Area System]] — Adaptasi viewport mobile, notch iPhone, dan navigasi bawah safe area.
