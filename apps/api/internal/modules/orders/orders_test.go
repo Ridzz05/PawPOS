@@ -545,3 +545,66 @@ func TestCreateOrderWithDiscountAndTax(t *testing.T) {
 		t.Errorf("expected change 600, got %d", order.ChangeAmountIDR)
 	}
 }
+
+type mockPromoRedeemer struct {
+	calledPromoID string
+	calledOrderID string
+	calledDisc    int64
+}
+
+func (m *mockPromoRedeemer) RecordRedemption(ctx context.Context, promoID string, orderID string, discountApplied int64) error {
+	m.calledPromoID = promoID
+	m.calledOrderID = orderID
+	m.calledDisc = discountApplied
+	return nil
+}
+
+func TestCreateOrderWithPromo(t *testing.T) {
+	invRepo := inventory.NewMemoryRepository()
+	orderRepo := NewMemoryRepository(invRepo)
+	redeemer := &mockPromoRedeemer{}
+	orderRepo.SetPromoRedeemer(redeemer)
+
+	ctx := tenantcontext.WithTenantID(context.Background(), "tenant-promo-1")
+	_, _ = invRepo.RecordMovement(ctx, inventory.RecordMovementRequest{
+		ProductID:     "prod-1",
+		LocationID:    "loc-main",
+		QuantityDelta: 10,
+		MovementType:  "opening",
+	})
+
+	promoID := "promo-voucher-123"
+	promoCode := "PAWHEMAT10"
+	discount := int64(10000)
+
+	order, err := orderRepo.CreateOrder(ctx, CreateOrderRequest{
+		LocationID:    "loc-main",
+		PaymentMethod: "cash",
+		Items: []CreateOrderItemRequest{
+			{
+				ProductID:    "prod-1",
+				ProductName:  "Pakan Kucing",
+				SKU:          "CAT-01",
+				UnitPriceIDR: 50000,
+				Quantity:     2,
+			},
+		},
+		DiscountIDR:   &discount,
+		PaidAmountIDR: 90000,
+		PromoID:       &promoID,
+		PromoCode:     &promoCode,
+	})
+	if err != nil {
+		t.Fatalf("failed to create order with promo: %v", err)
+	}
+
+	if order.PromoID == nil || *order.PromoID != promoID {
+		t.Errorf("expected PromoID %s, got %v", promoID, order.PromoID)
+	}
+	if order.PromoCode != promoCode {
+		t.Errorf("expected PromoCode %s, got %s", promoCode, order.PromoCode)
+	}
+	if redeemer.calledPromoID != promoID || redeemer.calledDisc != discount {
+		t.Errorf("expected promo redemption recorded, got %+v", redeemer)
+	}
+}

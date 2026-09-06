@@ -1155,6 +1155,176 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/promos:
+    get:
+      operationId: listPromos
+      summary: List all promos and vouchers for the current tenant
+      responses:
+        '200':
+          description: List of promos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPromoList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: createPromo
+      summary: Create a new promo code or voucher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertPromoRequest'
+      responses:
+        '201':
+          description: Promo created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPromo'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Duplicate promo code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/promos/{id}:
+    get:
+      operationId: getPromoById
+      summary: Get promo details by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Promo details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPromo'
+        '404':
+          description: Promo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updatePromo
+      summary: Update promo details by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertPromoRequest'
+      responses:
+        '200':
+          description: Promo updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPromo'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Promo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Duplicate promo code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deletePromo
+      summary: Delete a promo code
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Promo deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                  request_id:
+                    type: string
+        '404':
+          description: Promo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/promos/validate:
+    post:
+      operationId: validatePromo
+      summary: Validate a promo code against a cart subtotal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidatePromoRequest'
+      responses:
+        '200':
+          description: Promo is valid and discount calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPromoValidation'
+        '400':
+          description: Promo invalid, inactive, expired, or min spend not met
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Promo code not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     SuccessHealth:
@@ -2112,7 +2282,120 @@ components:
               $ref: '#/components/schemas/OrderDetail'
         request_id:
           type: string
-
-
-
-
+    Promo:
+      type: object
+      required: [id, tenant_id, code, kind, value, min_spend, max_discount, quota, used_count, starts_at, ends_at, is_active, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+          enum: [percent, nominal]
+        value:
+          type: integer
+        min_spend:
+          type: integer
+        max_discount:
+          type: integer
+        quota:
+          type: integer
+        used_count:
+          type: integer
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    UpsertPromoRequest:
+      type: object
+      required: [code, kind, value]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+          enum: [percent, nominal]
+        value:
+          type: integer
+        min_spend:
+          type: integer
+        max_discount:
+          type: integer
+        quota:
+          type: integer
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+    ValidatePromoRequest:
+      type: object
+      required: [code, subtotal_idr]
+      properties:
+        code:
+          type: string
+        subtotal_idr:
+          type: integer
+    ValidatePromoResponse:
+      type: object
+      required: [promo_id, code, name, kind, value, discount_idr]
+      properties:
+        promo_id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+          enum: [percent, nominal]
+        value:
+          type: integer
+        discount_idr:
+          type: integer
+    SuccessPromoList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Promo'
+        request_id:
+          type: string
+    SuccessPromo:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/Promo'
+        request_id:
+          type: string
+    SuccessPromoValidation:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/ValidatePromoResponse'
+        request_id:
+          type: string

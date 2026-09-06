@@ -23,7 +23,7 @@ booking jasa yang selesai otomatis menjadi struk kasir (`bookings → orders`).
 | Item jasa di order | ✅ Live | `order_items.item_kind` + `service_id` (00012). Item jasa skip kunci/potong/movement stok. |
 | Dark-mode contrast | ✅ Gelombang 1 | Critical+major fungsional diperbaiki (pil SKU, struk, stepper, tabel). Sisa: glare minor chip pastel & border `#e2e8f0`. |
 | PWA | ✅ Instalable | Ikon PNG + maskable, `sw.js` cache v2, splash, tombol instal. |
-| Promo & Voucher (F1d) | ❌ Berikutnya | Spec §4.1 |
+| Promo & Voucher (F1d) | ✅ Live | Modul `promos` (percent/nominal, min_spend, quota), tabel `promo_redemptions`, endpoint `/promos/validate`, integrasi POS & receipt, halaman `/promos`. |
 | Supplier & PO (F1e) | ❌ Berikutnya | Spec §4.2 |
 | Biaya + Laporan (F2) | ❌ Belum | Butuh data F1d/F1e untuk laba bersih. |
 | Rekam Medis + Karyawan (F3) | ❌ Belum | Tabel `users.pin` sudah ada (00007); hapus DEMO_ACCOUNTS hardcode saat F3. |
@@ -77,7 +77,7 @@ booking jasa yang selesai otomatis menjadi struk kasir (`bookings → orders`).
 
 ## 4. Backlog berurutan (kerjakan sesuai nomor)
 
-### 4.1 F1d — Promo & Voucher
+### 4.1 F1d — Promo & Voucher (✅ Selesai)
 - BE modul `promos`: `promos(code unique/tenant, kind: percent|nominal,
   value, min_spend, quota, starts_at, ends_at, is_active)` + tabel pemakaian
   `promo_redemptions(order_id, promo_id)` agar kuota tidak bisa diakali.
@@ -87,7 +87,7 @@ booking jasa yang selesai otomatis menjadi struk kasir (`bookings → orders`).
 - FE: halaman Promo (CRUD + kuota terpakai) + field kode promo di dialog
   checkout POS. Nav flag `promos` sudah live di registry (comingSoon hapus).
 - Test: kuota habis ditolak, periode kedaluwarsa ditolak, nominal > subtotal
-  di-cap ke subtotal.
+  di-cap ke subtotal. Unit test backend & Vitest frontend lulus 100%.
 
 ### 4.2 F1e — Supplier & Pembelian (PO)
 - BE modul `suppliers` (CRUD) + `purchases` (`purchase_orders` + items,

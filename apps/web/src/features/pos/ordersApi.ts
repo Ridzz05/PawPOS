@@ -31,6 +31,8 @@ export interface Order {
   cash_amount_idr?: number
   non_cash_amount_idr?: number
   notes: string
+  promo_id?: string
+  promo_code?: string
   created_at: string
 }
 
@@ -58,6 +60,8 @@ export interface CreateOrderInput {
   tax_idr?: number
   discount_idr?: number
   notes?: string
+  promo_id?: string
+  promo_code?: string
 }
 
 export class OrderApiError extends Error {

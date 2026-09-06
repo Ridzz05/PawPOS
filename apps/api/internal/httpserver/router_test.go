@@ -3,6 +3,7 @@ package httpserver
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -693,5 +694,102 @@ func TestRouterServiceBookingFlow(t *testing.T) {
 	_ = json.NewDecoder(rec.Body).Decode(&listRes)
 	if len(listRes.Data) != 1 {
 		t.Fatalf("expected 1 selesai booking, got %+v", listRes.Data)
+	}
+}
+
+func TestRouterPromoEndpoints(t *testing.T) {
+	router := NewRouter(nil, nil, nil)
+
+	// 1. Create Promo
+	createBody := []byte(`{
+		"code": "TESTHEMAT10",
+		"name": "Diskon Uji 10%",
+		"kind": "percent",
+		"value": 10,
+		"min_spend": 50000,
+		"max_discount": 20000,
+		"quota": 10
+	}`)
+	createRec := httptest.NewRecorder()
+	createReq := httptest.NewRequest(http.MethodPost, "/api/v1/promos", bytes.NewReader(createBody))
+	createReq.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(createRec, createReq)
+	if createRec.Code != http.StatusCreated {
+		t.Fatalf("expected 201 for promo creation, got %d: %s", createRec.Code, createRec.Body.String())
+	}
+
+	var created struct {
+		Data map[string]any `json:"data"`
+	}
+	_ = json.NewDecoder(createRec.Body).Decode(&created)
+	promoID := created.Data["id"].(string)
+
+	// 2. Validate Promo
+	valBody := []byte(`{
+		"code": "testhemat10",
+		"subtotal_idr": 100000
+	}`)
+	valRec := httptest.NewRecorder()
+	valReq := httptest.NewRequest(http.MethodPost, "/api/v1/promos/validate", bytes.NewReader(valBody))
+	valReq.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(valRec, valReq)
+	if valRec.Code != http.StatusOK {
+		t.Fatalf("expected 200 for promo validation, got %d: %s", valRec.Code, valRec.Body.String())
+	}
+
+	var valRes struct {
+		Data map[string]any `json:"data"`
+	}
+	_ = json.NewDecoder(valRec.Body).Decode(&valRes)
+	if valRes.Data["discount_idr"].(float64) != 10000 {
+		t.Fatalf("expected 10000 discount, got %v", valRes.Data["discount_idr"])
+	}
+
+	// 3. Pre-seed inventory for order
+	seedBody := []byte(`{
+		"product_id": "p-promo-1",
+		"location_id": "loc-main",
+		"quantity_delta": 20,
+		"movement_type": "opening"
+	}`)
+	seedRec := httptest.NewRecorder()
+	seedReq := httptest.NewRequest(http.MethodPost, "/api/v1/inventory/movements", bytes.NewReader(seedBody))
+	router.ServeHTTP(seedRec, seedReq)
+
+	// 4. Create Order with Promo Voucher
+	orderBody := []byte(fmt.Sprintf(`{
+		"location_id": "loc-main",
+		"payment_method": "cash",
+		"paid_amount_idr": 90000,
+		"discount_idr": 10000,
+		"promo_id": "%s",
+		"promo_code": "TESTHEMAT10",
+		"items": [
+			{
+				"product_id": "p-promo-1",
+				"product_name": "Makanan Hewan",
+				"sku": "PET-01",
+				"unit_price_idr": 100000,
+				"quantity": 1
+			}
+		]
+	}`, promoID))
+	orderRec := httptest.NewRecorder()
+	orderReq := httptest.NewRequest(http.MethodPost, "/api/v1/orders", bytes.NewReader(orderBody))
+	orderReq.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(orderRec, orderReq)
+	if orderRec.Code != http.StatusCreated {
+		t.Fatalf("expected 201 for order creation with promo, got %d: %s", orderRec.Code, orderRec.Body.String())
+	}
+
+	var orderRes struct {
+		Data map[string]any `json:"data"`
+	}
+	_ = json.NewDecoder(orderRec.Body).Decode(&orderRes)
+	if orderRes.Data["promo_code"] != "TESTHEMAT10" {
+		t.Fatalf("expected promo_code TESTHEMAT10, got %v", orderRes.Data["promo_code"])
+	}
+	if orderRes.Data["total_idr"].(float64) != 90000 {
+		t.Fatalf("expected total 90000, got %v", orderRes.Data["total_idr"])
 	}
 }

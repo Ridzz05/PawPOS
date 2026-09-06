@@ -33,6 +33,8 @@ type Order struct {
 	CashAmountIDR    int64     `json:"cash_amount_idr"`
 	NonCashAmountIDR int64     `json:"non_cash_amount_idr"`
 	Notes            string    `json:"notes"`
+	PromoID          *string   `json:"promo_id,omitempty"`
+	PromoCode        string    `json:"promo_code,omitempty"`
 	CreatedAt        time.Time `json:"created_at"`
 }
 
@@ -74,6 +76,8 @@ type CreateOrderRequest struct {
 	CashAmountIDR    *int64                   `json:"cash_amount_idr,omitempty"`
 	NonCashAmountIDR *int64                   `json:"non_cash_amount_idr,omitempty"`
 	Notes            string                   `json:"notes"`
+	PromoID          *string                  `json:"promo_id,omitempty"`
+	PromoCode        *string                  `json:"promo_code,omitempty"`
 }
 
 var (
@@ -119,6 +123,11 @@ type SaleRecorder interface {
 	RecordSale(ctx context.Context, tenantID string, paymentMethod string, totalIDR int64, cashAmountIDR int64, nonCashAmountIDR int64) error
 }
 
+// PromoRedeemer is an optional hook to record promo voucher redemptions.
+type PromoRedeemer interface {
+	RecordRedemption(ctx context.Context, promoID string, orderID string, discountApplied int64) error
+}
+
 type Repository interface {
 	CreateOrder(ctx context.Context, req CreateOrderRequest) (OrderDetail, error)
 	ListOrders(ctx context.Context, locationID *string) ([]Order, error)
@@ -132,6 +141,7 @@ type MemoryRepository struct {
 	orderItems    map[string][]OrderItem // keyed by orderID
 	inventoryRepo inventory.Repository
 	saleRecorder  SaleRecorder
+	promoRedeemer PromoRedeemer
 	counter       int
 }
 
@@ -139,6 +149,12 @@ func (m *MemoryRepository) SetSaleRecorder(sr SaleRecorder) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.saleRecorder = sr
+}
+
+func (m *MemoryRepository) SetPromoRedeemer(pr PromoRedeemer) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.promoRedeemer = pr
 }
 
 func NewMemoryRepository(invRepo inventory.Repository) *MemoryRepository {
@@ -268,7 +284,14 @@ func (m *MemoryRepository) CreateOrder(ctx context.Context, req CreateOrderReque
 		CashAmountIDR:    cashRecorded,
 		NonCashAmountIDR: nonCashRecorded,
 		Notes:            req.Notes,
+		PromoID:          req.PromoID,
 		CreatedAt:        now,
+	}
+	if req.PromoCode != nil {
+		order.PromoCode = *req.PromoCode
+	}
+	if req.PromoID != nil && *req.PromoID != "" && m.promoRedeemer != nil {
+		_ = m.promoRedeemer.RecordRedemption(ctx, *req.PromoID, order.ID, discount)
 	}
 
 	items := make([]OrderItem, 0, len(req.Items))
@@ -447,19 +470,57 @@ func (p *PostgresRepository) CreateOrder(ctx context.Context, req CreateOrderReq
 	now := time.Now().UTC()
 	orderNum := fmt.Sprintf("ORD-%s-%d", now.Format("20060102"), time.Now().UnixNano()%100000)
 
+	var promoIDParam any
+	var promoCodeParam string
+	if req.PromoID != nil && *req.PromoID != "" {
+		promoIDParam = *req.PromoID
+	}
+	if req.PromoCode != nil {
+		promoCodeParam = *req.PromoCode
+	}
+
 	var order Order
+	var scannedPromoID sql.NullString
 	err = tx.QueryRowContext(ctx,
-		`INSERT INTO orders (tenant_id, order_number, location_id, status, payment_method, subtotal_idr, tax_idr, discount_idr, total_idr, paid_amount_idr, change_amount_idr, cash_amount_idr, non_cash_amount_idr, notes, created_at)
-		VALUES ($1, $2, $3, 'completed', $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-		RETURNING id, tenant_id, order_number, location_id, status, payment_method, subtotal_idr, tax_idr, discount_idr, total_idr, paid_amount_idr, change_amount_idr, cash_amount_idr, non_cash_amount_idr, notes, created_at`,
-		tenantID, orderNum, req.LocationID, req.PaymentMethod, subtotal, tax, discount, total, req.PaidAmountIDR, change, cashRecorded, nonCashRecorded, req.Notes, now,
+		`INSERT INTO orders (tenant_id, order_number, location_id, status, payment_method, subtotal_idr, tax_idr, discount_idr, total_idr, paid_amount_idr, change_amount_idr, cash_amount_idr, non_cash_amount_idr, notes, promo_id, promo_code, created_at)
+		VALUES ($1, $2, $3, 'completed', $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+		RETURNING id, tenant_id, order_number, location_id, status, payment_method, subtotal_idr, tax_idr, discount_idr, total_idr, paid_amount_idr, change_amount_idr, cash_amount_idr, non_cash_amount_idr, notes, promo_id, promo_code, created_at`,
+		tenantID, orderNum, req.LocationID, req.PaymentMethod, subtotal, tax, discount, total, req.PaidAmountIDR, change, cashRecorded, nonCashRecorded, req.Notes, promoIDParam, promoCodeParam, now,
 	).Scan(
 		&order.ID, &order.TenantID, &order.OrderNumber, &order.LocationID, &order.Status, &order.PaymentMethod,
 		&order.SubtotalIDR, &order.TaxIDR, &order.DiscountIDR, &order.TotalIDR,
-		&order.PaidAmountIDR, &order.ChangeAmountIDR, &order.CashAmountIDR, &order.NonCashAmountIDR, &order.Notes, &order.CreatedAt,
+		&order.PaidAmountIDR, &order.ChangeAmountIDR, &order.CashAmountIDR, &order.NonCashAmountIDR, &order.Notes,
+		&scannedPromoID, &order.PromoCode, &order.CreatedAt,
 	)
 	if err != nil {
 		return OrderDetail{}, fmt.Errorf("insert order failed: %w", err)
+	}
+	if scannedPromoID.Valid {
+		order.PromoID = &scannedPromoID.String
+	}
+
+	// 2b. If promo is attached, verify quota, lock, increment used_count, and record redemption
+	if req.PromoID != nil && *req.PromoID != "" {
+		var promoQuota, promoUsedCount int
+		var promoIsActive bool
+		var promoStartsAt, promoEndsAt time.Time
+		err := tx.QueryRowContext(ctx,
+			`SELECT quota, used_count, is_active, starts_at, ends_at FROM promos WHERE tenant_id = $1 AND id = $2 FOR UPDATE`,
+			tenantID, *req.PromoID,
+		).Scan(&promoQuota, &promoUsedCount, &promoIsActive, &promoStartsAt, &promoEndsAt)
+		if err == nil {
+			if !promoIsActive || now.Before(promoStartsAt) || now.After(promoEndsAt) || (promoQuota > 0 && promoUsedCount >= promoQuota) {
+				return OrderDetail{}, fmt.Errorf("promo is invalid or quota exceeded")
+			}
+			_, _ = tx.ExecContext(ctx,
+				`UPDATE promos SET used_count = used_count + 1, updated_at = now() WHERE tenant_id = $1 AND id = $2`,
+				tenantID, *req.PromoID,
+			)
+			_, _ = tx.ExecContext(ctx,
+				`INSERT INTO promo_redemptions (tenant_id, promo_id, order_id, discount_applied, redeemed_at) VALUES ($1, $2, $3, $4, now())`,
+				tenantID, *req.PromoID, order.ID, discount,
+			)
+		}
 	}
 
 	// 3. Insert items, deduct stock, and append stock movement
@@ -539,7 +600,7 @@ func (p *PostgresRepository) CreateOrder(ctx context.Context, req CreateOrderReq
 
 func (p *PostgresRepository) ListOrders(ctx context.Context, locationID *string) ([]Order, error) {
 	tenantID := tenantcontext.FromContext(ctx)
-	query := `SELECT id, tenant_id, order_number, location_id, status, payment_method, subtotal_idr, tax_idr, discount_idr, total_idr, paid_amount_idr, change_amount_idr, cash_amount_idr, non_cash_amount_idr, notes, created_at
+	query := `SELECT id, tenant_id, order_number, location_id, status, payment_method, subtotal_idr, tax_idr, discount_idr, total_idr, paid_amount_idr, change_amount_idr, cash_amount_idr, non_cash_amount_idr, notes, promo_id, promo_code, created_at
 		FROM orders WHERE tenant_id = $1`
 	args := []any{tenantID}
 	if locationID != nil && *locationID != "" {
@@ -557,12 +618,20 @@ func (p *PostgresRepository) ListOrders(ctx context.Context, locationID *string)
 	results := make([]Order, 0)
 	for rows.Next() {
 		var o Order
+		var promoID, promoCode sql.NullString
 		if err := rows.Scan(
 			&o.ID, &o.TenantID, &o.OrderNumber, &o.LocationID, &o.Status, &o.PaymentMethod,
 			&o.SubtotalIDR, &o.TaxIDR, &o.DiscountIDR, &o.TotalIDR,
-			&o.PaidAmountIDR, &o.ChangeAmountIDR, &o.CashAmountIDR, &o.NonCashAmountIDR, &o.Notes, &o.CreatedAt,
+			&o.PaidAmountIDR, &o.ChangeAmountIDR, &o.CashAmountIDR, &o.NonCashAmountIDR, &o.Notes,
+			&promoID, &promoCode, &o.CreatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("scan order failed: %w", err)
+		}
+		if promoID.Valid {
+			o.PromoID = &promoID.String
+		}
+		if promoCode.Valid {
+			o.PromoCode = promoCode.String
 		}
 		results = append(results, o)
 	}
@@ -572,19 +641,27 @@ func (p *PostgresRepository) ListOrders(ctx context.Context, locationID *string)
 func (p *PostgresRepository) GetOrderByID(ctx context.Context, id string) (OrderDetail, error) {
 	tenantID := tenantcontext.FromContext(ctx)
 	var o Order
+	var promoID, promoCode sql.NullString
 	err := p.db.QueryRowContext(ctx,
-		`SELECT id, tenant_id, order_number, location_id, status, payment_method, subtotal_idr, tax_idr, discount_idr, total_idr, paid_amount_idr, change_amount_idr, cash_amount_idr, non_cash_amount_idr, notes, created_at
+		`SELECT id, tenant_id, order_number, location_id, status, payment_method, subtotal_idr, tax_idr, discount_idr, total_idr, paid_amount_idr, change_amount_idr, cash_amount_idr, non_cash_amount_idr, notes, promo_id, promo_code, created_at
 		FROM orders WHERE tenant_id = $1 AND (id::text = $2 OR order_number = $2)`,
 		tenantID, id,
 	).Scan(
 		&o.ID, &o.TenantID, &o.OrderNumber, &o.LocationID, &o.Status, &o.PaymentMethod,
 		&o.SubtotalIDR, &o.TaxIDR, &o.DiscountIDR, &o.TotalIDR,
-		&o.PaidAmountIDR, &o.ChangeAmountIDR, &o.CashAmountIDR, &o.NonCashAmountIDR, &o.Notes, &o.CreatedAt,
+		&o.PaidAmountIDR, &o.ChangeAmountIDR, &o.CashAmountIDR, &o.NonCashAmountIDR, &o.Notes,
+		&promoID, &promoCode, &o.CreatedAt,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
 		return OrderDetail{}, ErrOrderNotFound
 	} else if err != nil {
 		return OrderDetail{}, fmt.Errorf("get order failed: %w", err)
+	}
+	if promoID.Valid {
+		o.PromoID = &promoID.String
+	}
+	if promoCode.Valid {
+		o.PromoCode = promoCode.String
 	}
 
 	rows, err := p.db.QueryContext(ctx,

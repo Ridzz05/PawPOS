@@ -53,7 +53,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { to: '/products', label: 'Katalog Produk', icon: StorefrontOutlined, permission: 'access_products' },
       { to: '/services', label: 'Layanan & Paket', icon: SpaOutlined, permission: 'access_services' },
-      { to: '/promos', label: 'Promo & Voucher', icon: CardGiftcardOutlined, permission: 'manage_promos', comingSoon: true },
+      { to: '/promos', label: 'Promo & Voucher', icon: CardGiftcardOutlined, permission: 'manage_promos' },
     ],
   },
   {

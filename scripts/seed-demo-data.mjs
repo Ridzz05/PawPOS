@@ -371,4 +371,46 @@ async function seedDemoServices() {
   } else {
     console.warn('Failed to create demo booking:', await bookRes.text())
   }
+
+  // Demo Promos & Vouchers for POS testing and customer campaigns
+  const demoPromos = [
+    {
+      code: 'PAWHEMAT10',
+      name: 'Diskon Pelanggan Setia 10%',
+      kind: 'percent',
+      value: 10,
+      min_spend: 50000,
+      max_discount: 25000,
+      quota: 100,
+    },
+    {
+      code: 'NEWPET25K',
+      name: 'Voucher Belanja Pertama Rp 25.000',
+      kind: 'nominal',
+      value: 25000,
+      min_spend: 100000,
+      max_discount: 0,
+      quota: 50,
+    },
+    {
+      code: 'GROOMINGVIP',
+      name: 'Promo Paket Grooming VIP 15%',
+      kind: 'percent',
+      value: 15,
+      min_spend: 75000,
+      max_discount: 30000,
+      quota: 30,
+    },
+  ]
+
+  for (const promo of demoPromos) {
+    const res = await api('/api/v1/promos', 'POST', promo)
+    if (res.ok) {
+      console.log(`Created promo: ${promo.code} (${promo.name})`)
+    } else if (res.status === 409) {
+      console.log(`Promo ${promo.code} already exists, skipping`)
+    } else {
+      console.warn(`Failed to create promo ${promo.code}:`, await res.text())
+    }
+  }
 }

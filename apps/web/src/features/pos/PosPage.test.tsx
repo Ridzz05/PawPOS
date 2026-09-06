@@ -354,4 +354,121 @@ describe('PosPage', () => {
     expect(screen.getByText('Porsi Tunai')).toBeInTheDocument()
     expect(screen.getByText('Porsi Non-Tunai/QRIS')).toBeInTheDocument()
   })
+
+  it('applies promo voucher code, recalculates discount, and submits promo with order', async () => {
+    let capturedOrderBody: any = null
+    const createdOrderWithPromo = {
+      id: 'ord-promo-001',
+      order_number: 'ORD-20260904-0003',
+      location_id: 'loc-main',
+      status: 'completed',
+      payment_method: 'cash',
+      subtotal_idr: 18000,
+      tax_idr: 0,
+      discount_idr: 1800,
+      total_idr: 16200,
+      paid_amount_idr: 16200,
+      change_amount_idr: 0,
+      promo_id: 'promo-001',
+      promo_code: 'PAWHEMAT10',
+      notes: '',
+      created_at: '2026-09-04T12:00:00Z',
+      items: [
+        {
+          id: 'item-1',
+          order_id: 'ord-promo-001',
+          product_id: 'prod-1',
+          product_name: 'Kopi Susu Gula Aren',
+          sku: 'KOP-001',
+          unit_price_idr: 18000,
+          quantity: 1,
+          subtotal_idr: 18000,
+        },
+      ],
+    }
+
+    const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+      if (url.includes('/products')) {
+        return Promise.resolve({ ok: true, json: async () => ({ data: sampleProducts }) })
+      }
+      if (url.includes('/inventory/stocks')) {
+        return Promise.resolve({ ok: true, json: async () => ({ data: sampleStocks }) })
+      }
+      if (url.includes('/inventory/locations')) {
+        return Promise.resolve({ ok: true, json: async () => ({ data: sampleLocations }) })
+      }
+      if (url.includes('/promos/validate') && init?.method === 'POST') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            data: {
+              promo_id: 'promo-001',
+              code: 'PAWHEMAT10',
+              name: 'Hemat 10 Persen',
+              kind: 'percent',
+              value: 10,
+              discount_idr: 1800,
+            },
+          }),
+        })
+      }
+      if (url.includes('/orders') && init?.method === 'POST') {
+        capturedOrderBody = JSON.parse(init.body as string)
+        return Promise.resolve({ ok: true, json: async () => ({ data: createdOrderWithPromo }) })
+      }
+      return Promise.reject(new Error('not found'))
+    })
+
+    vi.stubGlobal('fetch', fetchMock)
+    render(<PosPage />)
+
+    const kopiProduct = await screen.findByText('Kopi Susu Gula Aren')
+    await user.click(kopiProduct)
+
+    // Open discount & voucher modal
+    const discountBtn = screen.getByRole('button', { name: '+ Diskon' })
+    await user.click(discountBtn)
+
+    expect(screen.getByText('Kode Voucher / Kupon Promo')).toBeInTheDocument()
+
+    // Type voucher code
+    const voucherInput = screen.getByPlaceholderText(/Contoh: PAWHEMAT10/i)
+    await user.type(voucherInput, 'pawhemat10')
+
+    // Click Terapkan
+    const terapkanBtn = screen.getByRole('button', { name: 'Terapkan' })
+    await user.click(terapkanBtn)
+
+    // Wait for discount modal to close
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+
+    // Verify discount applied in cart summary
+    expect(screen.getByText(/Voucher \(PAWHEMAT10\)/i)).toBeInTheDocument()
+    expect(screen.getByText('- Rp 1.800')).toBeInTheDocument()
+    expect(screen.getByText('Rp 16.200')).toBeInTheDocument()
+
+    // Proceed to checkout
+    const bayarBtn = screen.getByRole('button', { name: 'Bayar Sekarang' })
+    await user.click(bayarBtn)
+
+    const submitBtn = screen.getByRole('button', { name: 'Selesaikan Transaksi' })
+    await user.click(submitBtn)
+
+    await waitFor(() => {
+      expect(capturedOrderBody).not.toBeNull()
+    })
+    expect(capturedOrderBody.promo_id).toBe('promo-001')
+    expect(capturedOrderBody.promo_code).toBe('PAWHEMAT10')
+    expect(capturedOrderBody.discount_idr).toBe(1800)
+
+    // Receipt should display voucher code
+    await waitFor(() => {
+      expect(screen.getByText('Transaksi Berhasil')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Voucher Promo')).toBeInTheDocument()
+    expect(screen.getByText('PAWHEMAT10')).toBeInTheDocument()
+  })
 })

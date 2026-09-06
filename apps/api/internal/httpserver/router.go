@@ -18,6 +18,7 @@ import (
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/inventory"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/orders"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/products"
+	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/promos"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/services"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/shifts"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/tenant"
@@ -40,6 +41,7 @@ func NewRouter(log *slog.Logger, ready health.Check, db *sql.DB, configurations 
 	var customerRepo customers.Repository
 	var serviceRepo services.Repository
 	var bookingRepo bookings.Repository
+	var promoRepo promos.Repository
 	if db != nil {
 		productRepo = products.NewPostgresRepository(db)
 		inventoryRepo = inventory.NewPostgresRepository(db)
@@ -51,6 +53,7 @@ func NewRouter(log *slog.Logger, ready health.Check, db *sql.DB, configurations 
 		customerRepo = customers.NewPostgresRepository(db)
 		serviceRepo = services.NewPostgresRepository(db)
 		bookingRepo = bookings.NewPostgresRepository(db)
+		promoRepo = promos.NewPostgresRepository(db)
 	} else {
 		productRepo = products.NewMemoryRepository()
 		inventoryRepo = inventory.NewMemoryRepository()
@@ -62,8 +65,9 @@ func NewRouter(log *slog.Logger, ready health.Check, db *sql.DB, configurations 
 		customerRepo = customers.NewMemoryRepository()
 		serviceRepo = services.NewMemoryRepository()
 		bookingRepo = bookings.NewMemoryRepository()
+		promoRepo = promos.NewMemoryRepository()
 	}
-	return NewRouterWithAuthRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, authRepo, categoryRepo, customerRepo, serviceRepo, bookingRepo, configurations...)
+	return NewRouterWithAuthRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, authRepo, categoryRepo, customerRepo, serviceRepo, bookingRepo, promoRepo, configurations...)
 }
 
 func NewRouterWithRepo(log *slog.Logger, ready health.Check, productRepo products.Repository, configurations ...config.Config) http.Handler {
@@ -76,13 +80,19 @@ func NewRouterWithRepos(log *slog.Logger, ready health.Check, productRepo produc
 }
 
 func NewRouterWithAllRepos(log *slog.Logger, ready health.Check, productRepo products.Repository, inventoryRepo inventory.Repository, orderRepo orders.Repository, tenantRepo tenant.Repository, shiftRepo shifts.Repository, configurations ...config.Config) http.Handler {
-	return NewRouterWithAuthRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, auth.NewMemoryRepository(), products.NewMemoryCategoryRepository(), customers.NewMemoryRepository(), services.NewMemoryRepository(), bookings.NewMemoryRepository(), configurations...)
+	return NewRouterWithAuthRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, auth.NewMemoryRepository(), products.NewMemoryCategoryRepository(), customers.NewMemoryRepository(), services.NewMemoryRepository(), bookings.NewMemoryRepository(), promos.NewMemoryRepository(), configurations...)
 }
 
-func NewRouterWithAuthRepos(log *slog.Logger, ready health.Check, productRepo products.Repository, inventoryRepo inventory.Repository, orderRepo orders.Repository, tenantRepo tenant.Repository, shiftRepo shifts.Repository, authRepo auth.Repository, categoryRepo products.CategoryRepository, customerRepo customers.Repository, serviceRepo services.Repository, bookingRepo bookings.Repository, configurations ...config.Config) http.Handler {
+func NewRouterWithAuthRepos(log *slog.Logger, ready health.Check, productRepo products.Repository, inventoryRepo inventory.Repository, orderRepo orders.Repository, tenantRepo tenant.Repository, shiftRepo shifts.Repository, authRepo auth.Repository, categoryRepo products.CategoryRepository, customerRepo customers.Repository, serviceRepo services.Repository, bookingRepo bookings.Repository, promoRepo promos.Repository, configurations ...config.Config) http.Handler {
 	cfg := config.Load()
 	if len(configurations) > 0 {
 		cfg = configurations[0]
+	}
+	if promoRepo == nil {
+		promoRepo = promos.NewMemoryRepository()
+	}
+	if memOrderRepo, ok := orderRepo.(*orders.MemoryRepository); ok {
+		memOrderRepo.SetPromoRedeemer(promoRepo)
 	}
 	router := chi.NewRouter()
 	router.Use(requestid.Middleware)
@@ -165,6 +175,7 @@ func NewRouterWithAuthRepos(log *slog.Logger, ready health.Check, productRepo pr
 	customerHandler := customers.NewHandler(customerRepo)
 	serviceHandler := services.NewHandler(serviceRepo)
 	bookingHandler := bookings.NewHandler(bookingRepo, orderRepo, serviceRepo, customerRepo)
+	promoHandler := promos.NewHandler(promoRepo)
 	uploadHandler := uploads.NewHandler("./uploads")
 
 	router.Get("/health/live", healthHandler.Live)
@@ -246,6 +257,14 @@ func NewRouterWithAuthRepos(log *slog.Logger, ready health.Check, productRepo pr
 			r.Get("/", orderHandler.ListOrders)
 			r.Post("/", orderHandler.CreateOrder)
 			r.Get("/{id}", orderHandler.GetOrderByID)
+		})
+		r.Route("/promos", func(pr chi.Router) {
+			pr.Get("/", promoHandler.List)
+			pr.Post("/", promoHandler.Create)
+			pr.Get("/{id}", promoHandler.GetByID)
+			pr.Put("/{id}", promoHandler.Update)
+			pr.Delete("/{id}", promoHandler.Delete)
+			pr.Post("/validate", promoHandler.Validate)
 		})
 		r.Route("/shifts", func(sr chi.Router) {
 			sr.Post("/open", shiftHandler.OpenShift)

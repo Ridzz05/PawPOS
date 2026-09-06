@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BookingsPage } from './BookingsPage'
 
+const pad = (n: number) => String(n).padStart(2, '0')
+const now = new Date()
+const localToday = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+
 const sampleBookings = [
   {
     id: 'book-1',
@@ -12,7 +16,7 @@ const sampleBookings = [
     service_id: 'svc-1',
     package_id: null,
     location_id: 'loc-main',
-    scheduled_at: `${new Date().toISOString().slice(0, 10)}T10:00:00Z`,
+    scheduled_at: `${localToday}T10:00:00Z`,
     status: 'antre',
     staff_name: 'Rina',
     notes: '',

@@ -33,6 +33,7 @@ import { DashboardPage, LandingPage, LoginPage, NotFoundPage, OrdersPage, PosPag
 import { CustomersPage } from './features/customers/CustomersPage'
 import { ServicesPage } from './features/services/ServicesPage'
 import { BookingsPage } from './features/bookings/BookingsPage'
+import { PromosPage } from './features/promos/PromosPage'
 import { VoiceRecorder } from './features/ai-assistant/VoiceRecorder'
 import { CsAssistantWidget } from './features/ai-assistant/CsAssistantWidget'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -58,6 +59,7 @@ const pageNames: Record<string, { title: string; subtitle: string }> = {
   '/customers/hewan': { title: 'Data Hewan', subtitle: 'Profil hewan peliharaan, ras, alergi, dan pemilik' },
   '/services': { title: 'Layanan & Paket', subtitle: 'Tarif grooming, klinik, penitipan, dan paket bundel' },
   '/bookings': { title: 'Booking & Antrean', subtitle: 'Jadwal layanan hewan dan penyelesaian menjadi struk' },
+  '/promos': { title: 'Promo & Voucher', subtitle: 'Manajemen kupon diskon, kuota pemakaian, dan voucher belanja' },
 }
 
 export default function App() {
@@ -284,6 +286,14 @@ function AppShell() {
                 element={
                   <ProtectedRoute permission="access_bookings">
                     <BookingsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/promos"
+                element={
+                  <ProtectedRoute permission="manage_promos">
+                    <PromosPage />
                   </ProtectedRoute>
                 }
               />

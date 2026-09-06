@@ -65,6 +65,7 @@ import {
   formatThousand,
   parseThousand,
 } from '../../utils/currency'
+import { validatePromo } from '../promos/promosApi'
 
 interface CartItem {
   product_id: string
@@ -73,6 +74,13 @@ interface CartItem {
   unit_price_idr: number
   quantity: number
   available_stock: number
+}
+
+interface AppliedPromo {
+  id: string
+  code: string
+  name: string
+  discount: number
 }
 
 interface HeldCart {
@@ -134,6 +142,12 @@ export function PosPage() {
   const [discountValue, setDiscountValue] = useState<number>(0)
   const [discountModalOpen, setDiscountModalOpen] = useState(false)
   const [customDiscountInput, setCustomDiscountInput] = useState('')
+
+  // Promo voucher state
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null)
+  const [promoInput, setPromoInput] = useState('')
+  const [promoLoading, setPromoLoading] = useState(false)
+  const [promoError, setPromoError] = useState<string | null>(null)
 
   // Tax state
   const [taxEnabled, setTaxEnabled] = useState(false)
@@ -259,12 +273,15 @@ export function PosPage() {
   }, [cart])
 
   const discountAmount = useMemo(() => {
+    if (appliedPromo) {
+      return Math.min(appliedPromo.discount, subtotal)
+    }
     if (discountType === 'none' || discountValue <= 0) return 0
     if (discountType === 'percent') {
       return Math.min(Math.round((subtotal * discountValue) / 100), subtotal)
     }
     return Math.min(discountValue, subtotal)
-  }, [subtotal, discountType, discountValue])
+  }, [subtotal, appliedPromo, discountType, discountValue])
 
   const taxableAmount = Math.max(0, subtotal - discountAmount)
 
@@ -288,6 +305,42 @@ export function PosPage() {
     return 0
   }, [paymentMethod, paidAmount, splitCashTender, splitNonCashAmount, total])
 
+  async function handleApplyPromo() {
+    const code = promoInput.trim().toUpperCase()
+    if (!code) return
+    if (subtotal <= 0) {
+      setPromoError('Keranjang belanja masih kosong.')
+      return
+    }
+    setPromoLoading(true)
+    setPromoError(null)
+    try {
+      const res = await validatePromo({
+        code,
+        subtotal_idr: subtotal,
+      })
+      setAppliedPromo({
+        id: res.promo_id,
+        code: res.code,
+        name: res.name,
+        discount: res.discount_idr,
+      })
+      setDiscountType('none')
+      setDiscountValue(0)
+      setPromoInput('')
+      setDiscountModalOpen(false)
+    } catch (err) {
+      setPromoError(err instanceof Error ? err.message : 'Gagal memvalidasi kode promo.')
+    } finally {
+      setPromoLoading(false)
+    }
+  }
+
+  function handleRemovePromo() {
+    setAppliedPromo(null)
+    setPromoError(null)
+  }
+
   function handleHoldCart() {
     if (cart.length === 0) return
     const newHeld: HeldCart = {
@@ -299,6 +352,7 @@ export function PosPage() {
     }
     setHeldCarts((prev) => [newHeld, ...prev])
     setCart([])
+    setAppliedPromo(null)
     setHoldAlert(`Pesanan (${newHeld.label}) berhasil diparkir.`)
     setTimeout(() => setHoldAlert(null), 3500)
   }
@@ -433,6 +487,8 @@ export function PosPage() {
         non_cash_amount_idr: nonCashPortion,
         tax_idr: taxAmount,
         discount_idr: discountAmount,
+        promo_id: appliedPromo?.id,
+        promo_code: appliedPromo?.code,
         notes: notes.trim() || undefined,
         items: itemsPayload,
       })
@@ -442,6 +498,7 @@ export function PosPage() {
       setCart([])
       setDiscountType('none')
       setDiscountValue(0)
+      setAppliedPromo(null)
       setReceiptOpen(true)
       // Refresh stock & shift
       getStockBalances(selectedLocationId).then(setStocks).catch(() => undefined)
@@ -1222,15 +1279,26 @@ export function PosPage() {
 
               {/* Discount Row */}
               <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
                   <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.84rem' }}>
-                    Diskon {discountType === 'percent' ? `(${discountValue}%)` : ''}
+                    {appliedPromo ? `Voucher (${appliedPromo.code})` : `Diskon ${discountType === 'percent' ? `(${discountValue}%)` : ''}`}
                   </Typography>
+                  {appliedPromo && (
+                    <Chip
+                      size="small"
+                      label={appliedPromo.code}
+                      onDelete={handleRemovePromo}
+                      color="primary"
+                      variant="outlined"
+                      sx={{ height: 20, fontSize: '0.7rem', fontWeight: 750 }}
+                    />
+                  )}
                   <Button
                     size="small"
                     startIcon={<LocalOfferOutlined sx={{ fontSize: 13 }} />}
                     onClick={() => {
                       setCustomDiscountInput(discountType === 'nominal' ? formatThousand(discountValue) : '')
+                      setPromoError(null)
                       setDiscountModalOpen(true)
                     }}
                     sx={{
@@ -1766,6 +1834,64 @@ export function PosPage() {
         <Divider sx={{ borderColor: 'divider' }} />
         <DialogContent sx={{ p: 2.5 }}>
           <Stack spacing={2}>
+            {/* Promo Voucher Section */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '0.85rem', mb: 1 }}>
+                Kode Voucher / Kupon Promo
+              </Typography>
+              {appliedPromo && (
+                <Alert
+                  severity="success"
+                  action={
+                    <Button color="inherit" size="small" onClick={handleRemovePromo} sx={{ fontWeight: 700 }}>
+                      Hapus
+                    </Button>
+                  }
+                  sx={{ py: 0.5, px: 1.5, mb: 1.25, fontSize: '0.82rem', alignItems: 'center' }}
+                >
+                  Voucher <strong>{appliedPromo.code}</strong> aktif (-{formatRupiah(appliedPromo.discount)})
+                </Alert>
+              )}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Contoh: PAWHEMAT10"
+                  value={promoInput}
+                  onChange={(e) => {
+                    setPromoInput(e.target.value.toUpperCase())
+                    setPromoError(null)
+                  }}
+                  disabled={promoLoading}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LocalOfferOutlined sx={{ fontSize: 18, color: 'text.secondary' }} />
+                        </InputAdornment>
+                      ),
+                      sx: { fontWeight: 700, textTransform: 'uppercase' },
+                    },
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  disabled={!promoInput.trim() || promoLoading}
+                  onClick={handleApplyPromo}
+                  sx={{ px: 2.5, whiteSpace: 'nowrap', fontWeight: 750, borderRadius: '8px' }}
+                >
+                  {promoLoading ? 'Cek...' : 'Terapkan'}
+                </Button>
+              </Box>
+              {promoError && (
+                <Alert severity="error" sx={{ py: 0.5, mt: 1, fontSize: '0.8rem' }}>
+                  {promoError}
+                </Alert>
+              )}
+            </Box>
+
+            <Divider sx={{ my: 0.5, borderColor: 'divider' }} />
+
             <Typography variant="subtitle2" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '0.85rem' }}>
               Pintasan Diskon Persentase
             </Typography>
@@ -1773,8 +1899,9 @@ export function PosPage() {
               {[5, 10, 15, 20].map((pct) => (
                 <Button
                   key={pct}
-                  variant={discountType === 'percent' && discountValue === pct ? 'contained' : 'outlined'}
+                  variant={!appliedPromo && discountType === 'percent' && discountValue === pct ? 'contained' : 'outlined'}
                   onClick={() => {
+                    setAppliedPromo(null)
                     setDiscountType('percent')
                     setDiscountValue(pct)
                     setDiscountModalOpen(false)
@@ -1786,7 +1913,7 @@ export function PosPage() {
               ))}
             </Box>
 
-            <Divider sx={{ my: 0.5, borderColor: '#f1f5f9' }} />
+            <Divider sx={{ my: 0.5, borderColor: 'divider' }} />
 
             <Typography variant="subtitle2" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '0.85rem' }}>
               Atau Masukkan Diskon Nominal (Rp)
@@ -1812,6 +1939,7 @@ export function PosPage() {
               onClick={() => {
                 const val = parseThousand(customDiscountInput)
                 if (val > 0) {
+                  setAppliedPromo(null)
                   setDiscountType('nominal')
                   setDiscountValue(val)
                   setDiscountModalOpen(false)
@@ -1829,11 +1957,12 @@ export function PosPage() {
                 onClick={() => {
                   setDiscountType('none')
                   setDiscountValue(0)
+                  setAppliedPromo(null)
                   setDiscountModalOpen(false)
                 }}
                 sx={{ fontWeight: 700, fontSize: '0.82rem' }}
               >
-                Hapus / Batalkan Diskon
+                Hapus / Batalkan Diskon & Voucher
               </Button>
             )}
           </Stack>
@@ -1947,6 +2076,17 @@ export function PosPage() {
                     {formatRupiah(completedOrder.subtotal_idr)}
                   </Typography>
                 </Stack>
+
+                {completedOrder.promo_code && (
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="body2" color="text.secondary">
+                      Voucher Promo
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 750, color: 'primary.main' }}>
+                      {completedOrder.promo_code}
+                    </Typography>
+                  </Stack>
+                )}
 
                 {completedOrder.discount_idr > 0 && (
                   <Stack direction="row" justifyContent="space-between">

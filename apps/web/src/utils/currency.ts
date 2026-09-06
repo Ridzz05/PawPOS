@@ -59,3 +59,6 @@ export function formatCurrency(
   const formatted = formatThousand(amount) || '0'
   return includePrefix ? `Rp ${formatted}` : formatted
 }
+
+export const formatRupiah = formatCurrency
+
