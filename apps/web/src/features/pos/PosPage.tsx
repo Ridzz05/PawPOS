@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   AddOutlined,
+  BookmarkBorderOutlined,
   CallSplitOutlined,
   CheckCircleOutline,
   CloseOutlined,
   DeleteOutline,
   LocalAtmOutlined,
   LocalOfferOutlined,
+  LockOutlined,
+  PauseCircleOutline,
   PercentOutlined,
+  PlayCircleOutline,
   PointOfSaleOutlined,
   QrCode2Outlined,
   RefreshOutlined,
@@ -17,6 +21,7 @@ import {
   StorefrontOutlined,
   TuneOutlined,
 } from '@mui/icons-material'
+import { useAuth } from '../auth/authContext'
 import {
   Alert,
   Box,
@@ -67,9 +72,28 @@ interface CartItem {
   available_stock: number
 }
 
+interface HeldCart {
+  id: string
+  label: string
+  items: CartItem[]
+  timestamp: string
+  total: number
+}
+
 const formatRupiah = (amount: number) => formatCurrency(amount)
 
+const POS_CATEGORIES = [
+  { label: 'Semua', key: 'all' },
+  { label: '🐱 Pakan Kucing', key: 'cat_food' },
+  { label: '🐶 Pakan Anjing', key: 'dog_food' },
+  { label: '🛁 Grooming', key: 'grooming' },
+  { label: '💊 Obat & Vitamin', key: 'health' },
+  { label: '🎾 Aksesoris & Mainan', key: 'accessories' },
+  { label: '📦 Lainnya', key: 'other' },
+]
+
 export function PosPage() {
+  const { lockScreen } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [stocks, setStocks] = useState<ProductStockSummary[]>([])
   const [locations, setLocations] = useState<InventoryLocation[]>([])
@@ -79,9 +103,28 @@ export function PosPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('Semua')
 
   // Cart state
   const [cart, setCart] = useState<CartItem[]>([])
+
+  // Held Carts (Parkir Pesanan - Olsera Style)
+  const [heldCarts, setHeldCarts] = useState<HeldCart[]>(() => {
+    try {
+      const saved = localStorage.getItem('pawpos_held_carts')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+  const [heldModalOpen, setHeldModalOpen] = useState(false)
+  const [holdAlert, setHoldAlert] = useState<string | null>(null)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pawpos_held_carts', JSON.stringify(heldCarts))
+    } catch {}
+  }, [heldCarts])
 
   // Checkout modal state
   const [checkoutOpen, setCheckoutOpen] = useState(false)
@@ -152,6 +195,25 @@ export function PosPage() {
     }
   }, [selectedLocationId])
 
+  // Auto-lock terminal setelah 5 menit tanpa interaksi (anti-akses liar saat kasir tinggal)
+  useEffect(() => {
+    const IDLE_MS = 5 * 60 * 1000
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const arm = () => {
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        if (!checkoutOpen && !receiptOpen) lockScreen()
+      }, IDLE_MS)
+    }
+    const events: Array<keyof WindowEventMap> = ['pointerdown', 'keydown', 'touchstart']
+    events.forEach((ev) => window.addEventListener(ev, arm, { passive: true }))
+    arm()
+    return () => {
+      if (timer) clearTimeout(timer)
+      events.forEach((ev) => window.removeEventListener(ev, arm))
+    }
+  }, [checkoutOpen, receiptOpen, lockScreen])
+
   // Map of product ID to available quantity in current location
   const stockMap = useMemo(() => {
     const map = new Map<string, number>()
@@ -161,16 +223,48 @@ export function PosPage() {
     return map
   }, [stocks])
 
-  // Filtered product catalog
+  // Filtered product catalog with Olsera-style category tabs
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
-    if (!query) return products
-    return products.filter(
+    let list = products
+
+    if (selectedCategory !== 'Semua') {
+      list = list.filter((p) => {
+        const name = (p.name + ' ' + (p.category_id || '')).toLowerCase()
+        if (selectedCategory === '🐱 Pakan Kucing') {
+          return name.includes('kucing') || name.includes('cat') || name.includes('kitten') || name.includes('whiskas') || name.includes('royal canin') || name.includes('me-o')
+        }
+        if (selectedCategory === '🐶 Pakan Anjing') {
+          return name.includes('anjing') || name.includes('dog') || name.includes('puppy') || name.includes('pedigree') || name.includes('pro plan')
+        }
+        if (selectedCategory === '🛁 Grooming') {
+          return name.includes('shampoo') || name.includes('sabun') || name.includes('grooming') || name.includes('sisir') || name.includes('sikat') || name.includes('towel') || name.includes('bedak')
+        }
+        if (selectedCategory === '💊 Obat & Vitamin') {
+          return name.includes('obat') || name.includes('vitamin') || name.includes('suplemen') || name.includes('kalsium') || name.includes('salep') || name.includes('tetes') || name.includes('vaksin')
+        }
+        if (selectedCategory === '🎾 Aksesoris & Mainan') {
+          return name.includes('mainan') || name.includes('tali') || name.includes('leash') || name.includes('collar') || name.includes('kandang') || name.includes('pasir') || name.includes('litter') || name.includes('mangkok') || name.includes('tempat')
+        }
+        if (selectedCategory === '📦 Lainnya') {
+          const isCat = name.includes('kucing') || name.includes('cat') || name.includes('whiskas')
+          const isDog = name.includes('anjing') || name.includes('dog') || name.includes('pedigree')
+          const isGroom = name.includes('shampoo') || name.includes('sabun') || name.includes('grooming')
+          const isHealth = name.includes('obat') || name.includes('vitamin')
+          const isAcc = name.includes('mainan') || name.includes('pasir') || name.includes('kandang')
+          return !isCat && !isDog && !isGroom && !isHealth && !isAcc
+        }
+        return true
+      })
+    }
+
+    if (!query) return list
+    return list.filter(
       (p) =>
         p.name.toLowerCase().includes(query) ||
         p.sku.toLowerCase().includes(query),
     )
-  }, [products, searchQuery])
+  }, [products, searchQuery, selectedCategory])
 
   // Cart financial calculations
   const subtotal = useMemo(() => {
@@ -206,6 +300,44 @@ export function PosPage() {
     }
     return 0
   }, [paymentMethod, paidAmount, splitCashTender, splitNonCashAmount, total])
+
+  function handleHoldCart() {
+    if (cart.length === 0) return
+    const newHeld: HeldCart = {
+      id: `hold-${Date.now()}`,
+      label: `Antrean #${heldCarts.length + 1}`,
+      items: [...cart],
+      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      total: total,
+    }
+    setHeldCarts((prev) => [newHeld, ...prev])
+    setCart([])
+    setHoldAlert(`Pesanan (${newHeld.label}) berhasil diparkir.`)
+    setTimeout(() => setHoldAlert(null), 3500)
+  }
+
+  function handleResumeCart(held: HeldCart) {
+    if (cart.length > 0) {
+      const autoHeld: HeldCart = {
+        id: `hold-${Date.now()}`,
+        label: `Tukar Antrean #${heldCarts.length + 1}`,
+        items: [...cart],
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        total: total,
+      }
+      setHeldCarts((prev) => [autoHeld, ...prev.filter((h) => h.id !== held.id)])
+    } else {
+      setHeldCarts((prev) => prev.filter((h) => h.id !== held.id))
+    }
+    setCart(held.items)
+    setHeldModalOpen(false)
+    setHoldAlert(`Pesanan (${held.label}) kembali aktif di kasir.`)
+    setTimeout(() => setHoldAlert(null), 3500)
+  }
+
+  function handleDeleteHeldCart(id: string) {
+    setHeldCarts((prev) => prev.filter((h) => h.id !== id))
+  }
 
   function handleAddToCart(product: Product) {
     const currentStock = stockMap.get(product.id) ?? 0
@@ -361,7 +493,7 @@ export function PosPage() {
                   </InputAdornment>
                 ),
                 sx: {
-                  bgcolor: '#ffffff',
+                  bgcolor: 'background.paper',
                   borderRadius: '10px',
                   height: 44,
                 },
@@ -382,7 +514,7 @@ export function PosPage() {
                 minWidth: 140,
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '10px',
-                  bgcolor: '#ffffff',
+                  bgcolor: 'background.paper',
                   height: 44,
                 },
               }}
@@ -409,8 +541,36 @@ export function PosPage() {
           >
             Filter
           </Button>
+
+          {/* Olsera-style Cashier Screen Lock */}
+          <Button
+            variant="outlined"
+            color="inherit"
+            id="btn-pos-lock"
+            startIcon={<LockOutlined sx={{ fontSize: 18 }} />}
+            onClick={lockScreen}
+            sx={{
+              borderRadius: '10px',
+              height: 44,
+              px: 2,
+              fontWeight: 650,
+              fontSize: '0.85rem',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+              whiteSpace: 'nowrap',
+            }}
+            title="Kunci layar terminal kasir (membutuhkan PIN untuk membuka kembali)"
+          >
+            Kunci Layar
+          </Button>
         </Stack>
       </Box>
+
+      {holdAlert && (
+        <Alert severity="info" onClose={() => setHoldAlert(null)} sx={{ borderRadius: '10px' }}>
+          {holdAlert}
+        </Alert>
+      )}
 
       {loadError && (
         <Alert severity="error" onClose={() => setLoadError(null)} sx={{ borderRadius: '10px' }}>
@@ -473,7 +633,7 @@ export function PosPage() {
                 textTransform: 'none',
               }}
             >
-              Buka Shift Sekarang →
+              Buka Shift Sekarang
             </Button>
           </Stack>
         </Alert>
@@ -515,10 +675,47 @@ export function PosPage() {
             size="small"
             sx={{ fontWeight: 700, color: '#166534', p: 0, textDecoration: 'underline', fontSize: '0.78rem' }}
           >
-            Kelola Shift Kasir →
+            Kelola Shift Kasir
           </Button>
         </Paper>
       )}
+
+      {/* Olsera-style Category Filter Chips Bar */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          overflowX: 'auto',
+          py: 0.5,
+          px: 0.25,
+          '&::-webkit-scrollbar': { height: 4 },
+          '&::-webkit-scrollbar-thumb': { bgcolor: '#cbd5e1', borderRadius: 4 },
+        }}
+      >
+        {POS_CATEGORIES.map((cat) => {
+          const isSelected = selectedCategory === cat.label
+          return (
+            <Chip
+              key={cat.key}
+              label={cat.label}
+              clickable
+              onClick={() => setSelectedCategory(cat.label)}
+              color={isSelected ? 'primary' : 'default'}
+              variant={isSelected ? 'filled' : 'outlined'}
+              sx={{
+                fontWeight: isSelected ? 750 : 550,
+                fontSize: '0.82rem',
+                height: 34,
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                borderColor: isSelected ? 'primary.main' : 'divider',
+              }}
+            />
+          )
+        })}
+      </Box>
 
       {/* Main Operational Split Layout (Section 3: Product Grid & Cart Workspace) */}
       <Box
@@ -534,14 +731,14 @@ export function PosPage() {
           {loading ? (
             <Paper className="terminal-card" sx={{ p: 5, textAlign: 'center' }}>
               <RefreshOutlined className="loading-icon" sx={{ fontSize: 28 }} />
-              <Typography sx={{ mt: 1, color: '#475569', fontWeight: 650, fontSize: '0.88rem' }}>
+              <Typography sx={{ mt: 1, color: 'text.secondary', fontWeight: 650, fontSize: '0.88rem' }}>
                 Memuat katalog kasir...
               </Typography>
             </Paper>
           ) : filteredProducts.length === 0 ? (
-            <Paper className="terminal-card" sx={{ p: 5, textAlign: 'center', border: '1px dashed #cbd5e1' }}>
-              <StorefrontOutlined sx={{ fontSize: 36, color: '#94a3b8', mb: 1 }} />
-              <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', mb: 0.5, fontSize: '1rem' }}>
+            <Paper className="terminal-card" sx={{ p: 5, textAlign: 'center', border: '1px dashed', borderColor: 'divider' }}>
+              <StorefrontOutlined sx={{ fontSize: 36, color: 'text.disabled', mb: 1 }} />
+              <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5, fontSize: '1rem' }}>
                 Tidak ada produk ditemukan
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.82rem' }}>
@@ -578,9 +775,9 @@ export function PosPage() {
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       borderRadius: '12px',
-                      borderColor: isSelected ? '#ff8042' : '#e2e8f0',
-                      bgcolor: isSelected ? '#fff9f6' : '#ffffff',
-                      transition: 'border-color 140ms ease, background-color 140ms ease',
+                      borderColor: 'divider',
+                      bgcolor: 'background.paper',
+                      transition: 'border-color 120ms ease, background-color 120ms ease',
                     }}
                     onClick={() => !isOutOfStock && handleAddToCart(p)}
                   >
@@ -591,8 +788,9 @@ export function PosPage() {
                           width: 64,
                           height: 64,
                           borderRadius: '10px',
-                          bgcolor: '#f8fafc',
-                          border: '1px solid #f1f5f9',
+                          bgcolor: 'background.default',
+                          border: '1px solid',
+                          borderColor: 'divider',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -628,7 +826,7 @@ export function PosPage() {
                           variant="subtitle2"
                           sx={{
                             fontWeight: 750,
-                            color: isOutOfStock ? '#64748d' : '#0f172a',
+                            color: isOutOfStock ? 'text.secondary' : 'text.primary',
                             fontSize: '0.92rem',
                             lineHeight: 1.3,
                             display: '-webkit-box',
@@ -876,24 +1074,63 @@ export function PosPage() {
               direction="row"
               alignItems="center"
               justifyContent="space-between"
-              sx={{ pb: 1.5, borderBottom: '1px solid #e2e8f0' }}
+              sx={{ pb: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}
             >
               <Stack direction="row" alignItems="center" spacing={1}>
-                <ShoppingCartOutlined sx={{ fontSize: 20, color: '#ff7a30' }} />
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '1.05rem', letterSpacing: '-0.02em' }}>
+                <ShoppingCartOutlined sx={{ fontSize: 20, color: 'primary.main' }} />
+                <Typography variant="h6" sx={{ fontWeight: 850, fontSize: '1.05rem', letterSpacing: '-0.02em' }}>
                   Keranjang ({cart.reduce((a, b) => a + b.quantity, 0)})
                 </Typography>
               </Stack>
-              {cart.length > 0 && (
-                <Button
-                  size="small"
-                  color="error"
-                  onClick={() => setCart([])}
-                  sx={{ fontSize: '0.75rem', p: 0, fontWeight: 700 }}
-                >
-                  Kosongkan
-                </Button>
-              )}
+              <Stack direction="row" spacing={0.75} alignItems="center">
+                {cart.length > 0 && (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<BookmarkBorderOutlined sx={{ fontSize: 16 }} />}
+                    onClick={handleHoldCart}
+                    sx={{
+                      fontSize: '0.72rem',
+                      py: 0.35,
+                      px: 0.9,
+                      fontWeight: 700,
+                      borderRadius: '6px',
+                      borderColor: 'divider',
+                    }}
+                    title="Parkir pesanan aktif untuk antrean berikutnya"
+                  >
+                    Parkir
+                  </Button>
+                )}
+                {heldCarts.length > 0 && (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="warning"
+                    startIcon={<PlayCircleOutline sx={{ fontSize: 16 }} />}
+                    onClick={() => setHeldModalOpen(true)}
+                    sx={{
+                      fontSize: '0.72rem',
+                      py: 0.35,
+                      px: 0.9,
+                      fontWeight: 750,
+                      borderRadius: '6px',
+                    }}
+                  >
+                    Parkir ({heldCarts.length})
+                  </Button>
+                )}
+                {cart.length > 0 && (
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => setCart([])}
+                    sx={{ fontSize: '0.74rem', p: 0.4, fontWeight: 700 }}
+                  >
+                    Kosongkan
+                  </Button>
+                )}
+              </Stack>
             </Stack>
 
             {/* Cart Items List */}
@@ -913,13 +1150,14 @@ export function PosPage() {
                       sx={{
                         p: 1.25,
                         borderRadius: '10px',
-                        bgcolor: '#f8fafc',
-                        border: '1px solid #e2e8f0',
+                        bgcolor: 'background.default',
+                        border: '1px solid',
+                        borderColor: 'divider',
                       }}
                     >
                       <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                         <Box sx={{ flex: 1, pr: 1 }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 750, color: '#0f172a', lineHeight: 1.25, fontSize: '0.88rem' }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 750, color: 'text.primary', lineHeight: 1.25, fontSize: '0.88rem' }}>
                             {item.product_name}
                           </Typography>
                           <Typography variant="caption" color="text.secondary" className="tnum" sx={{ fontSize: '0.74rem', fontWeight: 600 }}>
@@ -947,7 +1185,7 @@ export function PosPage() {
                           >
                             <RemoveOutlined sx={{ fontSize: 14 }} />
                           </IconButton>
-                          <Typography sx={{ px: 1, fontWeight: 850, color: '#0f172a', fontSize: '0.82rem' }} className="tnum">
+                          <Typography sx={{ px: 1, fontWeight: 850, color: 'text.primary', fontSize: '0.82rem' }} className="tnum">
                             {item.quantity}
                           </Typography>
                           <IconButton
@@ -960,7 +1198,7 @@ export function PosPage() {
                           </IconButton>
                         </Box>
 
-                        <Typography variant="subtitle2" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '0.92rem', letterSpacing: '-0.02em' }} className="tnum">
+                        <Typography variant="subtitle2" sx={{ fontWeight: 850, color: 'text.primary', fontSize: '0.92rem', letterSpacing: '-0.02em' }} className="tnum">
                           {formatRupiah(item.unit_price_idr * item.quantity)}
                         </Typography>
                       </Stack>
@@ -971,13 +1209,13 @@ export function PosPage() {
             </Box>
 
             {/* Financial Summary */}
-            <Divider sx={{ my: 0.75, borderColor: '#e2e8f0' }} />
+            <Divider sx={{ my: 0.75, borderColor: 'divider' }} />
             <Stack spacing={0.75} sx={{ pt: 0.5 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.86rem', fontWeight: 550 }}>
                   Subtotal
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 750, color: '#1e293b' }} className="tnum">
+                <Typography variant="body2" sx={{ fontWeight: 750, color: 'text.primary' }} className="tnum">
                   {formatRupiah(subtotal)}
                 </Typography>
               </Stack>
@@ -1039,7 +1277,7 @@ export function PosPage() {
                   variant="body2"
                   sx={{
                     fontWeight: 750,
-                    color: taxEnabled ? '#1e293b' : '#94a3b8',
+                    color: taxEnabled ? 'text.primary' : 'text.disabled',
                   }}
                   className="tnum"
                 >
@@ -1050,7 +1288,7 @@ export function PosPage() {
               <Divider sx={{ my: 0.25, borderColor: '#f1f5f9' }} />
 
               <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ pt: 0.25 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '1.02rem', letterSpacing: '-0.02em' }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 850, color: 'text.primary', fontSize: '1.02rem', letterSpacing: '-0.02em' }}>
                   Total Tagihan
                 </Typography>
                 <Typography
@@ -1799,6 +2037,77 @@ export function PosPage() {
             sx={{ py: 1.1, fontWeight: 750, borderRadius: '8px' }}
           >
             Transaksi Baru
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal Daftar Pesanan Diparkir (Olsera Hold Cart) */}
+      <Dialog
+        open={heldModalOpen}
+        onClose={() => setHeldModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        TransitionComponent={ModalSlideTransition}
+      >
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.05rem', borderBottom: '1px solid', borderColor: 'divider' }}>
+          Daftar Antrean Diparkir ({heldCarts.length})
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2.5 }}>
+          {heldCarts.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
+              Tidak ada pesanan yang sedang diparkir.
+            </Typography>
+          ) : (
+            <Stack spacing={1.5}>
+              {heldCarts.map((held) => (
+                <Paper
+                  key={held.id}
+                  variant="outlined"
+                  sx={{
+                    p: 2,
+                    borderRadius: '10px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 750 }}>
+                      {held.label}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Jam {held.timestamp} • {held.items.length} item ({held.items.reduce((a, b) => a + b.quantity, 0)} pcs)
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 800, color: 'primary.main', mt: 0.5 }}>
+                      {formatRupiah(held.total)}
+                    </Typography>
+                  </Box>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={() => handleResumeCart(held)}
+                      sx={{ borderRadius: '8px', fontWeight: 700, fontSize: '0.78rem' }}
+                    >
+                      Lanjutkan
+                    </Button>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleDeleteHeldCart(held.id)}
+                    >
+                      <DeleteOutline sx={{ fontSize: 18 }} />
+                    </IconButton>
+                  </Stack>
+                </Paper>
+              ))}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ borderTop: '1px solid', borderColor: 'divider', px: 3, py: 1.5 }}>
+          <Button onClick={() => setHeldModalOpen(false)} sx={{ fontWeight: 650 }}>
+            Tutup
           </Button>
         </DialogActions>
       </Dialog>

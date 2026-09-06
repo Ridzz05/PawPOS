@@ -6,6 +6,7 @@ import { setActiveStaff } from './rbac'
 export interface DemoAccount {
   email: string
   password: string
+  pin: string
   name: string
   role: StaffRole
   roleTitle: string
@@ -20,6 +21,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     email: 'owner@pawpos.id',
     password: 'pawpos123',
+    pin: '9999',
     name: 'Budi Santoso',
     role: 'owner',
     roleTitle: 'Owner / Pemilik Toko',
@@ -32,6 +34,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     email: 'kasir@pawpos.id',
     password: 'kasir123',
+    pin: '1234',
     name: 'Siti Rahma',
     role: 'cashier',
     roleTitle: 'Kasir Operasional',
@@ -44,6 +47,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     email: 'gudang@pawpos.id',
     password: 'gudang123',
+    pin: '5678',
     name: 'Agus Pratama',
     role: 'warehouse',
     roleTitle: 'Staf Gudang & Logistik',
@@ -56,6 +60,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     email: 'manager@pawpos.id',
     password: 'manager123',
+    pin: '2026',
     name: 'Dewi Lestari',
     role: 'manager',
     roleTitle: 'Store Supervisor',
@@ -70,6 +75,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
 export interface AuthUser {
   id: string
   email: string
+  pin: string
   name: string
   role: StaffRole
   roleTitle: string
@@ -79,18 +85,130 @@ export interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null
   isAuthenticated: boolean
+  isScreenLocked: boolean
   login: (email: string, pass: string) => { success: boolean; error?: string; user?: AuthUser; initialRoute?: string }
+  loginWithPin: (role: StaffRole, pin: string) => { success: boolean; error?: string; user?: AuthUser; initialRoute?: string }
   loginAsDemo: (role: StaffRole) => { user: AuthUser; initialRoute: string }
+  lockScreen: () => void
+  unlockScreen: (pin: string) => { success: boolean; error?: string }
   logout: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const AUTH_STORAGE_KEY = 'pawpos_auth_user'
+const LOCK_STORAGE_KEY = 'pawpos_screen_locked'
+const LOGIN_AT_KEY = 'pawpos_auth_login_at'
+
+// Lead-hardening: batasi brute-force PIN + batasi umur sesi.
+export const MAX_PIN_ATTEMPTS = 5
+export const PIN_LOCKOUT_MS = 60_000
+export const SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000
+
+function lockoutKey(role: string): string {
+  return `pawpos_pin_lockout_${role}`
+}
+
+interface LockoutState {
+  fails: number
+  lockedUntil: number
+}
+
+function readLockout(role: string): LockoutState {
+  try {
+    const raw = localStorage.getItem(lockoutKey(role))
+    if (raw) {
+      const parsed = JSON.parse(raw) as LockoutState
+      if (typeof parsed.fails === 'number' && typeof parsed.lockedUntil === 'number') {
+        return parsed
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return { fails: 0, lockedUntil: 0 }
+}
+
+function writeLockout(role: string, state: LockoutState): void {
+  try {
+    localStorage.setItem(lockoutKey(role), JSON.stringify(state))
+  } catch {
+    // storage fallback
+  }
+}
+
+function clearLockout(role: string): void {
+  try {
+    localStorage.removeItem(lockoutKey(role))
+  } catch {
+    // storage fallback
+  }
+}
+
+function lockoutRemainingMs(role: string): number {
+  const state = readLockout(role)
+  return Math.max(0, state.lockedUntil - Date.now())
+}
+
+function recordPinFailure(role: string): number {
+  const state = readLockout(role)
+  const fails = state.fails + 1
+  const lockedUntil = fails >= MAX_PIN_ATTEMPTS ? Date.now() + PIN_LOCKOUT_MS : state.lockedUntil
+  writeLockout(role, { fails, lockedUntil })
+  return Math.max(0, lockedUntil - Date.now())
+}
+
+/** Demo 1-klik hanya untuk presentasi lead: DEV atau URL ?demo=1. */
+export function isDemoLoginEnabled(): boolean {
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) return true
+  } catch {
+    // ignore
+  }
+  try {
+    if (typeof window !== 'undefined' && window.location.search.includes('demo=1')) return true
+  } catch {
+    // ignore
+  }
+  return false
+}
+
+function isSessionExpired(): boolean {
+  try {
+    const raw = localStorage.getItem(LOGIN_AT_KEY)
+    if (!raw) return false
+    return Date.now() - Number(raw) > SESSION_MAX_AGE_MS
+  } catch {
+    return false
+  }
+}
+
+function persistSession(authUser: AuthUser): void {
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser))
+  try {
+    localStorage.setItem(LOGIN_AT_KEY, String(Date.now()))
+  } catch {
+    // storage fallback
+  }
+}
+
+function clearSession(): void {
+  localStorage.removeItem(AUTH_STORAGE_KEY)
+  localStorage.removeItem(LOCK_STORAGE_KEY)
+  try {
+    localStorage.removeItem(LOGIN_AT_KEY)
+  } catch {
+    // storage fallback
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
     try {
+      if (isSessionExpired()) {
+        clearSession()
+        return null
+      }
       const stored = localStorage.getItem(AUTH_STORAGE_KEY)
       if (stored) {
         const parsed = JSON.parse(stored) as AuthUser
@@ -106,6 +224,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null
   })
 
+  const [isScreenLocked, setIsScreenLocked] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(LOCK_STORAGE_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
+
   const login = (email: string, pass: string) => {
     const cleanEmail = email.trim().toLowerCase()
     const cleanPass = pass.trim()
@@ -113,41 +239,123 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (acc) => acc.email.toLowerCase() === cleanEmail && acc.password === cleanPass
     )
     if (!match) {
-      return { success: false, error: 'Email atau password akun demo salah. Periksa kredensial di atas.' }
+      return { success: false, error: 'Email atau password akun tidak sesuai. Periksa kembali kredensial Anda.' }
     }
     const authUser: AuthUser = {
       id: `staff-${match.role}`,
       email: match.email,
+      pin: match.pin,
       name: match.name,
       role: match.role,
       roleTitle: match.roleTitle,
       avatar: match.avatar,
     }
     setUser(authUser)
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser))
+    setIsScreenLocked(false)
+    localStorage.removeItem(LOCK_STORAGE_KEY)
+    persistSession(authUser)
+    setActiveStaff({ id: authUser.id, name: authUser.name, role: authUser.role })
+    return { success: true, user: authUser, initialRoute: match.initialRoute }
+  }
+
+  const loginWithPin = (role: StaffRole, pin: string) => {
+    const cleanPin = pin.trim()
+    const remaining = lockoutRemainingMs(role)
+    if (remaining > 0) {
+      return { success: false, error: `Terlalu banyak percobaan. Coba lagi dalam ${Math.ceil(remaining / 1000)} detik.` }
+    }
+    const match = DEMO_ACCOUNTS.find((acc) => acc.role === role)
+    if (!match) {
+      return { success: false, error: 'Profil kasir tidak ditemukan.' }
+    }
+    if (match.pin !== cleanPin) {
+      const lockedFor = recordPinFailure(role)
+      if (lockedFor > 0) {
+        return { success: false, error: `PIN salah 5x. Terminal dikunci ${Math.ceil(lockedFor / 1000)} detik.` }
+      }
+      return { success: false, error: 'PIN kasir salah. Silakan coba kembali.' }
+    }
+    clearLockout(role)
+    const authUser: AuthUser = {
+      id: `staff-${match.role}`,
+      email: match.email,
+      pin: match.pin,
+      name: match.name,
+      role: match.role,
+      roleTitle: match.roleTitle,
+      avatar: match.avatar,
+    }
+    setUser(authUser)
+    setIsScreenLocked(false)
+    localStorage.removeItem(LOCK_STORAGE_KEY)
+    persistSession(authUser)
     setActiveStaff({ id: authUser.id, name: authUser.name, role: authUser.role })
     return { success: true, user: authUser, initialRoute: match.initialRoute }
   }
 
   const loginAsDemo = (role: StaffRole) => {
+    if (!isDemoLoginEnabled()) {
+      throw new Error('Demo login dinonaktifkan di build produksi.')
+    }
     const match = DEMO_ACCOUNTS.find((acc) => acc.role === role) || DEMO_ACCOUNTS[0]
     const authUser: AuthUser = {
       id: `staff-${match.role}`,
       email: match.email,
+      pin: match.pin,
       name: match.name,
       role: match.role,
       roleTitle: match.roleTitle,
       avatar: match.avatar,
     }
     setUser(authUser)
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser))
+    setIsScreenLocked(false)
+    localStorage.removeItem(LOCK_STORAGE_KEY)
+    persistSession(authUser)
     setActiveStaff({ id: authUser.id, name: authUser.name, role: authUser.role })
     return { user: authUser, initialRoute: match.initialRoute }
   }
 
+  const lockScreen = () => {
+    setIsScreenLocked(true)
+    try {
+      localStorage.setItem(LOCK_STORAGE_KEY, 'true')
+    } catch {
+      // storage fallback
+    }
+  }
+
+  const unlockScreen = (pin: string) => {
+    const cleanPin = pin.trim()
+    if (!user) {
+      return { success: false, error: 'Sesi tidak aktif. Silakan login kembali.' }
+    }
+    const remaining = lockoutRemainingMs(`unlock-${user.id}`)
+    if (remaining > 0) {
+      return { success: false, error: `Terlalu banyak percobaan. Coba lagi dalam ${Math.ceil(remaining / 1000)} detik.` }
+    }
+    // Check against user PIN or matching demo PIN
+    const expectedPin = user.pin || DEMO_ACCOUNTS.find((a) => a.role === user.role)?.pin || '1234'
+    if (cleanPin !== expectedPin) {
+      const lockedFor = recordPinFailure(`unlock-${user.id}`)
+      if (lockedFor > 0) {
+        return { success: false, error: `PIN salah 5x. Terminal dikunci ${Math.ceil(lockedFor / 1000)} detik.` }
+      }
+      return { success: false, error: 'PIN pengunci salah. Silakan periksa kembali.' }
+    }
+    clearLockout(`unlock-${user.id}`)
+    setIsScreenLocked(false)
+    try {
+      localStorage.removeItem(LOCK_STORAGE_KEY)
+    } catch {
+      // storage fallback
+    }
+    return { success: true }
+  }
+
   const logout = () => {
     setUser(null)
-    localStorage.removeItem(AUTH_STORAGE_KEY)
+    setIsScreenLocked(false)
+    clearSession()
     setActiveStaff({ id: 'guest', name: 'Tamu', role: 'cashier' })
   }
 
@@ -156,8 +364,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isAuthenticated: !!user,
+        isScreenLocked,
         login,
+        loginWithPin,
         loginAsDemo,
+        lockScreen,
+        unlockScreen,
         logout,
       }}
     >
@@ -169,7 +381,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth(): AuthContextType {
   const ctx = useContext(AuthContext)
   if (!ctx) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    // Tanpa provider = tidak terautentikasi. Jangan auto-login sebagai owner.
+    return {
+      user: null,
+      isAuthenticated: false,
+      isScreenLocked: false,
+      login: () => ({ success: false, error: 'Sesi tidak tersedia.' }),
+      loginWithPin: () => ({ success: false, error: 'Sesi tidak tersedia.' }),
+      loginAsDemo: () => {
+        throw new Error('Sesi tidak tersedia.')
+      },
+      lockScreen: () => {},
+      unlockScreen: () => ({ success: false, error: 'Sesi tidak tersedia.' }),
+      logout: () => {},
+    }
   }
   return ctx
 }

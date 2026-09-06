@@ -291,8 +291,8 @@ export function DashboardPage() {
             borderRadius: '14px',
             border: '1px solid #e2e8f0',
             bgcolor: '#ffffff',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' },
+            transition: 'border-color 120ms ease, background-color 120ms ease',
+            '&:hover': { borderColor: '#cbd5e1' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
@@ -347,8 +347,8 @@ export function DashboardPage() {
             borderRadius: '14px',
             border: '1px solid #e2e8f0',
             bgcolor: '#ffffff',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' },
+            transition: 'border-color 120ms ease, background-color 120ms ease',
+            '&:hover': { borderColor: '#cbd5e1' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
@@ -394,8 +394,8 @@ export function DashboardPage() {
             borderRadius: '14px',
             border: '1px solid #e2e8f0',
             bgcolor: '#ffffff',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' },
+            transition: 'border-color 120ms ease, background-color 120ms ease',
+            '&:hover': { borderColor: '#cbd5e1' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
@@ -450,8 +450,8 @@ export function DashboardPage() {
             borderRadius: '14px',
             border: '1px solid #e2e8f0',
             bgcolor: '#ffffff',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' },
+            transition: 'border-color 120ms ease, background-color 120ms ease',
+            '&:hover': { borderColor: '#cbd5e1' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
@@ -993,8 +993,8 @@ export function DashboardPage() {
             {healthState === 'ready'
               ? 'Backend Cloud POS Terkoneksi & Siap Transaksi'
               : healthState === 'error'
-              ? 'Koneksi Backend Terputus'
-              : 'Memeriksa Kesiapan Endpoint...'}
+                ? 'Koneksi Backend Terputus'
+                : 'Memeriksa Kesiapan Endpoint...'}
           </Typography>
         </Stack>
 

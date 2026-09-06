@@ -40,13 +40,13 @@ export function UserProfileCard({ fullWidth = false }: { fullWidth?: boolean } =
         sx={{
           p: 1.5,
           borderRadius: '14px',
-          borderColor: '#E2E8F0',
-          bgcolor: '#FAFAFA',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
           width: fullWidth ? '100%' : 'auto',
-          transition: 'all 0.2s ease',
+          transition: 'background-color 120ms ease, border-color 120ms ease',
           '&:hover': {
-            borderColor: '#CBD5E1',
-            bgcolor: '#F8FAFC',
+            borderColor: 'divider',
+            bgcolor: 'action.hover',
           },
         }}
       >
@@ -73,7 +73,7 @@ export function UserProfileCard({ fullWidth = false }: { fullWidth?: boolean } =
                   sx={{
                     fontWeight: 750,
                     fontSize: '0.85rem',
-                    color: '#0F172A',
+                    color: 'text.primary',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
@@ -100,7 +100,7 @@ export function UserProfileCard({ fullWidth = false }: { fullWidth?: boolean } =
                   variant="caption"
                   sx={{
                     fontSize: '0.68rem',
-                    color: '#64748B',
+                    color: 'text.secondary',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
@@ -118,12 +118,12 @@ export function UserProfileCard({ fullWidth = false }: { fullWidth?: boolean } =
               onClick={() => setConfirmOpen(true)}
               aria-label="Keluar sesi"
               sx={{
-                color: '#64748B',
+                color: 'text.secondary',
                 borderRadius: '8px',
                 p: 0.75,
                 '&:hover': {
-                  color: '#DC2626',
-                  bgcolor: '#FEE2E2',
+                  color: 'error.main',
+                  bgcolor: 'action.hover',
                 },
               }}
             >

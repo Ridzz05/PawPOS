@@ -29,7 +29,8 @@ describe('app shell', () => {
   it('renders the dashboard without fabricated metrics and mounts voice assistant', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ request_id: 'test-request' }) }))
     render(<MemoryRouter initialEntries={['/dashboard']}><App /></MemoryRouter>)
-    expect(screen.getAllByText('POS').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Kasir POS').length).toBeGreaterThan(0)
+    expect(screen.getAllByAltText('PawPOS Logo').length).toBeGreaterThan(0)
     expect(screen.getByText('ENERGY 1')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Rekam suara' })).toBeInTheDocument()
     expect(await screen.findByText('Belum ada ringkasan operasional')).toBeInTheDocument()

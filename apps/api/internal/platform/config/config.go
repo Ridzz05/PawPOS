@@ -22,6 +22,7 @@ type Config struct {
 	ElevenLabsVoiceID string
 	ElevenLabsModel   string
 	WebDir            string
+	SessionTTLHours   int
 }
 
 func Load() Config {
@@ -41,6 +42,7 @@ func Load() Config {
 		ElevenLabsVoiceID: value("ELEVENLABS_VOICE_ID", "Xb7hH8MSUJpSbSDYk0k2"),
 		ElevenLabsModel:   value("ELEVENLABS_MODEL", "eleven_multilingual_v2"),
 		WebDir:            value("WEB_DIR", ""),
+		SessionTTLHours:   positiveInt("SESSION_TTL_HOURS", 12),
 	}
 }
 

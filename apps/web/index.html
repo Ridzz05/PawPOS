@@ -7,15 +7,144 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="PawPOS" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="PawPOS" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet" />
     <title>PawPOS — Point of Sale & Retail SaaS</title>
+    <script>
+      // Immediate theme initialization to prevent flash of unstyled theme
+      (function() {
+        try {
+          var mode = localStorage.getItem('pawpos_theme_mode');
+          if (!mode) {
+            mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', mode);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute('content', mode === 'dark' ? '#0B0F19' : '#FFFFFF');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* Native App Splash Loader Styles */
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f8fafc;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      html[data-theme='dark'] body {
+        background-color: #0b0f19;
+      }
+      .native-splash-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100dvh;
+        width: 100vw;
+        user-select: none;
+        box-sizing: border-box;
+      }
+      .native-splash-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        animation: splashPulse 1.8s ease-in-out infinite;
+      }
+      html[data-theme='dark'] .native-splash-icon {
+        background: #131b2e;
+        border-color: #1e293b;
+      }
+      .native-splash-icon svg {
+        width: 36px;
+        height: 36px;
+      }
+      .native-splash-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        margin: 0 0 6px 0;
+      }
+      html[data-theme='dark'] .native-splash-title {
+        color: #f8fafc;
+      }
+      .native-splash-subtitle {
+        font-size: 0.82rem;
+        color: #64748d;
+        font-weight: 500;
+        margin: 0 0 24px 0;
+      }
+      html[data-theme='dark'] .native-splash-subtitle {
+        color: #94a3b8;
+      }
+      .native-splash-bar {
+        width: 140px;
+        height: 3px;
+        background: #e2e8f0;
+        border-radius: 9999px;
+        overflow: hidden;
+        position: relative;
+      }
+      html[data-theme='dark'] .native-splash-bar {
+        background: #1e293b;
+      }
+      .native-splash-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 45%;
+        background: #ff8042;
+        border-radius: 9999px;
+        animation: splashLine 1.4s infinite ease-in-out;
+      }
+      @keyframes splashLine {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(250%); }
+      }
+      @keyframes splashPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Native Mobile App Loading Screen (replaces immediately when React mounts) -->
+      <div class="native-splash-container">
+        <div class="native-splash-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ff8042" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5c.67 0 1.2.9 1.2 2s-.53 2-1.2 2-1.2-.9-1.2-2 .53-2 1.2-2z"/>
+            <path d="M19 8c.67 0 1.2.9 1.2 2s-.53 2-1.2 2-1.2-.9-1.2-2 .53-2 1.2-2z"/>
+            <path d="M5 8c.67 0 1.2.9 1.2 2s-.53 2-1.2 2-1.2-.9-1.2-2 .53-2 1.2-2z"/>
+            <path d="M16.5 13.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5z"/>
+            <path d="M4.5 13.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5z"/>
+            <path d="M12 11c-2.5 0-4.5 1.5-4.5 3.5 0 2 2 3.5 4.5 3.5s4.5-1.5 4.5-3.5c0-2-2-3.5-4.5-3.5z"/>
+          </svg>
+        </div>
+        <div class="native-splash-title">PawPOS</div>
+        <div class="native-splash-subtitle">Terminal Kasir Operasional</div>
+        <div class="native-splash-bar">
+          <div class="native-splash-progress"></div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

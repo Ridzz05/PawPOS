@@ -237,7 +237,7 @@ export function OrdersPage() {
               fontSize: { xs: '1.6rem', md: '2.1rem' },
               fontWeight: 850,
               letterSpacing: '-0.035em',
-              color: '#0f172a',
+              color: 'text.primary',
               lineHeight: 1.2,
             }}
           >
@@ -295,7 +295,7 @@ export function OrdersPage() {
               <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
                 TOTAL STRUK TRANSAKSI
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
+              <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
                 {metrics.totalCount} Order
               </Typography>
             </Box>
@@ -309,7 +309,7 @@ export function OrdersPage() {
               <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
                 RATA-RATA ORDER (AOV)
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
+              <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
                 {formatCurrency(metrics.averageOrderValue)}
               </Typography>
             </Box>
@@ -465,7 +465,7 @@ export function OrdersPage() {
         {!loading && filteredOrders.length === 0 && (
           <Box sx={{ p: 6, textAlign: 'center' }}>
             <ReceiptLongOutlined sx={{ fontSize: 44, color: '#cbd5e1', mb: 1.5 }} />
-            <Typography variant="h6" sx={{ fontWeight: 750, color: '#0f172a', mb: 0.5, fontSize: '1.05rem' }}>
+            <Typography variant="h6" sx={{ fontWeight: 750, color: 'text.primary', mb: 0.5, fontSize: '1.05rem' }}>
               Tidak ada transaksi ditemukan
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420, mx: 'auto', fontSize: '0.84rem' }}>
@@ -527,7 +527,7 @@ export function OrdersPage() {
                           borderRadius: '8px',
                           display: 'inline-block',
                           fontSize: '0.82rem',
-                          color: '#0f172a',
+                          color: 'text.primary',
                           border: '1px solid rgba(203, 213, 225, 0.8)',
                           letterSpacing: '0.02em',
                         }}
@@ -537,7 +537,7 @@ export function OrdersPage() {
                     </TableCell>
 
                     <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: 650, color: '#0f172a', fontSize: '0.84rem' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 650, color: 'text.primary', fontSize: '0.84rem' }}>
                         {formatDateTime(o.created_at)}
                       </Typography>
                       {o.notes && (
@@ -627,7 +627,7 @@ export function OrdersPage() {
           }}
         >
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '1.15rem', letterSpacing: '-0.02em' }}>
+            <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', fontSize: '1.15rem', letterSpacing: '-0.02em' }}>
               Struk Digital & Rincian Pesanan
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.76rem', fontWeight: 550 }}>
@@ -671,7 +671,7 @@ export function OrdersPage() {
               >
                 {/* Receipt Header */}
                 <Box sx={{ textAlign: 'center', pb: 2, borderBottom: '1px dashed #cbd5e1' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '1.15rem' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', fontSize: '1.15rem' }}>
                     PawPOS Express
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.74rem' }}>
@@ -690,7 +690,7 @@ export function OrdersPage() {
                       px: 1.25,
                       py: 0.25,
                       borderRadius: '6px',
-                      color: '#0f172a',
+                      color: 'text.primary',
                     }}
                   >
                     {selectedOrder.order_number}
@@ -709,14 +709,14 @@ export function OrdersPage() {
                         <Box key={item.id || idx}>
                           <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                             <Box sx={{ flex: 1, pr: 1 }}>
-                              <Typography variant="body2" sx={{ fontWeight: 750, color: '#0f172a', fontSize: '0.86rem', lineHeight: 1.25 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '0.86rem', lineHeight: 1.25 }}>
                                 {item.product_name}
                               </Typography>
                               <Typography variant="caption" color="text.secondary" className="tnum" sx={{ fontSize: '0.72rem' }}>
                                 {item.quantity} × {formatCurrency(item.unit_price_idr)}
                               </Typography>
                             </Box>
-                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.88rem' }} className="tnum">
+                            <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.primary', fontSize: '0.88rem' }} className="tnum">
                               {formatCurrency(item.subtotal_idr)}
                             </Typography>
                           </Stack>
@@ -767,7 +767,7 @@ export function OrdersPage() {
                     <Divider sx={{ my: 0.5, borderColor: '#e2e8f0' }} />
 
                     <Stack direction="row" justifyContent="space-between" alignItems="baseline">
-                      <Typography variant="subtitle1" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '1rem' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 850, color: 'text.primary', fontSize: '1rem' }}>
                         TOTAL DIBAYAR
                       </Typography>
                       <Typography
@@ -797,7 +797,7 @@ export function OrdersPage() {
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                             Porsi Tunai (Kas Laci)
                           </Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 750, color: '#0f172a' }} className="tnum">
+                          <Typography variant="caption" sx={{ fontWeight: 750, color: 'text.primary' }} className="tnum">
                             {formatCurrency(selectedOrder.cash_amount_idr ?? 0)}
                           </Typography>
                         </Stack>
@@ -805,7 +805,7 @@ export function OrdersPage() {
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                             Porsi Non-Tunai / QRIS
                           </Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 750, color: '#0f172a' }} className="tnum">
+                          <Typography variant="caption" sx={{ fontWeight: 750, color: 'text.primary' }} className="tnum">
                             {formatCurrency(selectedOrder.non_cash_amount_idr ?? 0)}
                           </Typography>
                         </Stack>
@@ -813,7 +813,7 @@ export function OrdersPage() {
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                             Total Uang Diterima
                           </Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 750, color: '#0f172a' }} className="tnum">
+                          <Typography variant="caption" sx={{ fontWeight: 750, color: 'text.primary' }} className="tnum">
                             {formatCurrency(selectedOrder.paid_amount_idr)}
                           </Typography>
                         </Stack>
@@ -836,7 +836,7 @@ export function OrdersPage() {
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                             Uang Tunai Diterima
                           </Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 750, color: '#0f172a' }} className="tnum">
+                          <Typography variant="caption" sx={{ fontWeight: 750, color: 'text.primary' }} className="tnum">
                             {formatCurrency(selectedOrder.paid_amount_idr)}
                           </Typography>
                         </Stack>

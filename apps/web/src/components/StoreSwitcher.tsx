@@ -158,9 +158,9 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
         fullWidth={fullWidth}
         sx={{
           textTransform: 'none',
-          bgcolor: '#ffffff',
-          borderColor: '#e2e8f0',
-          color: '#1e293b',
+          bgcolor: 'background.paper',
+          borderColor: 'divider',
+          color: 'text.primary',
           fontWeight: 650,
           borderRadius: '8px',
           width: fullWidth ? '100%' : 'auto',
@@ -171,8 +171,8 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
           alignItems: 'center',
           gap: 0.75,
           '&:hover': {
-            bgcolor: '#f8fafc',
-            borderColor: '#cbd5e1',
+            bgcolor: 'action.hover',
+            borderColor: 'divider',
           },
         }}
       >
@@ -184,7 +184,7 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
             sx={{
               fontWeight: 700,
               fontSize: '0.8rem',
-              color: '#1e293b',
+              color: 'text.primary',
             }}
           >
             {activeTenant.name}

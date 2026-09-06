@@ -73,7 +73,7 @@ export function PageHeader({
             fontSize: { xs: '1.65rem', md: '2.15rem' },
             fontWeight: 850,
             letterSpacing: '-0.035em',
-            color: '#0f172a',
+            color: 'text.primary',
             lineHeight: 1.18,
           }}
         >
@@ -81,7 +81,7 @@ export function PageHeader({
         </Typography>
         <Typography
           variant="body1"
-          sx={{ mt: 0.5, maxWidth: 640, fontSize: { xs: '0.88rem', md: '0.92rem' }, color: '#64748d', lineHeight: 1.5 }}
+          sx={{ mt: 0.5, maxWidth: 640, fontSize: { xs: '0.88rem', md: '0.92rem' }, color: 'text.secondary', lineHeight: 1.5 }}
         >
           {body}
         </Typography>
@@ -117,7 +117,7 @@ export function EmptyState({
           height: 44,
           borderRadius: '10px',
           bgcolor: '#f1f5f9',
-          color: '#64748d',
+          color: 'text.secondary',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -127,7 +127,7 @@ export function EmptyState({
       >
         <HelpOutline sx={{ fontSize: 22 }} />
       </Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', mb: 0.75, fontSize: '1.05rem' }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.75, fontSize: '1.05rem' }}>
         {title}
       </Typography>
       <Typography
@@ -156,7 +156,7 @@ function LoadingState({ label }: { label: string }) {
       }}
     >
       <RefreshOutlined className="loading-icon" />
-      <Typography sx={{ fontWeight: 600, color: '#334155' }}>{label}</Typography>
+      <Typography sx={{ fontWeight: 600, color: 'text.secondary' }}>{label}</Typography>
     </Paper>
   )
 }
@@ -205,7 +205,7 @@ export function SettingsPage() {
           borderRadius: '12px',
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 750, color: '#1e293b', mb: 0.5, fontSize: '1.05rem' }}>
+        <Typography variant="h6" sx={{ fontWeight: 750, color: 'text.primary', mb: 0.5, fontSize: '1.05rem' }}>
           Tampilan Antarmuka
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, fontSize: '0.84rem' }}>
@@ -220,7 +220,7 @@ export function SettingsPage() {
             spacing={1.5}
           >
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 650, color: '#1e293b' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 650, color: 'text.primary' }}>
                 Mode Tampilan Ringkas (Compact Density)
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.82rem', mt: 0.25 }}>
@@ -252,7 +252,7 @@ export function SettingsPage() {
             spacing={2}
           >
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 650, color: '#1e293b' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 650, color: 'text.primary' }}>
                 Cetak Struk Otomatis Selesai Pembayaran
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.82rem', mt: 0.25 }}>
@@ -270,7 +270,7 @@ export function SettingsPage() {
 
         <Divider sx={{ my: 3, borderColor: '#e2e8f0' }} />
 
-        <Typography variant="h6" sx={{ fontWeight: 750, color: '#1e293b', mb: 0.5, fontSize: '1.05rem' }}>
+        <Typography variant="h6" sx={{ fontWeight: 750, color: 'text.primary', mb: 0.5, fontSize: '1.05rem' }}>
           Integrasi & Provider Pembayaran
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.84rem' }}>

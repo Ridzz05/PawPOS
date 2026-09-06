@@ -41,7 +41,7 @@ import {
   Typography,
 } from '@mui/material'
 
-const BRAND_LOGO = '/branding/pawpos_logo_enhanced.png'
+const BRAND_LOGO = '/branding/branding.png'
 const HERO_3D = '/branding/landing-hero-3d.png'
 const FEATURE_CHECKOUT = '/branding/feature-checkout-3d.png'
 const FEATURE_COPILOT = '/branding/feature-ai-copilot-3d.png'
@@ -102,8 +102,7 @@ export function LandingPage() {
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(16px)',
+          bgcolor: '#ffffff',
           borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
           color: '#1E293B',
           py: 0.8,
@@ -399,10 +398,9 @@ export function LandingPage() {
                 left: { sm: -16, md: -28 },
                 p: { sm: 1.5, md: 2 },
                 borderRadius: '16px',
-                bgcolor: 'rgba(255, 255, 255, 0.96)',
-                backdropFilter: 'blur(12px)',
+                bgcolor: '#ffffff',
                 border: '1px solid rgba(226, 232, 240, 0.9)',
-                boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
+                boxShadow: 'none',
                 display: { xs: 'none', sm: 'flex' },
                 alignItems: 'center',
                 gap: 1.5,
@@ -431,10 +429,9 @@ export function LandingPage() {
                 right: { sm: -16, md: -28 },
                 p: { sm: 1.5, md: 2 },
                 borderRadius: '16px',
-                bgcolor: 'rgba(255, 255, 255, 0.96)',
-                backdropFilter: 'blur(12px)',
+                bgcolor: '#ffffff',
                 border: '1px solid #FFE3CC',
-                boxShadow: '0 12px 32px rgba(255, 138, 61, 0.22)',
+                boxShadow: 'none',
                 display: { xs: 'none', sm: 'flex' },
                 alignItems: 'center',
                 gap: 1.5,
@@ -639,8 +636,8 @@ export function LandingPage() {
                     boxShadow: '0 16px 36px rgba(255, 138, 61, 0.14)',
                     lineHeight: 0,
                     bgcolor: '#ffffff',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                    '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 20px 45px rgba(255, 138, 61, 0.22)' },
+                    transition: 'border-color 120ms ease',
+                    '&:hover': { borderColor: '#FF8A3D' },
                   }}
                 >
                   <Box
@@ -692,8 +689,8 @@ export function LandingPage() {
                     boxShadow: '0 16px 36px rgba(255, 138, 61, 0.16)',
                     lineHeight: 0,
                     bgcolor: '#ffffff',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                    '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 20px 45px rgba(255, 138, 61, 0.24)' },
+                    transition: 'border-color 120ms ease',
+                    '&:hover': { borderColor: '#FF8A3D' },
                   }}
                 >
                   <Box
@@ -797,8 +794,8 @@ export function LandingPage() {
                     boxShadow: '0 16px 36px rgba(16, 185, 129, 0.14)',
                     lineHeight: 0,
                     bgcolor: '#ffffff',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                    '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 20px 45px rgba(16, 185, 129, 0.22)' },
+                    transition: 'border-color 120ms ease',
+                    '&:hover': { borderColor: '#10B981' },
                   }}
                 >
                   <Box

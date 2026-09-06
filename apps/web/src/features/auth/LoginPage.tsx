@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  Avatar,
   Box,
   Button,
   Card,
@@ -12,46 +13,59 @@ import {
   InputAdornment,
   Paper,
   Stack,
+  Tab,
+  Tabs,
   TextField,
   Typography,
   Alert,
 } from '@mui/material'
 import {
-  LockOutlined,
-  MailOutline,
-  Visibility,
-  VisibilityOff,
-  ArrowForwardOutlined,
   ArrowBackOutlined,
+  ArrowForwardOutlined,
+  BackspaceOutlined,
   CheckCircleOutline,
   FlashOnOutlined,
+  KeyOutlined,
+  LockOutlined,
+  MailOutline,
+  PinOutlined,
+  Visibility,
+  VisibilityOff,
 } from '@mui/icons-material'
 import { PawLogo } from '../../components/PawLogo'
-import { DEMO_ACCOUNTS, useAuth } from './authContext'
+import { DEMO_ACCOUNTS, isDemoLoginEnabled, useAuth } from './authContext'
 import type { StaffRole } from './rbac'
+import { ThemeToggle } from '../../components/ThemeToggle'
+import { useThemeMode } from '../../themeContext'
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const { login, loginAsDemo } = useAuth()
+  const { login, loginWithPin, loginAsDemo } = useAuth()
+  const { isDark } = useThemeMode()
 
+  // Tab mode: 'pin' (Terminal Kasir Cepat) vs 'credential' (Email & Sandi)
+  const [loginTab, setLoginTab] = useState<'pin' | 'credential'>('pin')
+
+  // PIN mode state
+  const [selectedStaffRole, setSelectedStaffRole] = useState<StaffRole>('cashier')
+  const [pinInput, setPinInput] = useState('')
+
+  // Credential mode state
   const [email, setEmail] = useState('owner@pawpos.id')
   const [password, setPassword] = useState('pawpos123')
   const [showPassword, setShowPassword] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<StaffRole>('owner')
+
+  // Status & Feedback
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const demoEnabled = isDemoLoginEnabled()
 
-  const handleSelectDemo = (role: StaffRole) => {
-    setSelectedRole(role)
-    const acc = DEMO_ACCOUNTS.find((a) => a.role === role)
-    if (acc) {
-      setEmail(acc.email)
-      setPassword(acc.password)
-      setErrorMsg(null)
+  // Quick 1-Click Demo (hanya DEV / ?demo=1 untuk presentasi lead)
+  const handleInstantDemoLogin = (role: StaffRole) => {
+    if (!demoEnabled) {
+      setErrorMsg('Mode demo dinonaktifkan di perangkat kasir produksi.')
+      return
     }
-  }
-
-  const handleInstantLogin = (role: StaffRole) => {
     setIsSubmitting(true)
     setErrorMsg(null)
     try {
@@ -64,7 +78,43 @@ export function LoginPage() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Keypad Handlers
+  const handleKeypadPress = (num: string) => {
+    if (pinInput.length < 6) {
+      const nextPin = pinInput + num
+      setPinInput(nextPin)
+      setErrorMsg(null)
+      if (nextPin.length === 4) {
+        // Auto-login on 4 digits
+        executePinLogin(selectedStaffRole, nextPin)
+      }
+    }
+  }
+
+  const handleKeypadBackspace = () => {
+    setPinInput((prev) => prev.slice(0, -1))
+    setErrorMsg(null)
+  }
+
+  const handleKeypadClear = () => {
+    setPinInput('')
+    setErrorMsg(null)
+  }
+
+  const executePinLogin = (role: StaffRole, pin: string) => {
+    setIsSubmitting(true)
+    setErrorMsg(null)
+    const res = loginWithPin(role, pin)
+    if (res.success && res.initialRoute) {
+      navigate(res.initialRoute, { replace: true })
+    } else {
+      setErrorMsg(res.error || 'PIN kasir tidak sesuai.')
+      setPinInput('')
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleCredentialSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     setErrorMsg(null)
@@ -77,39 +127,44 @@ export function LoginPage() {
     }
   }
 
+  const activeStaffMeta = DEMO_ACCOUNTS.find((a) => a.role === selectedStaffRole) || DEMO_ACCOUNTS[1]
+
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        bgcolor: '#F8FAFC',
-        backgroundImage: 'radial-gradient(#E2E8F0 1.2px, transparent 1.2px)',
-        backgroundSize: '24px 24px',
+        bgcolor: 'background.default',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        py: { xs: 3, sm: 6 },
+        py: { xs: 2.5, sm: 5 },
         px: { xs: 2, sm: 3 },
+        position: 'relative',
       }}
     >
+      {/* Top Controls: Theme Toggle */}
+      <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+        <ThemeToggle />
+      </Box>
+
       <Container maxWidth="sm">
         {/* Brand Header */}
-        <Stack alignItems="center" spacing={1.5} sx={{ mb: 3.5, textAlign: 'center' }}>
+        <Stack alignItems="center" spacing={1.5} sx={{ mb: 3, textAlign: 'center' }}>
           <PawLogo variant="vertical" size="large" />
           <Typography
-            variant="h4"
+            variant="h5"
             sx={{
               fontWeight: 800,
-              color: '#0F172A',
-              letterSpacing: '-0.02em',
-              fontSize: { xs: '1.65rem', sm: '2rem' },
-              mt: 1,
+              letterSpacing: '-0.025em',
+              fontSize: { xs: '1.5rem', sm: '1.75rem' },
+              mt: 0.5,
             }}
           >
-            Masuk ke PawPOS
+            Terminal Masuk PawPOS
           </Typography>
-          <Typography variant="body2" sx={{ color: '#64748B', maxWidth: 460 }}>
-            Platform Kasir & Copilot AI Cerdas untuk Pet Shop & Pet Clinic. Pilih akun demo uji coba di bawah atau masukkan kredensial peran Anda.
+          <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 440 }}>
+            Sistem Operasional Kasir & Retail Cerdas. Masuk menggunakan PIN kasir harian atau kredensial akun toko.
           </Typography>
         </Stack>
 
@@ -117,262 +172,426 @@ export function LoginPage() {
           elevation={0}
           sx={{
             p: { xs: 2.5, sm: 3.5 },
-            borderRadius: '24px',
-            border: '1px solid #E2E8F0',
-            bgcolor: '#FFFFFF',
-            boxShadow: '0 20px 40px -15px rgba(0,0,0,0.06)',
+            borderRadius: '18px',
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
           }}
         >
-          {/* Quick Demo Selector */}
-          <Box sx={{ mb: 3 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 750, color: '#1E293B', fontSize: '0.88rem' }}>
-                Pilih Akun Demo Trial:
-              </Typography>
-              <Chip
-                label="Trial Mode"
-                size="small"
-                color="primary"
-                variant="outlined"
-                sx={{ height: 22, fontSize: '0.65rem', fontWeight: 800 }}
-              />
-            </Stack>
+          {/* Login Mode Tabs */}
+          <Tabs
+            value={loginTab}
+            onChange={(_, val) => {
+              setLoginTab(val)
+              setErrorMsg(null)
+              setPinInput('')
+            }}
+            variant="fullWidth"
+            sx={{
+              mb: 3,
+              minHeight: 40,
+              bgcolor: isDark ? '#0E1626' : '#F1F5F9',
+              p: 0.5,
+              borderRadius: '10px',
+              '& .MuiTabs-indicator': {
+                display: 'none',
+              },
+            }}
+          >
+            <Tab
+              value="pin"
+              icon={<PinOutlined sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label="PIN Kasir Cepat"
+              sx={{
+                minHeight: 34,
+                borderRadius: '8px',
+                fontWeight: 750,
+                fontSize: '0.82rem',
+                textTransform: 'none',
+                color: 'text.secondary',
+                '&.Mui-selected': {
+                  bgcolor: 'background.paper',
+                  color: '#FF8A3D',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                },
+              }}
+            />
+            <Tab
+              value="credential"
+              icon={<KeyOutlined sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label="Email & Password"
+              sx={{
+                minHeight: 34,
+                borderRadius: '8px',
+                fontWeight: 750,
+                fontSize: '0.82rem',
+                textTransform: 'none',
+                color: 'text.secondary',
+                '&.Mui-selected': {
+                  bgcolor: 'background.paper',
+                  color: '#FF8A3D',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                },
+              }}
+            />
+          </Tabs>
 
-            <Stack spacing={1.25}>
-              {DEMO_ACCOUNTS.map((acc) => {
-                const isSelected = selectedRole === acc.role
-                return (
-                  <Card
-                    key={acc.role}
-                    variant="outlined"
-                    sx={{
-                      borderRadius: '14px',
-                      borderColor: isSelected ? '#FF8A3D' : '#E2E8F0',
-                      bgcolor: isSelected ? '#FFF9F5' : '#FAFAFA',
-                      boxShadow: isSelected ? '0 0 0 1px #FF8A3D' : 'none',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        borderColor: '#FF8A3D',
-                        bgcolor: '#FFF9F5',
-                      },
-                    }}
-                  >
-                    <Box
-                      onClick={() => handleSelectDemo(acc.role)}
-                      sx={{
-                        p: 1.5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0, flex: 1, mr: 1 }}>
-                        <Box
-                          sx={{
-                            width: 38,
-                            height: 38,
-                            borderRadius: '10px',
-                            bgcolor: acc.badgeBg,
-                            color: acc.badgeColor,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '1.25rem',
-                            flexShrink: 0,
-                          }}
-                        >
-                          {acc.avatar}
-                        </Box>
-                        <Box sx={{ minWidth: 0, flex: 1 }}>
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: '#0F172A', fontSize: '0.88rem' }}>
-                              {acc.name}
-                            </Typography>
-                            <Chip
-                              label={acc.role.toUpperCase()}
-                              size="small"
-                              sx={{
-                                height: 18,
-                                fontSize: '0.6rem',
-                                fontWeight: 800,
-                                bgcolor: acc.badgeBg,
-                                color: acc.badgeColor,
-                              }}
-                            />
-                          </Stack>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: '#64748B',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 1,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                              fontSize: '0.72rem',
-                            }}
-                          >
-                            {acc.email} • sandi: {acc.password}
-                          </Typography>
-                        </Box>
-                      </Stack>
-
-                      <Button
-                        id={`btn-demo-login-${acc.role}`}
-                        size="small"
-                        variant={isSelected ? 'contained' : 'outlined'}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleInstantLogin(acc.role)
-                        }}
-                        startIcon={<FlashOnOutlined sx={{ fontSize: '1rem !important' }} />}
-                        sx={{
-                          fontSize: '0.72rem',
-                          fontWeight: 750,
-                          py: 0.5,
-                          px: 1.25,
-                          borderRadius: '8px',
-                          textTransform: 'none',
-                          flexShrink: 0,
-                          bgcolor: isSelected ? '#FF8A3D' : 'transparent',
-                          borderColor: isSelected ? '#FF8A3D' : '#CBD5E1',
-                          color: isSelected ? '#FFFFFF' : '#475569',
-                          '&:hover': {
-                            bgcolor: isSelected ? '#E67328' : '#F1F5F9',
-                            borderColor: '#FF8A3D',
-                            color: isSelected ? '#FFFFFF' : '#FF8A3D',
-                          },
-                        }}
-                      >
-                        1-Klik Masuk
-                      </Button>
-                    </Box>
-                  </Card>
-                )
-              })}
-            </Stack>
-          </Box>
-
-          <Divider sx={{ my: 2.5 }}>
-            <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, px: 1 }}>
-              ATAU MASUKKAN KREDENSIAL MANUAL
-            </Typography>
-          </Divider>
-
-          {/* Form Credentials */}
+          {/* Error Alert */}
           {errorMsg && (
-            <Alert severity="error" sx={{ mb: 2.5, borderRadius: '10px' }}>
+            <Alert severity="error" sx={{ mb: 2.5, borderRadius: '8px', fontSize: '0.82rem' }}>
               {errorMsg}
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit}>
-            <Stack spacing={2}>
-              <TextField
-                label="Email / Username"
-                type="email"
-                fullWidth
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="nama@pawpos.id"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <MailOutline sx={{ color: '#94A3B8', fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                  },
-                }}
-              />
-
-              <TextField
-                label="Kata Sandi (Password)"
-                type={showPassword ? 'text' : 'password'}
-                fullWidth
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LockOutlined sx={{ color: '#94A3B8', fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        aria-label="Tampilkan sandi"
+          {/* TAB 1: PIN KASIR (Olsera Style Keypad) */}
+          {loginTab === 'pin' && (
+            <Box>
+              {/* Cashier Selector Chips */}
+              <Typography variant="caption" sx={{ fontWeight: 750, color: 'text.secondary', display: 'block', mb: 1 }}>
+                PILIH OPERATOR KASIR:
+              </Typography>
+              <Stack direction="row" spacing={1} sx={{ mb: 2.5, overflowX: 'auto', pb: 0.5 }}>
+                {DEMO_ACCOUNTS.map((acc) => {
+                  const isSelected = selectedStaffRole === acc.role
+                  return (
+                    <Paper
+                      key={acc.role}
+                      onClick={() => {
+                        setSelectedStaffRole(acc.role)
+                        setPinInput('')
+                        setErrorMsg(null)
+                      }}
+                      sx={{
+                        p: 1,
+                        px: 1.5,
+                        borderRadius: '10px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        minWidth: 130,
+                        border: '1px solid',
+                        borderColor: isSelected ? '#FF8A3D' : 'divider',
+                        bgcolor: isSelected ? (isDark ? '#2D1A10' : '#FFF9F5') : 'background.paper',
+                        transition: 'all 120ms ease',
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          fontSize: '0.85rem',
+                          bgcolor: acc.badgeBg,
+                          color: acc.badgeColor,
+                        }}
                       >
-                        {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
+                        {acc.avatar}
+                      </Avatar>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="subtitle2" sx={{ fontSize: '0.78rem', fontWeight: 750 }} noWrap>
+                          {acc.name.split(' ')[0]}
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                          {demoEnabled ? `PIN: ${acc.pin}` : 'PIN: ••••'}
+                        </Typography>
+                      </Box>
+                    </Paper>
+                  )
+                })}
+              </Stack>
+
+              {/* Active Operator Banner */}
+              <Box
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                  },
+                  p: 1.5,
+                  mb: 2,
+                  borderRadius: '12px',
+                  bgcolor: isDark ? '#0E1626' : '#F8FAFC',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 }}
-              />
+              >
+                <Stack direction="row" spacing={1.25} alignItems="center">
+                  <Avatar sx={{ bgcolor: activeStaffMeta.badgeBg, color: activeStaffMeta.badgeColor, width: 34, height: 34 }}>
+                    {activeStaffMeta.avatar}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, fontSize: '0.88rem' }}>
+                      {activeStaffMeta.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      {activeStaffMeta.roleTitle} (PIN: <strong>{demoEnabled ? activeStaffMeta.pin : '••••'}</strong>)
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Chip label={activeStaffMeta.role.toUpperCase()} size="small" sx={{ height: 20, fontSize: '0.62rem', fontWeight: 800 }} />
+              </Box>
+
+              {/* Masked PIN Dot Indicators */}
+              <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ mb: 2.5 }}>
+                {[0, 1, 2, 3].map((idx) => {
+                  const isFilled = pinInput.length > idx
+                  return (
+                    <Box
+                      key={idx}
+                      sx={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: '50%',
+                        bgcolor: isFilled ? '#FF8A3D' : 'transparent',
+                        border: '2px solid',
+                        borderColor: isFilled ? '#FF8A3D' : 'divider',
+                        transition: 'all 120ms ease',
+                      }}
+                    />
+                  )
+                })}
+              </Stack>
+
+              {/* Olsera-Style Numeric Keypad */}
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: 1.25,
+                  maxWidth: 290,
+                  mx: 'auto',
+                  mb: 2,
+                }}
+              >
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+                  <Button
+                    key={digit}
+                    variant="outlined"
+                    onClick={() => handleKeypadPress(digit)}
+                    sx={{
+                      height: 52,
+                      fontSize: '1.3rem',
+                      fontWeight: 750,
+                      borderRadius: '10px',
+                      p: 0,
+                    }}
+                  >
+                    {digit}
+                  </Button>
+                ))}
+                <Button
+                  variant="outlined"
+                  onClick={handleKeypadClear}
+                  sx={{
+                    height: 52,
+                    fontSize: '0.82rem',
+                    fontWeight: 750,
+                    borderRadius: '10px',
+                    p: 0,
+                    color: '#EF4444',
+                  }}
+                >
+                  C
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => handleKeypadPress('0')}
+                  sx={{
+                    height: 52,
+                    fontSize: '1.3rem',
+                    fontWeight: 750,
+                    borderRadius: '10px',
+                    p: 0,
+                  }}
+                >
+                  0
+                </Button>
+                <IconButton
+                  onClick={handleKeypadBackspace}
+                  sx={{
+                    height: 52,
+                    borderRadius: '10px',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <BackspaceOutlined sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Box>
 
               <Button
-                type="submit"
                 variant="contained"
-                size="large"
                 fullWidth
-                disabled={isSubmitting}
-                endIcon={<ArrowForwardOutlined />}
+                disabled={isSubmitting || pinInput.length === 0}
+                onClick={() => executePinLogin(selectedStaffRole, pinInput)}
                 sx={{
-                  py: 1.4,
-                  bgcolor: '#FF8A3D',
-                  color: '#FFFFFF',
+                  py: 1.2,
+                  borderRadius: '10px',
                   fontWeight: 800,
-                  fontSize: '0.95rem',
-                  borderRadius: '12px',
-                  textTransform: 'none',
-                  boxShadow: '0 4px 14px rgba(255, 138, 61, 0.35)',
+                  fontSize: '0.925rem',
+                }}
+              >
+                {isSubmitting ? 'Memproses...' : 'Masuk Terminal POS'}
+              </Button>
+            </Box>
+          )}
+
+          {/* TAB 2: EMAIL & PASSWORD FORM */}
+          {loginTab === 'credential' && (
+            <Box component="form" onSubmit={handleCredentialSubmit}>
+              <Stack spacing={2}>
+                <TextField
+                  label="Email Akun"
+                  type="email"
+                  fullWidth
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="owner@pawpos.id"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <MailOutline sx={{ color: 'text.secondary', fontSize: 19 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                <TextField
+                  label="Kata Sandi (Password)"
+                  type={showPassword ? 'text' : 'password'}
+                  fullWidth
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LockOutlined sx={{ color: 'text.secondary', fontSize: 19 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          aria-label="Tampilkan sandi"
+                        >
+                          {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  disabled={isSubmitting}
+                  endIcon={<ArrowForwardOutlined />}
+                  sx={{
+                    py: 1.25,
+                    borderRadius: '10px',
+                    fontWeight: 800,
+                    fontSize: '0.925rem',
+                  }}
+                >
+                  {isSubmitting ? 'Memverifikasi...' : 'Masuk ke Sistem'}
+                </Button>
+              </Stack>
+            </Box>
+          )}
+
+          <Divider sx={{ my: 2.5 }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 750, px: 1, letterSpacing: '0.04em' }}>
+              {demoEnabled ? 'AKUN DEMO TRIAL (1-KLIK MASUK)' : 'AKSES OPERATOR TOKO'}
+            </Typography>
+          </Divider>
+
+          {demoEnabled ? (
+          /* Quick Demo Persona Grid (hanya mode presentasi) */
+          <Stack spacing={1}>
+            {DEMO_ACCOUNTS.map((acc) => (
+              <Box
+                key={acc.role}
+                sx={{
+                  p: 1.25,
+                  borderRadius: '10px',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  bgcolor: isDark ? '#0E1626' : '#FAFAFA',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  transition: 'border-color 120ms ease',
                   '&:hover': {
-                    bgcolor: '#E67328',
+                    borderColor: '#FF8A3D',
                   },
                 }}
               >
-                {isSubmitting ? 'Memproses Masuk...' : 'Masuk ke Sistem'}
-              </Button>
-            </Stack>
-          </Box>
+                <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0, mr: 1 }}>
+                  <Avatar sx={{ bgcolor: acc.badgeBg, color: acc.badgeColor, width: 32, height: 32, fontSize: '0.9rem' }}>
+                    {acc.avatar}
+                  </Avatar>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Stack direction="row" spacing={0.75} alignItems="center">
+                      <Typography variant="subtitle2" sx={{ fontWeight: 750, fontSize: '0.82rem' }}>
+                        {acc.name}
+                      </Typography>
+                      <Chip label={acc.role.toUpperCase()} size="small" sx={{ height: 16, fontSize: '0.58rem', fontWeight: 800 }} />
+                    </Stack>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem' }} noWrap>
+                      {acc.email} • PIN: ••••
+                    </Typography>
+                  </Box>
+                </Stack>
 
-          <Box sx={{ mt: 3, p: 2, borderRadius: '12px', bgcolor: '#F1F5F9', border: '1px dashed #CBD5E1' }}>
-            <Stack direction="row" spacing={1} alignItems="flex-start">
-              <CheckCircleOutline sx={{ color: '#059669', fontSize: 18, mt: 0.2 }} />
-              <Typography variant="caption" sx={{ color: '#475569', lineHeight: 1.5 }}>
-                <strong>Role Isolation Enforced:</strong> Peran operator (Kasir, Gudang, Manajer, Owner) kini dipisahkan secara terisolasi. Pergantian peran langsung via sidebar telah dinonaktifkan demi integritas audit kasir. Untuk berganti peran, lakukan <em>Keluar / Logout</em> terlebih dahulu.
-              </Typography>
-            </Stack>
-          </Box>
+                <Button
+                  id={`btn-demo-login-${acc.role}`}
+                  size="small"
+                  variant="outlined"
+                  onClick={() => handleInstantDemoLogin(acc.role)}
+                  startIcon={<FlashOnOutlined sx={{ fontSize: '0.9rem !important' }} />}
+                  sx={{
+                    fontSize: '0.7rem',
+                    fontWeight: 750,
+                    py: 0.4,
+                    px: 1,
+                    borderRadius: '6px',
+                    flexShrink: 0,
+                  }}
+                >
+                  1-Klik
+                </Button>
+              </Box>
+            ))}
+          </Stack>
+          ) : (
+            <Alert severity="info" sx={{ borderRadius: '10px', fontSize: '0.8rem' }}>
+              Mode kasir produksi aktif. Masuk dengan PIN operator atau email toko. Hubungi owner untuk kredensial.
+            </Alert>
+          )}
         </Paper>
 
-        <Box sx={{ textAlign: 'center', mt: 3 }}>
+        <Box sx={{ textAlign: 'center', mt: 2.5 }}>
           <Button
             variant="text"
             startIcon={<ArrowBackOutlined />}
             onClick={() => navigate('/landing')}
             sx={{
-              color: '#64748B',
+              color: 'text.secondary',
               fontWeight: 700,
-              textTransform: 'none',
-              fontSize: '0.85rem',
-              '&:hover': { color: '#0F172A', bgcolor: 'transparent' },
+              fontSize: '0.82rem',
+              '&:hover': { color: 'text.primary', bgcolor: 'transparent' },
             }}
           >
-            Kembali ke Halaman Beranda (Landing Page)
+            Kembali ke Landing Page
           </Button>
         </Box>
       </Container>

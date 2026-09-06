@@ -7,10 +7,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/assistant"
+	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/auth"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/inventory"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/orders"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/products"
@@ -30,20 +32,23 @@ func NewRouter(log *slog.Logger, ready health.Check, db *sql.DB, configurations 
 	var orderRepo orders.Repository
 	var tenantRepo tenant.Repository
 	var shiftRepo shifts.Repository
+	var authRepo auth.Repository
 	if db != nil {
 		productRepo = products.NewPostgresRepository(db)
 		inventoryRepo = inventory.NewPostgresRepository(db)
 		orderRepo = orders.NewPostgresRepository(db)
 		tenantRepo = tenant.NewPostgresRepository(db)
 		shiftRepo = shifts.NewPostgresRepository(db)
+		authRepo = auth.NewPostgresRepository(db)
 	} else {
 		productRepo = products.NewMemoryRepository()
 		inventoryRepo = inventory.NewMemoryRepository()
 		orderRepo = orders.NewMemoryRepository(inventoryRepo)
 		tenantRepo = tenant.NewMemoryRepository()
 		shiftRepo = shifts.NewMemoryRepository()
+		authRepo = auth.NewMemoryRepository()
 	}
-	return NewRouterWithAllRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, configurations...)
+	return NewRouterWithAuthRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, authRepo, configurations...)
 }
 
 func NewRouterWithRepo(log *slog.Logger, ready health.Check, productRepo products.Repository, configurations ...config.Config) http.Handler {
@@ -56,6 +61,10 @@ func NewRouterWithRepos(log *slog.Logger, ready health.Check, productRepo produc
 }
 
 func NewRouterWithAllRepos(log *slog.Logger, ready health.Check, productRepo products.Repository, inventoryRepo inventory.Repository, orderRepo orders.Repository, tenantRepo tenant.Repository, shiftRepo shifts.Repository, configurations ...config.Config) http.Handler {
+	return NewRouterWithAuthRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, auth.NewMemoryRepository(), configurations...)
+}
+
+func NewRouterWithAuthRepos(log *slog.Logger, ready health.Check, productRepo products.Repository, inventoryRepo inventory.Repository, orderRepo orders.Repository, tenantRepo tenant.Repository, shiftRepo shifts.Repository, authRepo auth.Repository, configurations ...config.Config) http.Handler {
 	cfg := config.Load()
 	if len(configurations) > 0 {
 		cfg = configurations[0]
@@ -102,6 +111,9 @@ func NewRouterWithAllRepos(log *slog.Logger, ready health.Check, productRepo pro
 	if shiftRepo == nil {
 		shiftRepo = shifts.NewMemoryRepository()
 	}
+	if authRepo == nil {
+		authRepo = auth.NewMemoryRepository()
+	}
 
 	// Link order repo with shift repo to record cashier sales automatically
 	if sr, ok := orderRepo.(interface{ SetSaleRecorder(orders.SaleRecorder) }); ok {
@@ -121,6 +133,7 @@ func NewRouterWithAllRepos(log *slog.Logger, ready health.Check, productRepo pro
 	orderHandler := orders.NewHandler(orderRepo)
 	tenantHandler := tenant.NewHandler(tenantRepo)
 	shiftHandler := shifts.NewHandler(shiftRepo)
+	authHandler := auth.NewHandler(authRepo, time.Duration(cfg.SessionTTLHours)*time.Hour)
 	uploadHandler := uploads.NewHandler("./uploads")
 
 	router.Get("/health/live", healthHandler.Live)

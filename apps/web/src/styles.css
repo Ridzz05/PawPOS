@@ -145,6 +145,66 @@ a {
   border-radius: 0 !important;
 }
 
+/* ==========================================================================
+   DARK MODE ADAPTATIONS (Olsera Minimalist Dark Surface Spec)
+   ========================================================================== */
+html[data-theme='dark'],
+html[data-theme='dark'] body {
+  background-color: #0b0f19 !important;
+  color: #f8fafc !important;
+}
+
+html[data-theme='dark'] .terminal-card,
+html[data-theme='dark'] .purr-card,
+html[data-theme='dark'] .clay-card,
+html[data-theme='dark'] .terminal-card-hover,
+html[data-theme='dark'] .purr-card-interactive,
+html[data-theme='dark'] .clay-card-interactive,
+html[data-theme='dark'] .stripe-card-interactive {
+  background-color: #131b2e !important;
+  border-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+html[data-theme='dark'] .terminal-card-hover:hover,
+html[data-theme='dark'] .purr-card-interactive:hover,
+html[data-theme='dark'] .clay-card-interactive:hover,
+html[data-theme='dark'] .stripe-card-interactive:hover {
+  border-color: #334155 !important;
+  background-color: #1a2438 !important;
+}
+
+html[data-theme='dark'] .terminal-selected {
+  border-color: #ff8a3d !important;
+  background-color: #26160d !important;
+}
+
+html[data-theme='dark'] .terminal-inset,
+html[data-theme='dark'] .clay-inset,
+html[data-theme='dark'] .purr-inset {
+  background-color: #0e1626 !important;
+  border-color: #1e293b !important;
+}
+
+html[data-theme='dark'] .terminal-topbar,
+html[data-theme='dark'] .stripe-glass-header,
+html[data-theme='dark'] .clay-header {
+  background-color: #131b2e !important;
+  border-bottom-color: #1e293b !important;
+}
+
+html[data-theme='dark'] .terminal-cat-btn {
+  color: #94a3b8 !important;
+}
+
+html[data-theme='dark'] .terminal-cat-btn:hover {
+  color: #f8fafc !important;
+}
+
+html[data-theme='dark'] .heading-tight {
+  color: #f8fafc !important;
+}
+
 /* Tabular Numbers */
 .tnum {
   font-feature-settings: 'tnum' 1;

@@ -32,8 +32,7 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material'
-import { ThemeProvider } from '@mui/material/styles'
-import { theme } from './theme'
+import { ThemeModeProvider } from './themeContext'
 import { DashboardPage, LandingPage, LoginPage, NotFoundPage, OrdersPage, PosPage, ProductsPage, SettingsPage, ShiftsPage, StocksPage } from './pages'
 import { VoiceRecorder } from './features/ai-assistant/VoiceRecorder'
 import { CsAssistantWidget } from './features/ai-assistant/CsAssistantWidget'
@@ -43,6 +42,9 @@ import { UserProfileCard } from './components/UserProfileCard'
 import { AuthProvider, useAuth } from './features/auth/authContext'
 import { useRbac, type Permission } from './features/auth/rbac'
 import { PawLogo } from './components/PawLogo'
+import { ThemeToggle } from './components/ThemeToggle'
+import { PwaInstallButton } from './components/PwaInstallButton'
+import { CashierLockModal } from './components/CashierLockModal'
 
 interface NavGroup {
   group: string
@@ -87,7 +89,7 @@ const pageNames: Record<string, { title: string; subtitle: string }> = {
 
 export default function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeModeProvider>
       <CssBaseline />
       <AuthProvider>
         <Routes>
@@ -97,7 +99,7 @@ export default function App() {
           <Route path="*" element={<AppShell />} />
         </Routes>
       </AuthProvider>
-    </ThemeProvider>
+    </ThemeModeProvider>
   )
 }
 
@@ -131,7 +133,9 @@ function AppShell() {
             width: 240,
             height: '100vh',
             zIndex: 1100,
-            bgcolor: '#ffffff',
+            bgcolor: 'background.paper',
+            borderRight: '1px solid',
+            borderColor: 'divider',
           }}
         >
           <Navigation onNavigate={() => undefined} />
@@ -143,7 +147,7 @@ function AppShell() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         ModalProps={{ keepMounted: true }}
-        PaperProps={{ sx: { width: 250, bgcolor: '#ffffff' } }}
+        PaperProps={{ sx: { width: 250, bgcolor: 'background.paper' } }}
       >
         <Navigation onNavigate={() => setDrawerOpen(false)} />
       </Drawer>
@@ -164,7 +168,7 @@ function AppShell() {
             <IconButton
               aria-label="Buka menu"
               onClick={() => setDrawerOpen(true)}
-              sx={{ display: { md: 'none' }, mr: 0.75, color: '#334155', flexShrink: 0 }}
+              sx={{ display: { md: 'none' }, mr: 0.75, color: 'text.secondary', flexShrink: 0 }}
             >
               <MenuOutlined />
             </IconButton>
@@ -176,7 +180,7 @@ function AppShell() {
                 sx={{
                   fontWeight: 800,
                   fontSize: { xs: '0.98rem', sm: '1.1rem', md: '1.2rem' },
-                  color: '#0f172a',
+                  color: 'text.primary',
                   letterSpacing: '-0.025em',
                   lineHeight: 1.25,
                 }}
@@ -186,13 +190,19 @@ function AppShell() {
               <Typography
                 variant="body2"
                 noWrap
-                sx={{ fontSize: '0.76rem', color: '#64748d', display: { xs: 'none', sm: 'block' } }}
+                sx={{ fontSize: '0.76rem', color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}
               >
                 {pageMeta.subtitle}
               </Typography>
             </Box>
 
             <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+              {/* PWA Home Screen Install Button */}
+              <PwaInstallButton />
+
+              {/* Minimalist Zero-Glow Theme Mode Toggle */}
+              <ThemeToggle />
+
               {/* Voice AI Assistant Button - hidden on mobile view */}
               <Box sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
                 <VoiceRecorder />
@@ -289,9 +299,9 @@ function AppShell() {
           left: 0,
           right: 0,
           zIndex: 1200,
-          bgcolor: '#ffffff',
-          borderTop: '1px solid #e2e8f0',
-          boxShadow: '0 -2px 12px rgba(0, 0, 0, 0.04)',
+          bgcolor: 'background.paper',
+          borderTop: '1px solid',
+          borderColor: 'divider',
           pb: 'calc(env(safe-area-inset-bottom, 0px) + 6px)',
           pt: 0.5,
         }}
@@ -303,6 +313,9 @@ function AppShell() {
           <MobileNavItem to="/dashboard" label="Dasbor" icon={DashboardOutlined} />
         </List>
       </Box>
+
+      {/* Olsera-style Cashier Screen Lock Dialog */}
+      <CashierLockModal />
     </Box>
   )
 }
@@ -354,7 +367,7 @@ function ProtectedRoute({
         >
           <LockOutlined sx={{ fontSize: 28 }} />
         </Box>
-        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 1, letterSpacing: '-0.02em' }}>
+        <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 1, letterSpacing: '-0.02em' }}>
           Akses Halaman Dibatasi
         </Typography>
         <Stack direction="row" spacing={1} justifyContent="center" alignItems="center" sx={{ mb: 2 }}>
@@ -400,8 +413,9 @@ function Navigation({ onNavigate }: { onNavigate: () => void }) {
       sx={{
         width: '100%',
         height: '100%',
-        bgcolor: '#ffffff',
-        borderRight: '1px solid #e2e8f0',
+        bgcolor: 'background.paper',
+        borderRight: '1px solid',
+        borderColor: 'divider',
         p: 2,
         display: 'flex',
         flexDirection: 'column',
@@ -463,26 +477,27 @@ function Navigation({ onNavigate }: { onNavigate: () => void }) {
                       borderRadius: '8px',
                       mb: 0.25,
                       px: 1.25,
-                      color: isAllowed ? '#475569' : '#94a3b8',
+                      color: isAllowed ? 'text.primary' : 'text.disabled',
                       opacity: isAllowed ? 1 : 0.6,
                       transition: 'background-color 120ms ease, color 120ms ease',
                       '&.active': {
-                        bgcolor: '#FFF5ED',
-                        color: '#FF8A3D',
+                        bgcolor: 'action.selected',
+                        color: 'primary.main',
                         fontWeight: 750,
-                        borderLeft: '3px solid #FF8A3D',
+                        borderLeft: '3px solid',
+                        borderLeftColor: 'primary.main',
                         borderRadius: '0 8px 8px 0',
                         '& .MuiListItemIcon-root': {
-                          color: '#FF8A3D',
+                          color: 'primary.main',
                         },
                       },
                       '&:hover': {
-                        bgcolor: isAllowed ? '#f8fafc' : '#fef2f2',
-                        color: isAllowed ? '#1e293b' : '#dc2626',
+                        bgcolor: 'action.hover',
+                        color: isAllowed ? 'text.primary' : 'error.main',
                       },
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: 28, color: isAllowed ? '#64748d' : '#94a3b8' }}>
+                    <ListItemIcon sx={{ minWidth: 28, color: isAllowed ? 'text.primary' : 'text.disabled' }}>
                       <Icon sx={{ fontSize: 18 }} />
                     </ListItemIcon>
                     <ListItemText
@@ -524,8 +539,9 @@ function Navigation({ onNavigate }: { onNavigate: () => void }) {
           p: 1.25,
           mt: 'auto',
           borderRadius: '8px',
-          bgcolor: '#f8fafc',
-          border: '1px solid #e2e8f0',
+          bgcolor: 'background.default',
+          border: '1px solid',
+          borderColor: 'divider',
         }}
       >
         <Stack direction="row" spacing={1} alignItems="center">
@@ -533,17 +549,18 @@ function Navigation({ onNavigate }: { onNavigate: () => void }) {
             sx={{
               width: 28,
               height: 28,
-              bgcolor: '#FFF5ED',
-              color: '#FF8A3D',
+              bgcolor: 'action.selected',
+              color: 'primary.main',
               fontWeight: 750,
               fontSize: '0.75rem',
-              border: '1px solid #FFE3CC',
+              border: '1px solid',
+              borderColor: 'divider',
             }}
           >
             PC
           </Avatar>
           <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Typography variant="subtitle2" noWrap sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#1e293b' }}>
+            <Typography variant="subtitle2" noWrap sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'text.primary' }}>
               Terminal Kasir 01
             </Typography>
             <Stack direction="row" spacing={0.5} alignItems="center">
@@ -573,13 +590,13 @@ function MobileNavItem({ to, label, icon: Icon }: { to: string; label: string; i
         gap: 0.25,
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#64748d',
+        color: 'text.primary',
         borderRadius: '8px',
         mx: 0.5,
         '&.active': {
-          color: '#FF8A3D',
+          color: 'primary.main',
           fontWeight: 800,
-          bgcolor: '#fff7ed',
+          bgcolor: 'action.selected',
         },
       }}
     >
