@@ -246,7 +246,7 @@ export function ShiftsPage() {
               fontSize: { xs: '1.6rem', md: '2.1rem' },
               fontWeight: 800,
               letterSpacing: '-0.03em',
-              color: '#1e293b',
+              color: 'text.primary',
               lineHeight: 1.2,
             }}
           >
@@ -331,7 +331,7 @@ export function ShiftsPage() {
             p: { xs: 2, sm: 3 },
             border: '1px solid #10b981',
             borderRadius: '12px',
-            bgcolor: '#ffffff',
+            bgcolor: 'background.paper',
             position: 'relative',
             overflow: 'hidden',
           }}
@@ -361,8 +361,8 @@ export function ShiftsPage() {
                     label="SHIFT BERLANGSUNG"
                     size="small"
                     sx={{
-                      bgcolor: '#ecfdf5',
-                      color: '#065f46',
+                      bgcolor: 'success.light',
+                      color: 'success.main',
                       fontWeight: 800,
                       fontSize: '0.72rem',
                       height: 22,
@@ -373,7 +373,7 @@ export function ShiftsPage() {
                   </Typography>
                 </Stack>
 
-                <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}>
                   Kasir: {currentShift.cashier_name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
@@ -405,11 +405,11 @@ export function ShiftsPage() {
                 gap: 2,
               }}
             >
-              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid #e2e8f0' }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: '0.04em', fontSize: '0.72rem' }}>
                   MODAL AWAL KAS
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '1.25rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', fontSize: '1.25rem', letterSpacing: '-0.025em' }} className="tnum">
                   Rp {formatThousand(currentShift.starting_cash_idr)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.74rem' }}>
@@ -417,11 +417,11 @@ export function ShiftsPage() {
                 </Typography>
               </Box>
 
-              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid #e2e8f0' }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: '0.04em', fontSize: '0.72rem' }}>
                   PENJUALAN TUNAI (CASH)
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#047857', fontSize: '1.25rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography variant="h6" sx={{ fontWeight: 850, color: 'success.main', fontSize: '1.25rem', letterSpacing: '-0.025em' }} className="tnum">
                   Rp {formatThousand(currentShift.total_cash_sales_idr)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.74rem' }}>
@@ -429,11 +429,11 @@ export function ShiftsPage() {
                 </Typography>
               </Box>
 
-              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid #e2e8f0' }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: '0.04em', fontSize: '0.72rem' }}>
                   NON-TUNAI (QRIS/EDC)
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#0284c7', fontSize: '1.25rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography variant="h6" sx={{ fontWeight: 850, color: 'info.main', fontSize: '1.25rem', letterSpacing: '-0.025em' }} className="tnum">
                   Rp {formatThousand(currentShift.total_non_cash_sales_idr)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.74rem' }}>
@@ -441,23 +441,23 @@ export function ShiftsPage() {
                 </Typography>
               </Box>
 
-              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: '#ecfdf5', border: '1.5px solid #a7f3d0' }}>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#065f46', display: 'block', mb: 0.5, letterSpacing: '0.04em', fontSize: '0.72rem' }}>
+              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'success.light', border: '1.5px solid', borderColor: 'divider' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'success.main', display: 'block', mb: 0.5, letterSpacing: '0.04em', fontSize: '0.72rem' }}>
                   ESTIMASI KAS DI LACI
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#065f46', fontSize: '1.35rem', letterSpacing: '-0.03em' }} className="tnum">
+                <Typography variant="h6" sx={{ fontWeight: 850, color: 'success.main', fontSize: '1.35rem', letterSpacing: '-0.03em' }} className="tnum">
                   Rp {formatThousand(expectedCashInDrawer)}
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#047857', fontWeight: 600, fontSize: '0.74rem' }}>
+                <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 600, fontSize: '0.74rem' }}>
                   Modal Awal + Tunai
                 </Typography>
               </Box>
 
-              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid #e2e8f0' }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: '0.04em', fontSize: '0.72rem' }}>
                   TOTAL TRANSAKSI
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '1.25rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', fontSize: '1.25rem', letterSpacing: '-0.025em' }} className="tnum">
                   {currentShift.transaction_count}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.74rem' }}>
@@ -475,7 +475,7 @@ export function ShiftsPage() {
             p: 3,
             border: '1px dashed #cbd5e1',
             borderRadius: '12px',
-            bgcolor: '#ffffff',
+            bgcolor: 'background.paper',
             textAlign: 'center',
           }}
         >
@@ -484,8 +484,8 @@ export function ShiftsPage() {
               width: 52,
               height: 52,
               borderRadius: '50%',
-              bgcolor: '#f1f5f9',
-              color: '#64748d',
+              bgcolor: 'action.hover',
+              color: 'text.secondary',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -495,7 +495,7 @@ export function ShiftsPage() {
           >
             <LockOutlined sx={{ fontSize: 26 }} />
           </Box>
-          <Typography variant="h6" sx={{ fontWeight: 750, color: '#1e293b', mb: 0.5 }}>
+          <Typography variant="h6" sx={{ fontWeight: 750, color: 'text.primary', mb: 0.5 }}>
             Tidak Ada Shift Kasir yang Sedang Aktif
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 480, mx: 'auto', mb: 2 }}>
@@ -517,8 +517,8 @@ export function ShiftsPage() {
       <Box>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.75 }}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <HistoryOutlined sx={{ color: '#475569', fontSize: 20 }} />
-            <Typography variant="h6" sx={{ fontWeight: 750, color: '#1e293b', fontSize: '1.05rem' }}>
+            <HistoryOutlined sx={{ color: 'text.secondary', fontSize: 20 }} />
+            <Typography variant="h6" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '1.05rem' }}>
               Riwayat Shift Selesai
             </Typography>
           </Stack>
@@ -544,7 +544,7 @@ export function ShiftsPage() {
           ) : history.length === 0 ? (
             <Box sx={{ p: 5, textAlign: 'center' }}>
               <ReceiptLongOutlined sx={{ fontSize: 40, color: '#94a3b8', mb: 1 }} />
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#334155' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'text.secondary' }}>
                 Belum ada riwayat shift selesai
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -554,15 +554,15 @@ export function ShiftsPage() {
           ) : (
             <TableContainer>
               <Table size="medium">
-                <TableHead sx={{ bgcolor: '#f8fafc' }}>
+                <TableHead sx={{ bgcolor: 'background.default' }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 750, color: '#475569', fontSize: '0.75rem' }}>SESI & KASIR</TableCell>
-                    <TableCell sx={{ fontWeight: 750, color: '#475569', fontSize: '0.75rem' }}>WAKTU BUKA - TUTUP</TableCell>
-                    <TableCell sx={{ fontWeight: 750, color: '#475569', fontSize: '0.75rem' }} align="right">MODAL AWAL</TableCell>
-                    <TableCell sx={{ fontWeight: 750, color: '#475569', fontSize: '0.75rem' }} align="right">PENJUALAN TUNAI</TableCell>
-                    <TableCell sx={{ fontWeight: 750, color: '#475569', fontSize: '0.75rem' }} align="right">KAS FISIK DIHITUNG</TableCell>
-                    <TableCell sx={{ fontWeight: 750, color: '#475569', fontSize: '0.75rem' }} align="center">SELISIH KAS</TableCell>
-                    <TableCell sx={{ fontWeight: 750, color: '#475569', fontSize: '0.75rem' }} align="center">AKSI</TableCell>
+                    <TableCell sx={{ fontWeight: 750, color: 'text.secondary', fontSize: '0.75rem' }}>SESI & KASIR</TableCell>
+                    <TableCell sx={{ fontWeight: 750, color: 'text.secondary', fontSize: '0.75rem' }}>WAKTU BUKA - TUTUP</TableCell>
+                    <TableCell sx={{ fontWeight: 750, color: 'text.secondary', fontSize: '0.75rem' }} align="right">MODAL AWAL</TableCell>
+                    <TableCell sx={{ fontWeight: 750, color: 'text.secondary', fontSize: '0.75rem' }} align="right">PENJUALAN TUNAI</TableCell>
+                    <TableCell sx={{ fontWeight: 750, color: 'text.secondary', fontSize: '0.75rem' }} align="right">KAS FISIK DIHITUNG</TableCell>
+                    <TableCell sx={{ fontWeight: 750, color: 'text.secondary', fontSize: '0.75rem' }} align="center">SELISIH KAS</TableCell>
+                    <TableCell sx={{ fontWeight: 750, color: 'text.secondary', fontSize: '0.75rem' }} align="center">AKSI</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -574,7 +574,7 @@ export function ShiftsPage() {
                     return (
                       <TableRow key={s.id} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
                         <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 750, color: '#1e293b' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 750, color: 'text.primary' }}>
                             {s.cashier_name}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
@@ -582,7 +582,7 @@ export function ShiftsPage() {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="caption" sx={{ display: 'block', color: '#1e293b', fontWeight: 600 }}>
+                          <Typography variant="caption" sx={{ display: 'block', color: 'text.primary', fontWeight: 600 }}>
                             Buka: {formatDateTime(s.opened_at)}
                           </Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
@@ -590,12 +590,12 @@ export function ShiftsPage() {
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
-                          <Typography variant="body2" sx={{ fontWeight: 650, color: '#334155', fontSize: '0.86rem' }} className="tnum">
+                          <Typography variant="body2" sx={{ fontWeight: 650, color: 'text.secondary', fontSize: '0.86rem' }} className="tnum">
                             Rp {formatThousand(s.starting_cash_idr)}
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
-                          <Typography variant="body2" sx={{ fontWeight: 750, color: '#047857', fontSize: '0.88rem' }} className="tnum">
+                          <Typography variant="body2" sx={{ fontWeight: 750, color: 'success.main', fontSize: '0.88rem' }} className="tnum">
                             Rp {formatThousand(s.total_cash_sales_idr)}
                           </Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.72rem' }}>
@@ -603,7 +603,7 @@ export function ShiftsPage() {
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
-                          <Typography variant="body2" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '0.92rem' }} className="tnum">
+                          <Typography variant="body2" sx={{ fontWeight: 850, color: 'text.primary', fontSize: '0.92rem' }} className="tnum">
                             Rp {formatThousand(s.actual_cash_idr)}
                           </Typography>
                         </TableCell>
@@ -670,7 +670,7 @@ export function ShiftsPage() {
         }}
       >
         <form onSubmit={handleOpenShiftSubmit}>
-          <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.2rem', color: '#1e293b' }}>
+          <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.2rem', color: 'text.primary' }}>
             Buka Shift Kasir Baru
           </DialogTitle>
           <DialogContent sx={{ pt: 1.5 }}>
@@ -746,7 +746,7 @@ export function ShiftsPage() {
             <Button
               onClick={() => setOpenShiftModal(false)}
               disabled={openingSubmitting}
-              sx={{ fontWeight: 650, color: '#64748d' }}
+              sx={{ fontWeight: 650, color: 'text.secondary' }}
             >
               Batal
             </Button>
@@ -778,7 +778,7 @@ export function ShiftsPage() {
         }}
       >
         <form onSubmit={handleCloseShiftSubmit}>
-          <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.25rem', color: '#1e293b' }}>
+          <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.25rem', color: 'text.primary' }}>
             Tutup Shift & Rekonsiliasi Kas Fisik
           </DialogTitle>
           <DialogContent sx={{ pt: 1.5 }}>
@@ -796,12 +796,13 @@ export function ShiftsPage() {
                     sx={{
                       p: 2,
                       borderRadius: '10px',
-                      border: '1px solid #e2e8f0',
-                      bgcolor: '#fafafa',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      bgcolor: 'background.default',
                     }}
                   >
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 750, color: '#1e293b' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 750, color: 'text.primary' }}>
                         Kalkulator Pecahan Uang Fisik
                       </Typography>
                       <Button
@@ -827,7 +828,7 @@ export function ShiftsPage() {
                               alignItems="center"
                               justifyContent="space-between"
                             >
-                              <Typography variant="body2" sx={{ fontWeight: 700, width: 90, color: '#334155' }}>
+                              <Typography variant="body2" sx={{ fontWeight: 700, width: 90, color: 'text.secondary' }}>
                                 Rp {formatThousand(denom)}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
@@ -847,7 +848,7 @@ export function ShiftsPage() {
                               </Typography>
                               <Typography
                                 variant="body2"
-                                sx={{ fontWeight: 700, width: 110, textAlign: 'right', color: '#1e293b' }}
+                                sx={{ fontWeight: 700, width: 110, textAlign: 'right', color: 'text.primary' }}
                               >
                                 Rp {formatThousand(subtotal)}
                               </Typography>
@@ -859,7 +860,7 @@ export function ShiftsPage() {
 
                         {/* Coins */}
                         <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between">
-                          <Typography variant="body2" sx={{ fontWeight: 700, width: 90, color: '#334155' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 700, width: 90, color: 'text.secondary' }}>
                             Koin / Logam
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
@@ -897,10 +898,10 @@ export function ShiftsPage() {
                     <Divider sx={{ my: 1.5 }} />
 
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary' }}>
                         TOTAL KAS FISIK DIHITUNG:
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 850, color: '#047857' }}>
+                      <Typography variant="h6" sx={{ fontWeight: 850, color: 'success.main' }}>
                         Rp {formatThousand(actualCountedCash)}
                       </Typography>
                     </Stack>
@@ -914,11 +915,12 @@ export function ShiftsPage() {
                       sx={{
                         p: 2,
                         borderRadius: '10px',
-                        border: '1px solid #e2e8f0',
-                        bgcolor: '#f8fafc',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: 'background.default',
                       }}
                     >
-                      <Typography variant="subtitle2" sx={{ fontWeight: 750, color: '#475569', mb: 1.5 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 750, color: 'text.secondary', mb: 1.5 }}>
                         Perhitungan Sistem POS
                       </Typography>
 
@@ -936,7 +938,7 @@ export function ShiftsPage() {
                           <Typography variant="body2" color="text.secondary">
                             Penjualan Tunai:
                           </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#047857' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main' }}>
                             + Rp {formatThousand(cashSales)}
                           </Typography>
                         </Stack>
@@ -944,19 +946,19 @@ export function ShiftsPage() {
                         <Divider sx={{ my: 0.5 }} />
 
                         <Stack direction="row" justifyContent="space-between">
-                          <Typography variant="body2" sx={{ fontWeight: 800, color: '#1e293b' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.primary' }}>
                             Estimasi Kas Sistem:
                           </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 800, color: '#1e293b' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.primary' }}>
                             Rp {formatThousand(expectedCashInDrawer)}
                           </Typography>
                         </Stack>
 
                         <Stack direction="row" justifyContent="space-between">
-                          <Typography variant="body2" sx={{ fontWeight: 800, color: '#047857' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: 'success.main' }}>
                             Kas Fisik Dihitung:
                           </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 800, color: '#047857' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: 'success.main' }}>
                             Rp {formatThousand(actualCountedCash)}
                           </Typography>
                         </Stack>
@@ -978,10 +980,10 @@ export function ShiftsPage() {
                             : '#ef4444',
                         bgcolor:
                           cashDifference === 0
-                            ? '#ecfdf5'
+                            ? 'success.light'
                             : cashDifference > 0
-                            ? '#eff6ff'
-                            : '#fef2f2',
+                            ? 'info.light'
+                            : 'error.light',
                       }}
                     >
                       <Stack direction="row" spacing={1.5} alignItems="center">
@@ -1000,10 +1002,10 @@ export function ShiftsPage() {
                               fontWeight: 800,
                               color:
                                 cashDifference === 0
-                                  ? '#065f46'
+                                  ? 'success.main'
                                   : cashDifference > 0
-                                  ? '#1d4ed8'
-                                  : '#b91c1c',
+                                  ? 'info.main'
+                                  : 'error.main',
                             }}
                           >
                             {cashDifference === 0
@@ -1018,10 +1020,10 @@ export function ShiftsPage() {
                               fontWeight: 850,
                               color:
                                 cashDifference === 0
-                                  ? '#065f46'
+                                  ? 'success.main'
                                   : cashDifference > 0
-                                  ? '#1d4ed8'
-                                  : '#b91c1c',
+                                  ? 'info.main'
+                                  : 'error.main',
                             }}
                           >
                             {cashDifference === 0
@@ -1050,11 +1052,11 @@ export function ShiftsPage() {
             </Stack>
           </DialogContent>
 
-          <DialogActions sx={{ px: 3, pb: 2.5, pt: 1.5, borderTop: '1px solid #f1f5f9' }}>
+          <DialogActions sx={{ px: 3, pb: 2.5, pt: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
             <Button
               onClick={() => setCloseShiftModal(false)}
               disabled={closingSubmitting}
-              sx={{ fontWeight: 650, color: '#64748d' }}
+              sx={{ fontWeight: 650, color: 'text.secondary' }}
             >
               Batal
             </Button>
@@ -1082,13 +1084,11 @@ export function ShiftsPage() {
         PaperProps={{
           sx: {
             borderRadius: '12px',
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-            bgcolor: '#fafafa',
+            boxShadow: 'none',
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.15rem', color: '#1e293b' }}>
+        <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.15rem', color: 'text.primary' }}>
           Struk Z-Report Shift Kasir
         </DialogTitle>
         <DialogContent sx={{ pt: 1 }}>
@@ -1097,8 +1097,9 @@ export function ShiftsPage() {
               elevation={0}
               sx={{
                 p: 2.5,
-                bgcolor: '#ffffff',
-                border: '1px dashed #cbd5e1',
+                bgcolor: 'background.default',
+                border: '1px dashed',
+                borderColor: 'divider',
                 borderRadius: '8px',
                 fontFamily: '"Courier New", Courier, monospace',
                 fontSize: '0.82rem',
@@ -1109,10 +1110,10 @@ export function ShiftsPage() {
                 <Typography sx={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.05em' }}>
                   {activeTenant.name.toUpperCase()}
                 </Typography>
-                <Typography sx={{ fontSize: '0.72rem', color: '#64748d' }}>
+                <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
                   LAPORAN Z-REPORT PENUTUPAN SHIFT
                 </Typography>
-                <Typography sx={{ fontSize: '0.72rem', color: '#64748d' }}>
+                <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
                   ID: {selectedZReportShift.id}
                 </Typography>
               </Box>
@@ -1183,10 +1184,10 @@ export function ShiftsPage() {
                     fontWeight: 800,
                     color:
                       selectedZReportShift.cash_difference_idr === 0
-                        ? '#047857'
+                        ? 'success.main'
                         : selectedZReportShift.cash_difference_idr > 0
-                        ? '#1d4ed8'
-                        : '#b91c1c',
+                        ? 'info.main'
+                        : 'error.main',
                   }}
                 >
                   <span>Selisih Kas:</span>
@@ -1203,14 +1204,14 @@ export function ShiftsPage() {
               {selectedZReportShift.notes && (
                 <>
                   <Divider sx={{ borderStyle: 'dashed', my: 1.5 }} />
-                  <Typography sx={{ fontSize: '0.72rem', color: '#64748d' }}>
+                  <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
                     Catatan: {selectedZReportShift.notes}
                   </Typography>
                 </>
               )}
 
-              <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed #cbd5e1', textAlign: 'center' }}>
-                <Typography sx={{ fontSize: '0.72rem', color: '#64748d', mb: 3 }}>
+              <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed', borderColor: 'divider', textAlign: 'center' }}>
+                <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', mb: 3 }}>
                   Tanda Tangan Kasir Bertugas
                 </Typography>
                 <Typography sx={{ fontSize: '0.75rem', fontWeight: 700 }}>
@@ -1220,8 +1221,8 @@ export function ShiftsPage() {
             </Paper>
           )}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5, pt: 1.5, borderTop: '1px solid #f1f5f9' }}>
-          <Button onClick={() => setZReportModal(false)} sx={{ fontWeight: 650, color: '#64748d' }}>
+        <DialogActions sx={{ px: 3, pb: 2.5, pt: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
+          <Button onClick={() => setZReportModal(false)} sx={{ fontWeight: 650, color: 'text.secondary' }}>
             Tutup
           </Button>
           <Button

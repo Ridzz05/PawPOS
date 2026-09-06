@@ -156,9 +156,9 @@ export function DashboardPage() {
         sx={{
           p: { xs: 2.5, md: 3 },
           borderRadius: '16px',
-          border: '1px solid #FFE3CC',
-          background: 'linear-gradient(135deg, #FFFFFF 0%, #FFF8F3 60%, #FFF2E8 100%)',
-          boxShadow: '0 4px 20px rgba(255, 138, 61, 0.08)',
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -186,9 +186,10 @@ export function DashboardPage() {
                 label={`PAKET: ${activeTenant.plan_type.toUpperCase()}`}
                 size="small"
                 sx={{
-                  bgcolor: '#FFF5ED',
-                  color: '#FF8A3D',
-                  border: '1px solid #FFE3CC',
+                  bgcolor: 'warning.light',
+                  color: 'primary.main',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   fontWeight: 800,
                   fontSize: '0.68rem',
                   borderRadius: '6px',
@@ -198,9 +199,10 @@ export function DashboardPage() {
                 label={`OPERATOR: ${activeStaff.name} (${activeStaff.role.toUpperCase()})`}
                 size="small"
                 sx={{
-                  bgcolor: '#f1f5f9',
-                  color: '#475569',
-                  border: '1px solid #cbd5e1',
+                  bgcolor: 'background.default',
+                  color: 'text.secondary',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   fontWeight: 700,
                   fontSize: '0.68rem',
                   borderRadius: '6px',
@@ -212,7 +214,7 @@ export function DashboardPage() {
               variant="h4"
               sx={{
                 fontWeight: 850,
-                color: '#0f172a',
+                color: 'text.primary',
                 letterSpacing: '-0.03em',
                 fontSize: { xs: '1.45rem', md: '1.85rem' },
                 lineHeight: 1.2,
@@ -240,12 +242,8 @@ export function DashboardPage() {
               sx={{
                 px: 3,
                 py: 1.25,
-                bgcolor: '#FF8A3D',
-                color: '#ffffff',
                 fontWeight: 800,
                 borderRadius: '10px',
-                boxShadow: '0 4px 16px rgba(255, 138, 61, 0.35)',
-                '&:hover': { bgcolor: '#e67328' },
                 width: { xs: '100%', sm: 'auto' },
               }}
             >
@@ -261,12 +259,8 @@ export function DashboardPage() {
               sx={{
                 px: 2.5,
                 py: 1.25,
-                borderColor: '#cbd5e1',
-                color: '#334155',
-                bgcolor: '#ffffff',
                 fontWeight: 750,
                 borderRadius: '10px',
-                '&:hover': { borderColor: '#FF8A3D', color: '#FF8A3D', bgcolor: '#FFF5ED' },
                 width: { xs: '100%', sm: 'auto' },
               }}
             >
@@ -290,14 +284,14 @@ export function DashboardPage() {
           sx={{
             borderRadius: '14px',
             border: '1px solid #e2e8f0',
-            bgcolor: '#ffffff',
+            bgcolor: 'background.paper',
             transition: 'border-color 120ms ease, background-color 120ms ease',
             '&:hover': { borderColor: '#cbd5e1' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', letterSpacing: '0.04em' }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.04em' }}>
                 TOTAL PENJUALAN TRANSAKSI
               </Typography>
               <Box
@@ -317,7 +311,7 @@ export function DashboardPage() {
               </Box>
             </Stack>
 
-            <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', mb: 0.5 }}>
+            <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', letterSpacing: '-0.02em', mb: 0.5 }}>
               {isLoadingData ? <CircularProgress size={24} sx={{ color: '#FF8A3D' }} /> : formatCurrency(totalRevenue)}
             </Typography>
 
@@ -333,7 +327,7 @@ export function DashboardPage() {
                   height: 20,
                 }}
               />
-              <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.74rem' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.74rem' }}>
                 {splitSales > 0 ? `(${formatCurrency(splitSales)} Split)` : 'Tunai & QRIS'}
               </Typography>
             </Stack>
@@ -346,14 +340,14 @@ export function DashboardPage() {
           sx={{
             borderRadius: '14px',
             border: '1px solid #e2e8f0',
-            bgcolor: '#ffffff',
+            bgcolor: 'background.paper',
             transition: 'border-color 120ms ease, background-color 120ms ease',
             '&:hover': { borderColor: '#cbd5e1' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', letterSpacing: '0.04em' }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.04em' }}>
                 KAS LACI & SESI SHIFT
               </Typography>
               <Box
@@ -374,13 +368,13 @@ export function DashboardPage() {
               </Box>
             </Stack>
 
-            <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', mb: 0.5 }}>
+            <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', letterSpacing: '-0.02em', mb: 0.5 }}>
               {isLoadingData ? <CircularProgress size={24} sx={{ color: '#059669' }} /> : formatCurrency(expectedCashInDrawer)}
             </Typography>
 
             <Stack direction="row" spacing={1} alignItems="center">
               <span className={isShiftActive ? 'status-dot-active' : 'status-dot-neutral'} />
-              <Typography variant="caption" sx={{ fontWeight: 750, color: isShiftActive ? '#059669' : '#64748b', fontSize: '0.74rem' }}>
+              <Typography variant="caption" sx={{ fontWeight: 750, color: isShiftActive ? 'success.main' : 'text.secondary', fontSize: '0.74rem' }}>
                 {isShiftActive ? `Shift Aktif • ${activeCashierName}` : 'Shift Belum Dibuka'}
               </Typography>
             </Stack>
@@ -393,14 +387,14 @@ export function DashboardPage() {
           sx={{
             borderRadius: '14px',
             border: '1px solid #e2e8f0',
-            bgcolor: '#ffffff',
+            bgcolor: 'background.paper',
             transition: 'border-color 120ms ease, background-color 120ms ease',
             '&:hover': { borderColor: '#cbd5e1' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', letterSpacing: '0.04em' }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.04em' }}>
                 KATALOG MASTER SKU
               </Typography>
               <Box
@@ -420,7 +414,7 @@ export function DashboardPage() {
               </Box>
             </Stack>
 
-            <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', mb: 0.5 }}>
+            <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', letterSpacing: '-0.02em', mb: 0.5 }}>
               {isLoadingData ? <CircularProgress size={24} sx={{ color: '#2563eb' }} /> : `${products.length} SKU`}
             </Typography>
 
@@ -436,7 +430,7 @@ export function DashboardPage() {
                   height: 20,
                 }}
               />
-              <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.74rem' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.74rem' }}>
                 WebP Optimizer Aktif
               </Typography>
             </Stack>
@@ -449,14 +443,14 @@ export function DashboardPage() {
           sx={{
             borderRadius: '14px',
             border: '1px solid #e2e8f0',
-            bgcolor: '#ffffff',
+            bgcolor: 'background.paper',
             transition: 'border-color 120ms ease, background-color 120ms ease',
             '&:hover': { borderColor: '#cbd5e1' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', letterSpacing: '0.04em' }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.04em' }}>
                 STATUS INVENTORI FISIK
               </Typography>
               <Box
@@ -477,7 +471,7 @@ export function DashboardPage() {
               </Box>
             </Stack>
 
-            <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', mb: 0.5 }}>
+            <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', letterSpacing: '-0.02em', mb: 0.5 }}>
               {isLoadingData ? <CircularProgress size={24} sx={{ color: '#16a34a' }} /> : `${totalStockUnits} Pcs`}
             </Typography>
 
@@ -493,7 +487,7 @@ export function DashboardPage() {
                   height: 20,
                 }}
               />
-              <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.74rem' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.74rem' }}>
                 Gudang Toko Utama
               </Typography>
             </Stack>
@@ -520,12 +514,12 @@ export function DashboardPage() {
               p: { xs: 2.5, sm: 3 },
               borderRadius: '16px',
               border: '1px solid #e2e8f0',
-              bgcolor: '#ffffff',
+              bgcolor: 'background.paper',
             }}
           >
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', fontSize: '1.05rem' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', fontSize: '1.05rem' }}>
                   Transaksi Penjualan Terkini
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -548,13 +542,14 @@ export function DashboardPage() {
                 sx={{
                   p: 4,
                   textAlign: 'center',
-                  border: '1px dashed #cbd5e1',
+                  border: '1px dashed',
+                  borderColor: 'divider',
                   borderRadius: '12px',
-                  bgcolor: '#f8fafc',
+                  bgcolor: 'background.default',
                 }}
               >
-                <ReceiptLongOutlined sx={{ fontSize: 36, color: '#94a3b8', mb: 1 }} />
-                <Typography sx={{ fontWeight: 750, color: '#1e293b', mb: 0.5 }}>
+                <ReceiptLongOutlined sx={{ fontSize: 36, color: 'text.disabled', mb: 1 }} />
+                <Typography sx={{ fontWeight: 750, color: 'text.primary', mb: 0.5 }}>
                   Belum ada ringkasan operasional
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420, mx: 'auto', mb: 2, fontSize: '0.82rem' }}>
@@ -566,20 +561,20 @@ export function DashboardPage() {
                   variant="contained"
                   size="small"
                   startIcon={<PointOfSaleOutlined />}
-                  sx={{ borderRadius: '8px', bgcolor: '#FF8A3D', fontWeight: 750 }}
+                  sx={{ borderRadius: '8px', fontWeight: 750 }}
                 >
                   Buka Kasir Sekarang
                 </Button>
               </Box>
             ) : (
-              <TableContainer sx={{ border: '1px solid #f1f5f9', borderRadius: '10px' }}>
+              <TableContainer sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '10px' }}>
                 <Table size="small">
-                  <TableHead sx={{ bgcolor: '#f8fafc' }}>
+                  <TableHead sx={{ bgcolor: 'background.default' }}>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 800, fontSize: '0.74rem', color: '#64748b' }}>NO. STRUK</TableCell>
-                      <TableCell sx={{ fontWeight: 800, fontSize: '0.74rem', color: '#64748b' }}>METODE</TableCell>
-                      <TableCell sx={{ fontWeight: 800, fontSize: '0.74rem', color: '#64748b' }}>WAKTU</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 800, fontSize: '0.74rem', color: '#64748b' }}>TOTAL FINAL</TableCell>
+                      <TableCell sx={{ fontWeight: 800, fontSize: '0.74rem', color: 'text.secondary' }}>NO. STRUK</TableCell>
+                      <TableCell sx={{ fontWeight: 800, fontSize: '0.74rem', color: 'text.secondary' }}>METODE</TableCell>
+                      <TableCell sx={{ fontWeight: 800, fontSize: '0.74rem', color: 'text.secondary' }}>WAKTU</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 800, fontSize: '0.74rem', color: 'text.secondary' }}>TOTAL FINAL</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -588,7 +583,7 @@ export function DashboardPage() {
                       const isQris = order.payment_method === 'qris'
                       return (
                         <TableRow key={order.id} hover sx={{ '&:last-child td': { border: 0 } }}>
-                          <TableCell sx={{ fontWeight: 750, fontSize: '0.82rem', color: '#0f172a' }}>
+                          <TableCell sx={{ fontWeight: 750, fontSize: '0.82rem', color: 'text.primary' }}>
                             {order.order_number || `#${order.id.slice(0, 8)}`}
                           </TableCell>
                           <TableCell>
@@ -606,10 +601,10 @@ export function DashboardPage() {
                               }}
                             />
                           </TableCell>
-                          <TableCell sx={{ fontSize: '0.78rem', color: '#64748b' }}>
+                          <TableCell sx={{ fontSize: '0.78rem', color: 'text.secondary' }}>
                             {new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                           </TableCell>
-                          <TableCell align="right" sx={{ fontWeight: 800, fontSize: '0.84rem', color: '#0f172a' }}>
+                          <TableCell align="right" sx={{ fontWeight: 800, fontSize: '0.84rem', color: 'text.primary' }}>
                             {formatCurrency(order.total_idr)}
                           </TableCell>
                         </TableRow>
@@ -628,13 +623,11 @@ export function DashboardPage() {
             sx={{
               p: { xs: 2.5, sm: 3 },
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
-              bgcolor: '#ffffff',
             }}
           >
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', fontSize: '1.05rem' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', fontSize: '1.05rem' }}>
                   Pemantauan Stok Gudang
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -669,8 +662,8 @@ export function DashboardPage() {
                         p: 1.5,
                         borderRadius: '10px',
                         border: '1px solid',
-                        borderColor: isLow ? '#fecaca' : '#f1f5f9',
-                        bgcolor: isLow ? '#fffbfb' : '#ffffff',
+                        borderColor: 'divider',
+                        bgcolor: 'background.default',
                         display: 'flex',
                         flexDirection: { xs: 'column', sm: 'row' },
                         alignItems: { xs: 'flex-start', sm: 'center' },
@@ -680,7 +673,7 @@ export function DashboardPage() {
                     >
                       <Box sx={{ minWidth: 0, flex: 1 }}>
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <Typography sx={{ fontWeight: 750, fontSize: '0.88rem', color: '#0f172a' }} noWrap>
+                          <Typography sx={{ fontWeight: 750, fontSize: '0.88rem', color: 'text.primary' }} noWrap>
                             {stock.product_name}
                           </Typography>
                           <Chip
@@ -696,10 +689,10 @@ export function DashboardPage() {
 
                       <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
                         <Box sx={{ minWidth: 90, textAlign: 'right' }}>
-                          <Typography sx={{ fontWeight: 850, fontSize: '0.94rem', color: isLow ? '#dc2626' : '#16a34a' }}>
+                          <Typography sx={{ fontWeight: 850, fontSize: '0.94rem', color: isLow ? 'error.main' : 'success.main' }}>
                             {stock.quantity} {stock.base_unit}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: isLow ? '#dc2626' : '#64748b', fontSize: '0.68rem', fontWeight: 700 }}>
+                          <Typography variant="caption" sx={{ color: isLow ? 'error.main' : 'text.secondary', fontSize: '0.68rem', fontWeight: 700 }}>
                             {isLow ? '⚠️ Perlu Restock' : '✓ Stok Aman'}
                           </Typography>
                         </Box>
@@ -737,9 +730,6 @@ export function DashboardPage() {
             sx={{
               p: 2.5,
               borderRadius: '16px',
-              border: '1px solid #FFE3CC',
-              bgcolor: '#FFFDFB',
-              boxShadow: '0 4px 16px rgba(255, 138, 61, 0.08)',
             }}
           >
             <Stack direction="row" spacing={1.75} alignItems="center" sx={{ mb: 2 }}>
@@ -750,12 +740,12 @@ export function DashboardPage() {
                   width: 52,
                   height: 52,
                   border: '2px solid #FF8A3D',
-                  bgcolor: '#ffffff',
+                  bgcolor: 'background.paper',
                 }}
               />
               <Box sx={{ flex: 1 }}>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography sx={{ fontWeight: 850, color: '#0f172a', fontSize: '1rem' }}>
+                  <Typography sx={{ fontWeight: 850, color: 'text.primary', fontSize: '1rem' }}>
                     PawPOS AI Copilot
                   </Typography>
                   <span className="status-dot-active" />
@@ -766,7 +756,7 @@ export function DashboardPage() {
               </Box>
             </Stack>
 
-            <Typography variant="body2" sx={{ color: '#475569', mb: 2, fontSize: '0.82rem', lineHeight: 1.5 }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2, fontSize: '0.82rem', lineHeight: 1.5 }}>
               Tanyakan ketersediaan stok pakan, panduan transaksi campuran, atau resep nutrisi hewan tanpa meninggalkan kasir:
             </Typography>
 
@@ -779,16 +769,12 @@ export function DashboardPage() {
                   sx={{
                     justifyContent: 'flex-start',
                     textAlign: 'left',
-                    borderColor: '#FFE3CC',
-                    bgcolor: '#ffffff',
-                    color: '#1e293b',
                     fontWeight: 700,
                     borderRadius: '8px',
                     py: 0.85,
                     px: 1.5,
                     fontSize: '0.8rem',
                     textTransform: 'none',
-                    '&:hover': { bgcolor: '#FFF5ED', borderColor: '#FF8A3D' },
                   }}
                 >
                   <span style={{ marginRight: 8 }}>{item.icon}</span>
@@ -805,20 +791,17 @@ export function DashboardPage() {
             sx={{
               p: 2.5,
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
-              bgcolor: '#ffffff',
             }}
           >
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'text.primary' }}>
                 Kotak Kas Laci Kasir
               </Typography>
               <Chip
                 label={isShiftActive ? 'Shift Terbuka' : 'Tutup'}
                 size="small"
+                color={isShiftActive ? 'success' : 'default'}
                 sx={{
-                  bgcolor: isShiftActive ? '#ecfdf5' : '#f1f5f9',
-                  color: isShiftActive ? '#059669' : '#64748b',
                   fontWeight: 800,
                   fontSize: '0.68rem',
                 }}
@@ -828,19 +811,19 @@ export function DashboardPage() {
             <Stack spacing={1.25}>
               <Stack direction="row" justifyContent="space-between" sx={{ fontSize: '0.82rem' }}>
                 <Typography variant="body2" color="text.secondary">Modal Kas Awal:</Typography>
-                <Typography fontWeight={750} color="#0f172a">
+                <Typography fontWeight={750} color="text.primary">
                   {formatCurrency(currentShift?.starting_cash_idr || 0)}
                 </Typography>
               </Stack>
               <Stack direction="row" justifyContent="space-between" sx={{ fontSize: '0.82rem' }}>
                 <Typography variant="body2" color="text.secondary">Penjualan Kas Tunai Masuk:</Typography>
-                <Typography fontWeight={750} color="#16a34a">
+                <Typography fontWeight={750} color="success.main">
                   +{formatCurrency(currentShift?.total_cash_sales_idr || cashSales)}
                 </Typography>
               </Stack>
               <Divider sx={{ my: 0.5 }} />
               <Stack direction="row" justifyContent="space-between" sx={{ fontSize: '0.9rem' }}>
-                <Typography fontWeight={800} color="#0f172a">Ekspektasi Kas Fisik Laci:</Typography>
+                <Typography fontWeight={800} color="text.primary">Ekspektasi Kas Fisik Laci:</Typography>
                 <Typography fontWeight={900} color="#FF8A3D">
                   {formatCurrency(expectedCashInDrawer)}
                 </Typography>
@@ -857,7 +840,7 @@ export function DashboardPage() {
                 mt: 2,
                 borderRadius: '8px',
                 borderColor: '#cbd5e1',
-                color: '#334155',
+                color: 'text.secondary',
                 fontWeight: 750,
                 textTransform: 'none',
                 '&:hover': { borderColor: '#FF8A3D', color: '#FF8A3D', bgcolor: '#FFF5ED' },
@@ -875,10 +858,10 @@ export function DashboardPage() {
               p: 2.5,
               borderRadius: '16px',
               border: '1px solid #e2e8f0',
-              bgcolor: '#ffffff',
+              bgcolor: 'background.paper',
             }}
           >
-            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a', mb: 1.5 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'text.primary', mb: 1.5 }}>
               Jalan Pintas Terminal
             </Typography>
 
@@ -893,7 +876,7 @@ export function DashboardPage() {
                   gap: 0.5,
                   borderRadius: '10px',
                   borderColor: '#e2e8f0',
-                  color: '#1e293b',
+                  color: 'text.primary',
                   fontWeight: 750,
                   fontSize: '0.78rem',
                   textTransform: 'none',
@@ -914,7 +897,7 @@ export function DashboardPage() {
                   gap: 0.5,
                   borderRadius: '10px',
                   borderColor: '#e2e8f0',
-                  color: '#1e293b',
+                  color: 'text.primary',
                   fontWeight: 750,
                   fontSize: '0.78rem',
                   textTransform: 'none',
@@ -935,7 +918,7 @@ export function DashboardPage() {
                   gap: 0.5,
                   borderRadius: '10px',
                   borderColor: '#e2e8f0',
-                  color: '#1e293b',
+                  color: 'text.primary',
                   fontWeight: 750,
                   fontSize: '0.78rem',
                   textTransform: 'none',
@@ -956,7 +939,7 @@ export function DashboardPage() {
                   gap: 0.5,
                   borderRadius: '10px',
                   borderColor: '#e2e8f0',
-                  color: '#1e293b',
+                  color: 'text.primary',
                   fontWeight: 750,
                   fontSize: '0.78rem',
                   textTransform: 'none',
@@ -979,7 +962,7 @@ export function DashboardPage() {
           py: 1,
           borderRadius: '8px',
           border: '1px solid #e2e8f0',
-          bgcolor: '#ffffff',
+          bgcolor: 'background.paper',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -989,7 +972,7 @@ export function DashboardPage() {
       >
         <Stack direction="row" spacing={1} alignItems="center">
           <span className={healthState === 'ready' ? 'status-dot-active' : healthState === 'error' ? 'status-dot-neutral' : 'status-dot-pending'} />
-          <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.74rem' }}>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.74rem' }}>
             {healthState === 'ready'
               ? 'Backend Cloud POS Terkoneksi & Siap Transaksi'
               : healthState === 'error'
@@ -1004,7 +987,7 @@ export function DashboardPage() {
               req: {requestId.slice(0, 16)}...
             </Typography>
           )}
-          <IconButton size="small" onClick={loadAllDashboardData} sx={{ p: 0.5, color: '#64748b' }}>
+          <IconButton size="small" onClick={loadAllDashboardData} sx={{ p: 0.5, color: 'text.secondary' }}>
             <RefreshOutlined sx={{ fontSize: 16 }} />
           </IconButton>
         </Stack>

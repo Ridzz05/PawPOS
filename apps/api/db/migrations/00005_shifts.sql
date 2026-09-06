@@ -22,10 +22,3 @@ CREATE INDEX IF NOT EXISTS cashier_shifts_tenant_opened_idx ON cashier_shifts(te
 
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS shift_id UUID REFERENCES cashier_shifts(id) ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS orders_shift_id_idx ON orders(shift_id);
-
--- +goose Down
-DROP INDEX IF EXISTS orders_shift_id_idx;
-ALTER TABLE orders DROP COLUMN IF EXISTS shift_id;
-DROP INDEX IF EXISTS cashier_shifts_tenant_opened_idx;
-DROP INDEX IF EXISTS cashier_shifts_tenant_status_idx;
-DROP TABLE IF EXISTS cashier_shifts;

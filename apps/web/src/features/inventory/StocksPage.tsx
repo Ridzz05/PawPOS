@@ -405,7 +405,7 @@ export function StocksPage() {
               fontSize: { xs: '1.6rem', md: '2.1rem' },
               fontWeight: 800,
               letterSpacing: '-0.03em',
-              color: '#0f172a',
+              color: 'text.primary',
               lineHeight: 1.2,
             }}
           >
@@ -431,7 +431,7 @@ export function StocksPage() {
                 value={selectedLocationId}
                 label="Filter Lokasi"
                 onChange={(e) => setSelectedLocationId(e.target.value)}
-                sx={{ borderRadius: '8px', bgcolor: '#ffffff' }}
+                sx={{ borderRadius: '8px' }}
               >
                 <MenuItem value="">Semua Lokasi</MenuItem>
                 {locations.map((loc) => (
@@ -455,10 +455,9 @@ export function StocksPage() {
                   px: 2,
                   borderRadius: '8px',
                   fontWeight: 750,
-                  bgcolor: '#f0fdf4',
-                  borderColor: '#86efac',
-                  color: '#15803d',
-                  '&:hover': { bgcolor: '#dcfce7', borderColor: '#4ade80' },
+                  borderColor: 'success.main',
+                  color: 'success.main',
+                  '&:hover': { bgcolor: 'success.light', borderColor: 'success.main' },
                 }}
               >
                 + Barang Masuk
@@ -474,10 +473,9 @@ export function StocksPage() {
                   px: 2,
                   borderRadius: '8px',
                   fontWeight: 750,
-                  bgcolor: '#fff1f2',
-                  borderColor: '#fecdd3',
-                  color: '#be123c',
-                  '&:hover': { bgcolor: '#ffe4e6', borderColor: '#fda4af' },
+                  borderColor: 'error.main',
+                  color: 'error.main',
+                  '&:hover': { bgcolor: 'error.light', borderColor: 'error.main' },
                 }}
               >
                 - Barang Keluar
@@ -503,14 +501,14 @@ export function StocksPage() {
               label="Mode Baca (Hanya Lihat)"
               size="small"
               variant="outlined"
-              sx={{ fontWeight: 700, borderColor: '#cbd5e1', color: '#64748d' }}
+              sx={{ fontWeight: 700, borderColor: '#cbd5e1', color: 'text.secondary' }}
             />
           )}
         </Stack>
       </Stack>
 
       {/* Tabs Switcher */}
-      <Box sx={{ borderBottom: 1, borderColor: '#e2e8f0' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs
           value={activeTab}
           onChange={(_, val) => setActiveTab(val)}
@@ -560,10 +558,10 @@ export function StocksPage() {
           <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
                   TOTAL SKU TERCATAT
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
                   {stockSummary.totalItems} Produk
                 </Typography>
               </Box>
@@ -574,7 +572,7 @@ export function StocksPage() {
           <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
                   STOK AMAN
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 850, color: '#047857', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
@@ -588,14 +586,14 @@ export function StocksPage() {
           <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
                   PERLU RESTOCK / MENIPIS
                 </Typography>
                 <Typography
                   variant="h6"
                   sx={{
                     fontWeight: 850,
-                    color: stockSummary.lowStock > 0 ? '#dc2626' : '#0f172a',
+                    color: stockSummary.lowStock > 0 ? 'error.main' : 'text.primary',
                     mt: 0.25,
                     fontSize: '1.35rem',
                     letterSpacing: '-0.025em',
@@ -648,10 +646,10 @@ export function StocksPage() {
           <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
                   FREKUENSI MUTASI TERCATAT
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
                   {movementSummary.totalCount} Pergerakan
                 </Typography>
               </Box>
@@ -665,7 +663,7 @@ export function StocksPage() {
       {status === 'loading' && (
         <Paper className="terminal-card" elevation={0} sx={{ p: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
           <RefreshOutlined className="loading-icon" />
-          <Typography sx={{ fontWeight: 650, color: '#334155' }}>Memuat data stok inventori...</Typography>
+          <Typography sx={{ fontWeight: 650, color: 'text.secondary' }}>Memuat data stok inventori...</Typography>
         </Paper>
       )}
 
@@ -703,8 +701,8 @@ export function StocksPage() {
                   width: 48,
                   height: 48,
                   borderRadius: '10px',
-                  bgcolor: '#f1f5f9',
-                  color: '#64748d',
+                  bgcolor: 'action.hover',
+                  color: 'text.secondary',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -714,7 +712,7 @@ export function StocksPage() {
               >
                 <Inventory2Outlined sx={{ fontSize: 24 }} />
               </Box>
-              <Typography variant="h6" sx={{ fontWeight: 750, color: '#1e293b', mb: 1, fontSize: '1.1rem' }}>
+              <Typography variant="h6" sx={{ fontWeight: 750, color: 'text.primary', mb: 1, fontSize: '1.1rem' }}>
                 Belum ada saldo stok tercatat
               </Typography>
               <Typography color="text.secondary" sx={{ maxWidth: 480, mx: 'auto', mb: 3, lineHeight: 1.6 }}>
@@ -769,7 +767,7 @@ export function StocksPage() {
                           hover
                           sx={{
                             transition: 'background-color 0.15s ease',
-                            '&:hover': { bgcolor: '#f8fafc' },
+                            '&:hover': { bgcolor: 'action.hover' },
                             '&:last-child td, &:last-child th': { border: 0 },
                           }}
                         >
@@ -778,14 +776,15 @@ export function StocksPage() {
                               variant="body2"
                               sx={{
                                 fontWeight: 750,
-                                bgcolor: '#f1f5f9',
+                                bgcolor: 'action.hover',
                                 px: 1.25,
                                 py: 0.35,
                                 borderRadius: '8px',
                                 display: 'inline-block',
                                 fontSize: '0.82rem',
-                                color: '#0f172a',
-                                border: '1px solid rgba(203, 213, 225, 0.8)',
+                                color: 'text.primary',
+                                border: '1px solid',
+                                borderColor: 'divider',
                                 letterSpacing: '0.02em',
                               }}
                             >
@@ -793,7 +792,7 @@ export function StocksPage() {
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontWeight: 750, color: '#0f172a', fontSize: '0.92rem', letterSpacing: '-0.015em' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '0.92rem', letterSpacing: '-0.015em' }}>
                               {s.product_name}
                             </Typography>
                             {s.minimum_stock > 0 && (
@@ -816,7 +815,7 @@ export function StocksPage() {
                               sx={{
                                 fontWeight: 850,
                                 fontSize: '0.96rem',
-                                color: s.quantity <= s.minimum_stock ? '#dc2626' : '#0f172a',
+                                color: s.quantity <= s.minimum_stock ? 'error.main' : 'text.primary',
                                 fontFeatureSettings: '"tnum"',
                                 letterSpacing: '-0.015em',
                               }}
@@ -865,7 +864,7 @@ export function StocksPage() {
                   value={movementFilterType}
                   label="Tipe Mutasi"
                   onChange={(e) => setMovementFilterType(e.target.value)}
-                  sx={{ borderRadius: '8px', bgcolor: '#ffffff' }}
+                  sx={{ borderRadius: '8px' }}
                 >
                   <MenuItem value="">Semua Tipe Mutasi</MenuItem>
                   <MenuItem value="purchase_receipt">Barang Masuk (Pembelian/Kulakan)</MenuItem>
@@ -883,9 +882,9 @@ export function StocksPage() {
                     labelId="movement-product-filter-label"
                     value={movementFilterProduct}
                     label="Filter Produk"
-                    onChange={(e) => setMovementFilterProduct(e.target.value)}
-                    sx={{ borderRadius: '8px', bgcolor: '#ffffff' }}
-                  >
+                  onChange={(e) => setMovementFilterProduct(e.target.value)}
+                  sx={{ borderRadius: '8px' }}
+                >
                     <MenuItem value="">Semua Produk</MenuItem>
                     {products.map((p) => (
                       <MenuItem key={p.id} value={p.id}>
@@ -905,7 +904,7 @@ export function StocksPage() {
                   setMovementFilterType('')
                   setMovementFilterProduct('')
                 }}
-                sx={{ textTransform: 'none', fontWeight: 700, color: '#64748d', whiteSpace: 'nowrap' }}
+                sx={{ textTransform: 'none', fontWeight: 700, color: 'text.secondary', whiteSpace: 'nowrap' }}
               >
                 Reset Filter
               </Button>
@@ -929,8 +928,8 @@ export function StocksPage() {
                   width: 48,
                   height: 48,
                   borderRadius: '10px',
-                  bgcolor: '#f1f5f9',
-                  color: '#64748d',
+                  bgcolor: 'action.hover',
+                  color: 'text.secondary',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -940,7 +939,7 @@ export function StocksPage() {
               >
                 <HistoryOutlined sx={{ fontSize: 24 }} />
               </Box>
-              <Typography variant="h6" sx={{ fontWeight: 750, color: '#1e293b', mb: 0.5, fontSize: '1.05rem' }}>
+              <Typography variant="h6" sx={{ fontWeight: 750, color: 'text.primary', mb: 0.5, fontSize: '1.05rem' }}>
                 Tidak ada riwayat mutasi stok ditemukan
               </Typography>
               <Typography color="text.secondary" variant="body2" sx={{ maxWidth: 460, mx: 'auto', mb: 2.5 }}>
@@ -1013,11 +1012,11 @@ export function StocksPage() {
                           hover
                           sx={{
                             transition: 'background-color 0.15s ease',
-                            '&:hover': { bgcolor: '#f8fafc' },
+                            '&:hover': { bgcolor: 'action.hover' },
                             '&:last-child td, &:last-child th': { border: 0 },
                           }}
                         >
-                          <TableCell sx={{ fontFeatureSettings: '"tnum"', color: '#475569', fontSize: '0.85rem' }}>
+                          <TableCell sx={{ fontFeatureSettings: '"tnum"', color: 'text.secondary', fontSize: '0.85rem' }}>
                             {formattedTime}
                           </TableCell>
                           <TableCell>{getMovementBadge(m.movement_type)}</TableCell>
@@ -1026,21 +1025,22 @@ export function StocksPage() {
                               variant="body2"
                               sx={{
                                 fontWeight: 750,
-                                bgcolor: '#f1f5f9',
+                                bgcolor: 'action.hover',
                                 px: 1,
                                 py: 0.25,
                                 borderRadius: '6px',
                                 display: 'inline-block',
                                 fontSize: '0.8rem',
-                                color: '#0f172a',
-                                border: '1px solid rgba(203, 213, 225, 0.8)',
+                                color: 'text.primary',
+                                border: '1px solid',
+                                borderColor: 'divider',
                               }}
                             >
                               {m.sku || 'SKU'}
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontWeight: 750, color: '#0f172a', fontSize: '0.9rem' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '0.9rem' }}>
                               {m.product_name || `Produk ${m.product_id}`}
                             </Typography>
                           </TableCell>
@@ -1053,7 +1053,7 @@ export function StocksPage() {
                               sx={{
                                 fontWeight: 850,
                                 fontSize: '0.95rem',
-                                color: isPositive ? '#047857' : '#dc2626',
+                                color: isPositive ? 'success.main' : 'error.main',
                                 fontFeatureSettings: '"tnum"',
                                 letterSpacing: '-0.015em',
                               }}
@@ -1100,7 +1100,7 @@ export function StocksPage() {
             }}
           >
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b', letterSpacing: '-0.02em', fontSize: '1.15rem' }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em', fontSize: '1.15rem' }}>
                 {movementType === 'purchase_receipt'
                   ? 'Catat Barang Masuk (Inbound)'
                   : movementType === 'sale'
@@ -1118,7 +1118,7 @@ export function StocksPage() {
             <IconButton
               aria-label="Tutup form"
               onClick={handleCloseDialog}
-              sx={{ position: 'absolute', right: 12, top: 12, color: '#64748d' }}
+              sx={{ position: 'absolute', right: 12, top: 12, color: 'text.secondary' }}
             >
               <CloseOutlined fontSize="small" />
             </IconButton>
@@ -1172,7 +1172,7 @@ export function StocksPage() {
                         <MenuItem key={p.id} value={p.id} sx={{ py: 1 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', gap: 1.5 }}>
                             <Box>
-                              <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', color: '#0f172a' }}>
+                              <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', color: 'text.primary' }}>
                                 {p.name}
                               </Typography>
                               <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
@@ -1209,22 +1209,22 @@ export function StocksPage() {
               {activeProduct && (
                 <Paper
                   variant="outlined"
-                  sx={{
-                    p: 1.75,
-                    borderRadius: '10px',
-                    bgcolor: isOverStock ? '#fff1f2' : '#f8fafc',
-                    borderColor: isOverStock ? '#fecdd3' : '#e2e8f0',
-                    transition: 'all 0.2s ease',
-                  }}
+                sx={{
+                  p: 1.75,
+                  borderRadius: '10px',
+                  bgcolor: isOverStock ? 'error.light' : 'background.default',
+                  borderColor: 'divider',
+                  transition: 'all 0.2s ease',
+                }}
                 >
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Box>
-                      <Typography variant="caption" sx={{ color: '#64748d', fontWeight: 700, letterSpacing: '0.04em' }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, letterSpacing: '0.04em' }}>
                         SALDO STOK SAAT INI ({activeLocation?.name || 'Toko Utama'})
                       </Typography>
                       <Typography
                         variant="body1"
-                        sx={{ fontWeight: 850, color: '#0f172a', fontFeatureSettings: '"tnum"', fontSize: '1.05rem' }}
+                        sx={{ fontWeight: 850, color: 'text.primary', fontFeatureSettings: '"tnum"', fontSize: '1.05rem' }}
                       >
                         {currentQty} {unit}
                       </Typography>
@@ -1234,14 +1234,14 @@ export function StocksPage() {
                       <>
                         <Typography sx={{ color: '#94a3b8', fontWeight: 800, fontSize: '1.1rem' }}>➔</Typography>
                         <Box sx={{ textAlign: 'right' }}>
-                          <Typography variant="caption" sx={{ color: '#64748d', fontWeight: 700, letterSpacing: '0.04em' }}>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, letterSpacing: '0.04em' }}>
                             {isOutbound ? 'ESTIMASI SISA STOK' : 'ESTIMASI STOK BARU'}
                           </Typography>
                           <Typography
                             variant="body1"
                             sx={{
                               fontWeight: 850,
-                              color: isOverStock ? '#dc2626' : '#047857',
+                              color: isOverStock ? 'error.main' : 'success.main',
                               fontFeatureSettings: '"tnum"',
                               fontSize: '1.05rem',
                             }}
@@ -1362,8 +1362,9 @@ export function StocksPage() {
                         fontWeight: 750,
                         fontSize: '0.75rem',
                         height: 24,
-                        bgcolor: '#f1f5f9',
-                        '&:hover': { bgcolor: '#e2e8f0' },
+                        bgcolor: 'action.hover',
+                        color: 'text.primary',
+                        '&:hover': { bgcolor: 'action.selected' },
                       }}
                     />
                   ))}
@@ -1377,9 +1378,9 @@ export function StocksPage() {
                         fontWeight: 700,
                         fontSize: '0.72rem',
                         height: 24,
-                        color: '#dc2626',
-                        bgcolor: '#fef2f2',
-                        '&:hover': { bgcolor: '#fee2e2' },
+                        color: 'error.main',
+                        bgcolor: 'error.light',
+                        '&:hover': { bgcolor: 'action.selected' },
                       }}
                     />
                   )}
@@ -1427,9 +1428,9 @@ export function StocksPage() {
             </Stack>
           </DialogContent>
 
-          <Divider sx={{ borderColor: 'rgba(226, 232, 240, 0.8)' }} />
+          <Divider sx={{ borderColor: 'divider' }} />
 
-          <DialogActions sx={{ p: 2, px: 2.5, gap: 1.5, bgcolor: '#f8fafc' }}>
+          <DialogActions sx={{ p: 2, px: 2.5, gap: 1.5 }}>
             <Button
               variant="outlined"
               color="inherit"

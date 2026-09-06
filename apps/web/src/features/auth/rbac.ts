@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-export type StaffRole = 'owner' | 'manager' | 'cashier' | 'warehouse'
+export type StaffRole = 'owner' | 'manager' | 'cashier' | 'warehouse' | 'staff_jasa'
 
 export interface StaffUser {
   id: string
@@ -51,6 +51,20 @@ export type Permission =
   | 'reconcile_shifts'
   | 'access_settings'
   | 'register_store'
+  | 'access_customers'
+  | 'manage_customers'
+  | 'access_services'
+  | 'manage_services'
+  | 'access_bookings'
+  | 'manage_bookings'
+  | 'access_medical'
+  | 'manage_medical'
+  | 'access_suppliers'
+  | 'manage_purchases'
+  | 'record_expense'
+  | 'view_reports'
+  | 'manage_promos'
+  | 'manage_staff'
 
 export interface RoleMeta {
   role: StaffRole
@@ -99,6 +113,15 @@ export const ROLE_DEFINITIONS: Record<StaffRole, RoleMeta> = {
     badgeBg: '#fff7ed',
     badgeColor: '#c2410c',
   },
+  staff_jasa: {
+    role: 'staff_jasa',
+    label: 'JASA',
+    title: 'Staf Jasa Grooming & Klinik',
+    description: 'Layanan grooming dan klinik hewan, booking antrean, rekam medis, dan data pelanggan terkait.',
+    color: '#0d9488',
+    badgeBg: '#f0fdfa',
+    badgeColor: '#0f766e',
+  },
 }
 
 export const ROLE_PERMISSIONS: Record<StaffRole, Set<Permission>> = {
@@ -115,6 +138,20 @@ export const ROLE_PERMISSIONS: Record<StaffRole, Set<Permission>> = {
     'reconcile_shifts',
     'access_settings',
     'register_store',
+    'access_customers',
+    'manage_customers',
+    'access_services',
+    'manage_services',
+    'access_bookings',
+    'manage_bookings',
+    'access_medical',
+    'manage_medical',
+    'access_suppliers',
+    'manage_purchases',
+    'record_expense',
+    'view_reports',
+    'manage_promos',
+    'manage_staff',
   ]),
   manager: new Set<Permission>([
     'access_dashboard',
@@ -127,18 +164,44 @@ export const ROLE_PERMISSIONS: Record<StaffRole, Set<Permission>> = {
     'access_shifts',
     'reconcile_shifts',
     'access_settings',
+    'access_customers',
+    'manage_customers',
+    'access_services',
+    'manage_services',
+    'access_bookings',
+    'manage_bookings',
+    'access_medical',
+    'manage_medical',
+    'access_suppliers',
+    'manage_purchases',
+    'record_expense',
+    'view_reports',
+    'manage_promos',
   ]),
   cashier: new Set<Permission>([
     'access_pos',
     'access_orders',
     'access_shifts',
     'reconcile_shifts',
+    'access_customers',
+    'access_services',
+    'access_bookings',
   ]),
   warehouse: new Set<Permission>([
     'access_dashboard',
     'access_products',
     'access_inventory',
     'record_stock_movement',
+    'access_suppliers',
+  ]),
+  staff_jasa: new Set<Permission>([
+    'access_dashboard',
+    'access_customers',
+    'access_services',
+    'access_bookings',
+    'manage_bookings',
+    'access_medical',
+    'manage_medical',
   ]),
 }
 
@@ -170,6 +233,7 @@ export function useRbac() {
     isManager: role === 'manager',
     isCashier: role === 'cashier',
     isWarehouse: role === 'warehouse',
+    isServiceStaff: role === 'staff_jasa',
     hasPermission: (permission: Permission) => hasPermission(role, permission),
   }
 }

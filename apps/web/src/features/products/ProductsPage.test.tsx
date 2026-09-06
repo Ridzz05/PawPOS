@@ -69,6 +69,11 @@ describe('ProductsPage', () => {
         ok: true,
         json: async () => ({ data: [], request_id: 'req-empty' }),
       })
+      // Initial categories call: empty
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [], request_id: 'req-cats' }),
+      })
       // Creation call
       .mockResolvedValueOnce({
         ok: true,
@@ -125,6 +130,10 @@ describe('ProductsPage', () => {
         ok: true,
         json: async () => ({ data: sampleProducts, request_id: 'req-retry' }),
       })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: sampleProducts, request_id: 'req-retry-2' }),
+      })
 
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
@@ -145,6 +154,11 @@ describe('ProductsPage', () => {
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ data: sampleProducts, request_id: 'req-list' }),
+      })
+      // Initial categories call: empty
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [], request_id: 'req-cats' }),
       })
       // Update PUT call
       .mockResolvedValueOnce({
@@ -193,6 +207,11 @@ describe('ProductsPage', () => {
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ data: sampleProducts, request_id: 'req-list' }),
+      })
+      // Initial categories call: empty
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [], request_id: 'req-cats' }),
       })
       // Delete call
       .mockResolvedValueOnce({

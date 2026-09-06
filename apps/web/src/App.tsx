@@ -6,11 +6,7 @@ import {
   LockOutlined,
   MenuOutlined,
   PointOfSaleOutlined,
-  ReceiptLongOutlined,
-  SettingsOutlined,
   StorefrontOutlined,
-  SwapHorizOutlined,
-  LanguageOutlined,
 } from '@mui/icons-material'
 import {
   AppBar,
@@ -34,6 +30,9 @@ import {
 } from '@mui/material'
 import { ThemeModeProvider } from './themeContext'
 import { DashboardPage, LandingPage, LoginPage, NotFoundPage, OrdersPage, PosPage, ProductsPage, SettingsPage, ShiftsPage, StocksPage } from './pages'
+import { CustomersPage } from './features/customers/CustomersPage'
+import { ServicesPage } from './features/services/ServicesPage'
+import { BookingsPage } from './features/bookings/BookingsPage'
 import { VoiceRecorder } from './features/ai-assistant/VoiceRecorder'
 import { CsAssistantWidget } from './features/ai-assistant/CsAssistantWidget'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -41,41 +40,11 @@ import { StoreSwitcher } from './components/StoreSwitcher'
 import { UserProfileCard } from './components/UserProfileCard'
 import { AuthProvider, useAuth } from './features/auth/authContext'
 import { useRbac, type Permission } from './features/auth/rbac'
+import { navGroups } from './features/navigation/navRegistry'
 import { PawLogo } from './components/PawLogo'
 import { ThemeToggle } from './components/ThemeToggle'
 import { PwaInstallButton } from './components/PwaInstallButton'
 import { CashierLockModal } from './components/CashierLockModal'
-
-interface NavGroup {
-  group: string
-  items: { to: string; label: string; icon: typeof DashboardOutlined; badge?: string; permission: Permission }[]
-}
-
-const navGroups: NavGroup[] = [
-  {
-    group: 'OPERASIONAL',
-    items: [
-      { to: '/pos', label: 'Kasir POS', icon: PointOfSaleOutlined, badge: 'Live', permission: 'access_pos' },
-      { to: '/orders', label: 'Riwayat Transaksi', icon: ReceiptLongOutlined, permission: 'access_orders' },
-      { to: '/products', label: 'Katalog Produk', icon: StorefrontOutlined, permission: 'access_products' },
-      { to: '/inventory/stocks', label: 'Stok Inventori', icon: Inventory2Outlined, permission: 'access_inventory' },
-    ],
-  },
-  {
-    group: 'MANAJEMEN',
-    items: [
-      { to: '/dashboard', label: 'Dashboard', icon: DashboardOutlined, permission: 'access_dashboard' },
-      { to: '/shifts', label: 'Sesi & Shift', icon: SwapHorizOutlined, permission: 'access_shifts' },
-    ],
-  },
-  {
-    group: 'WORKSPACE',
-    items: [
-      { to: '/settings', label: 'Pengaturan', icon: SettingsOutlined, permission: 'access_settings' },
-      { to: '/landing', label: 'Landing Page SaaS', icon: LanguageOutlined, permission: 'access_pos' },
-    ],
-  },
-]
 
 const pageNames: Record<string, { title: string; subtitle: string }> = {
   '/dashboard': { title: 'Dashboard Operasional', subtitle: 'Pusat kontrol operasional kasir, katalog produk, dan kesiapan sistem' },
@@ -85,6 +54,10 @@ const pageNames: Record<string, { title: string; subtitle: string }> = {
   '/pos': { title: 'Kasir POS', subtitle: 'Terminal register penjualan responsif dengan settlement transaksi instan' },
   '/shifts': { title: 'Sesi & Shift Kasir', subtitle: 'Pencatatan kas laci, audit pergantian kasir, dan ringkasan shift' },
   '/settings': { title: 'Pengaturan Workspace', subtitle: 'Preferensi tampilan antarmuka, format struk, dan opsi terminal' },
+  '/customers': { title: 'Data Pelanggan', subtitle: 'Direktori pemilik hewan, kontak, dan riwayat kunjungan' },
+  '/customers/hewan': { title: 'Data Hewan', subtitle: 'Profil hewan peliharaan, ras, alergi, dan pemilik' },
+  '/services': { title: 'Layanan & Paket', subtitle: 'Tarif grooming, klinik, penitipan, dan paket bundel' },
+  '/bookings': { title: 'Booking & Antrean', subtitle: 'Jadwal layanan hewan dan penyelesaian menjadi struk' },
 }
 
 export default function App() {
@@ -282,6 +255,38 @@ function AppShell() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/customers"
+                element={
+                  <ProtectedRoute permission="access_customers">
+                    <CustomersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/customers/hewan"
+                element={
+                  <ProtectedRoute permission="access_customers">
+                    <CustomersPage initialTab="pets" />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/services"
+                element={
+                  <ProtectedRoute permission="access_services">
+                    <ServicesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bookings"
+                element={
+                  <ProtectedRoute permission="access_bookings">
+                    <BookingsPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </ErrorBoundary>
@@ -342,8 +347,8 @@ function ProtectedRoute({
         elevation={0}
         sx={{
           p: { xs: 3, md: 5 },
-          border: '1px solid #fee2e2',
-          bgcolor: '#fffbfb',
+          border: '1px solid',
+          borderColor: 'divider',
           borderRadius: '16px',
           textAlign: 'center',
           maxWidth: 580,
@@ -356,8 +361,8 @@ function ProtectedRoute({
             width: 52,
             height: 52,
             borderRadius: '14px',
-            bgcolor: '#fef2f2',
-            color: '#dc2626',
+            bgcolor: 'error.light',
+            color: 'error.main',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -458,7 +463,7 @@ function Navigation({ onNavigate }: { onNavigate: () => void }) {
             <List sx={{ p: 0 }}>
               {group.items.map((item) => {
                 const Icon = item.icon
-                const isAllowed = hasPermission(item.permission)
+                const isAllowed = !item.comingSoon && hasPermission(item.permission)
 
                 return (
                   <ListItemButton
@@ -507,8 +512,24 @@ function Navigation({ onNavigate }: { onNavigate: () => void }) {
                         fontWeight: 'inherit',
                       }}
                     />
-                    {!isAllowed && (
+                    {!isAllowed && !item.comingSoon && (
                       <LockOutlined sx={{ fontSize: 14, color: '#94a3b8', ml: 'auto' }} />
+                    )}
+                    {item.comingSoon && (
+                      <Chip
+                        label="Segera"
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.6rem',
+                          fontWeight: 750,
+                          bgcolor: 'action.hover',
+                          color: 'text.secondary',
+                          borderRadius: '4px',
+                          px: 0.25,
+                          ml: 'auto',
+                        }}
+                      />
                     )}
                     {item.badge && isAllowed && (
                       <Chip

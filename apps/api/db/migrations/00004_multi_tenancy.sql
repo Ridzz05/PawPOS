@@ -45,27 +45,3 @@ CREATE INDEX IF NOT EXISTS inventory_locations_tenant_idx ON inventory_locations
 CREATE INDEX IF NOT EXISTS product_stocks_tenant_idx ON product_stocks(tenant_id, location_id);
 CREATE INDEX IF NOT EXISTS orders_tenant_created_idx ON orders(tenant_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS stock_movements_tenant_idx ON stock_movements(tenant_id, created_at DESC);
-
--- +goose Down
-DROP INDEX IF EXISTS stock_movements_tenant_idx;
-DROP INDEX IF EXISTS orders_tenant_created_idx;
-DROP INDEX IF EXISTS product_stocks_tenant_idx;
-DROP INDEX IF EXISTS inventory_locations_tenant_idx;
-DROP INDEX IF EXISTS products_tenant_active_idx;
-
-ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_tenant_order_number_key;
-ALTER TABLE orders DROP COLUMN IF EXISTS tenant_id;
-
-ALTER TABLE stock_movements DROP COLUMN IF EXISTS tenant_id;
-ALTER TABLE product_stocks DROP COLUMN IF EXISTS tenant_id;
-
-ALTER TABLE inventory_locations DROP CONSTRAINT IF EXISTS inventory_locations_tenant_code_key;
-ALTER TABLE inventory_locations DROP COLUMN IF EXISTS tenant_id;
-
-ALTER TABLE products DROP CONSTRAINT IF EXISTS products_tenant_sku_key;
-ALTER TABLE products DROP COLUMN IF EXISTS tenant_id;
-
-ALTER TABLE categories DROP COLUMN IF EXISTS tenant_id;
-ALTER TABLE users DROP COLUMN IF EXISTS tenant_id;
-
-DROP TABLE IF EXISTS tenants;

@@ -293,7 +293,7 @@ export function CsAssistantWidget() {
           borderRadius: '999px',
           borderColor: isOpen ? '#FF8A3D' : '#e2e8f0',
           bgcolor: isOpen ? '#FFF5ED' : '#ffffff',
-          color: '#1e293b',
+          color: 'text.primary',
           px: { xs: 0.6, sm: 1.25 },
           py: 0.4,
           minWidth: 0,
@@ -338,7 +338,7 @@ export function CsAssistantWidget() {
                   fontWeight: 750,
                   fontSize: '0.8rem',
                   lineHeight: 1.2,
-                  color: '#1e293b',
+                  color: 'text.primary',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -437,7 +437,7 @@ export function CsAssistantWidget() {
                       }}
                     />
                   </Stack>
-                  <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.72rem', display: 'block' }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem', display: 'block' }}>
                     Online • Copilot Operasional Toko
                   </Typography>
                 </Box>
@@ -449,7 +449,7 @@ export function CsAssistantWidget() {
                     size="small"
                     onClick={handleClearChat}
                     aria-label="Bersihkan riwayat chat"
-                    sx={{ color: '#64748B', '&:hover': { bgcolor: '#FFE3CC', color: '#ea580c' } }}
+                    sx={{ color: 'text.secondary', '&:hover': { bgcolor: '#FFE3CC', color: '#ea580c' } }}
                   >
                     <DeleteOutline fontSize="small" />
                   </IconButton>
@@ -459,7 +459,7 @@ export function CsAssistantWidget() {
                     size="small"
                     onClick={() => setIsOpen(false)}
                     aria-label="Tutup asisten"
-                    sx={{ color: '#64748B', '&:hover': { bgcolor: '#FFE3CC', color: '#dc2626' } }}
+                    sx={{ color: 'text.secondary', '&:hover': { bgcolor: '#FFE3CC', color: '#dc2626' } }}
                   >
                     <CloseOutlined fontSize="small" />
                   </IconButton>
@@ -493,7 +493,7 @@ export function CsAssistantWidget() {
                     fontWeight: 650,
                     bgcolor: '#ffffff',
                     border: '1px solid #e2e8f0',
-                    color: '#334155',
+                    color: 'text.secondary',
                     cursor: 'pointer',
                     flexShrink: 0,
                     '&:hover': {
@@ -799,7 +799,7 @@ function FormattedMessage({ content, isUser }: { content: string; isUser: boolea
                 sx={{
                   fontSize: '0.84rem',
                   lineHeight: 1.5,
-                  color: '#1e293b',
+                  color: 'text.primary',
                   flex: 1,
                 }}
               >
@@ -816,7 +816,7 @@ function FormattedMessage({ content, isUser }: { content: string; isUser: boolea
             sx={{
               fontSize: '0.84rem',
               lineHeight: 1.5,
-              color: '#1e293b',
+              color: 'text.primary',
             }}
           >
             {renderInlineMarkdown(line, isUser)}

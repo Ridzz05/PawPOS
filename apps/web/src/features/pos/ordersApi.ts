@@ -11,6 +11,8 @@ export interface OrderItem {
   unit_price_idr: number
   quantity: number
   subtotal_idr: number
+  item_kind?: string
+  service_id?: string | null
 }
 
 export interface Order {
@@ -37,11 +39,13 @@ export interface OrderDetail extends Order {
 }
 
 export interface CreateOrderItemInput {
-  product_id: string
+  product_id?: string
   product_name: string
   sku: string
   unit_price_idr: number
   quantity: number
+  item_kind?: string
+  service_id?: string | null
 }
 
 export interface CreateOrderInput {

@@ -18,6 +18,16 @@ export type Product = {
   updated_at: string
 }
 
+export type Category = {
+  id: string
+  tenant_id?: string
+  name: string
+  description?: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 export type CreateProductInput = {
   category_id?: string | null
   sku: string
@@ -109,6 +119,76 @@ export async function getProducts(signal?: AbortSignal): Promise<Product[]> {
 
   const success = payload as { data?: Product[] }
   return Array.isArray(success.data) ? success.data : []
+}
+
+export async function getCategories(signal?: AbortSignal): Promise<Category[]> {
+  let response: Response
+  try {
+    response = await fetch(`${apiBase}/api/v1/categories`, {
+      method: 'GET',
+      headers: { Accept: 'application/json', ...getTenantHeaders() },
+      signal,
+    })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw error
+    }
+    throw new ProductsApiError('NETWORK_ERROR', 'Koneksi ke server gagal. Periksa jaringan API.')
+  }
+
+  let payload: unknown
+  try {
+    payload = await response.json()
+  } catch {
+    throw new ProductsApiError('INVALID_RESPONSE', 'Server mengirim respons yang tidak dapat dibaca.')
+  }
+
+  if (!response.ok) {
+    const failure = readErrorEnvelope(payload)
+    throw new ProductsApiError(failure.code, failure.message, failure.requestId, failure.details)
+  }
+
+  const success = payload as { data?: Category[] }
+  return Array.isArray(success.data) ? success.data : []
+}
+
+export async function createCategory(name: string, signal?: AbortSignal): Promise<Category> {
+  let response: Response
+  try {
+    response = await fetch(`${apiBase}/api/v1/categories`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...getTenantHeaders(),
+      },
+      body: JSON.stringify({ name }),
+      signal,
+    })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw error
+    }
+    throw new ProductsApiError('NETWORK_ERROR', 'Koneksi ke server gagal saat membuat kategori.')
+  }
+
+  let payload: unknown
+  try {
+    payload = await response.json()
+  } catch {
+    throw new ProductsApiError('INVALID_RESPONSE', 'Server mengirim respons yang tidak dapat dibaca.')
+  }
+
+  if (!response.ok) {
+    const failure = readErrorEnvelope(payload)
+    throw new ProductsApiError(failure.code, failure.message, failure.requestId, failure.details)
+  }
+
+  const success = payload as { data?: Category }
+  if (!success.data) {
+    throw new ProductsApiError('INVALID_RESPONSE', 'Server tidak mengembalikan data kategori baru.')
+  }
+  return success.data
 }
 
 export async function createProduct(input: CreateProductInput, signal?: AbortSignal): Promise<Product> {

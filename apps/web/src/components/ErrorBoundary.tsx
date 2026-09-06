@@ -101,11 +101,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             width: '100%',
             p: { xs: 3, sm: 4 },
             border: '1px solid',
-            borderColor: '#e3e8ee',
+            borderColor: 'divider',
             borderRadius: 3,
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+            boxShadow: 'none',
             textAlign: 'center',
-            bgcolor: '#ffffff',
+            bgcolor: 'background.paper',
           }}
         >
           <Box
@@ -113,14 +113,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               width: 56,
               height: 56,
               borderRadius: '50%',
-              bgcolor: '#fef2f2',
-              color: '#df1b41',
+              bgcolor: 'error.light',
+              color: 'error.main',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               mx: 'auto',
               mb: 2.5,
-              border: '1px solid #fee2e2',
+              border: '1px solid',
+              borderColor: 'divider',
             }}
           >
             <ErrorOutlineOutlined sx={{ fontSize: 32 }} />
@@ -128,7 +129,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
           <Typography
             variant="h5"
-            sx={{ fontWeight: 700, color: '#0d253d', mb: 1, letterSpacing: '-0.02em' }}
+            sx={{ fontWeight: 700, color: 'text.primary', mb: 1, letterSpacing: '-0.02em' }}
           >
             Terjadi Kesalahan pada Aplikasi
           </Typography>
@@ -156,14 +157,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               variant="outlined"
               startIcon={<RefreshOutlined />}
               onClick={this.handleReload}
-              sx={{ px: 3, py: 1, fontWeight: 600, borderRadius: 2, borderColor: '#e3e8ee', color: '#425466' }}
+              sx={{ px: 3, py: 1, fontWeight: 600, borderRadius: 2 }}
             >
               Muat Ulang Halaman
             </Button>
           </Stack>
 
           {/* Collapsible Technical Debug Details */}
-          <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #f0f2f5' }}>
+          <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
             <Button
               size="small"
               variant="text"
@@ -171,7 +172,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               startIcon={<BugReportOutlined fontSize="small" />}
               endIcon={showDetails ? <KeyboardArrowUpOutlined fontSize="small" /> : <KeyboardArrowDownOutlined fontSize="small" />}
               onClick={this.toggleDetails}
-              sx={{ color: '#697386', textTransform: 'none', fontSize: '0.8rem' }}
+              sx={{ color: 'text.secondary', textTransform: 'none', fontSize: '0.8rem' }}
             >
               {showDetails ? 'Sembunyikan Rincian Teknis' : 'Lihat Rincian Teknis'}
             </Button>
@@ -181,24 +182,25 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 sx={{
                   mt: 2,
                   p: 2,
-                  bgcolor: '#f8fafc',
+                  bgcolor: 'background.default',
                   borderRadius: 2,
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   textAlign: 'left',
                   overflowX: 'auto',
                   fontFamily: 'monospace',
                   fontSize: '0.78rem',
-                  color: '#334155',
+                  color: 'text.secondary',
                   maxHeight: 220,
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word',
                 }}
               >
-                <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', color: '#dc2626', mb: 1 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', color: 'error.main', mb: 1 }}>
                   {error?.name}: {error?.message}
                 </Typography>
                 {errorInfo?.componentStack && (
-                  <Box component="pre" sx={{ m: 0, fontSize: '0.75rem', color: '#64748b' }}>
+                  <Box component="pre" sx={{ m: 0, fontSize: '0.75rem', color: 'text.secondary' }}>
                     {errorInfo.componentStack}
                   </Box>
                 )}

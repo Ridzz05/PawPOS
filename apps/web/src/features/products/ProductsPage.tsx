@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material'
 import {
   Alert,
+  Autocomplete,
   Avatar,
   Box,
   Button,
@@ -40,12 +41,15 @@ import {
 } from '@mui/material'
 import { convertImageToWebp, formatFileSize } from './imageConverter'
 import {
+  createCategory,
   createProduct,
   deleteProduct,
+  getCategories,
   getProducts,
   ProductsApiError,
   updateProduct,
   uploadProductImage,
+  type Category,
   type Product,
 } from './productsApi'
 import { formatCurrency, formatNominalInput, parseThousand } from '../../utils/currency'
@@ -59,6 +63,7 @@ export function ProductsPage() {
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [errorMessage, setErrorMessage] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -68,6 +73,7 @@ export function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [sku, setSku] = useState('')
   const [name, setName] = useState('')
+  const [categoryInput, setCategoryInput] = useState('')
   const [baseUnit, setBaseUnit] = useState('pcs')
   const [purchasePrice, setPurchasePrice] = useState('')
   const [sellingPrice, setSellingPrice] = useState('')
@@ -90,6 +96,14 @@ export function ProductsPage() {
   const [conversionBadge, setConversionBadge] = useState<string>('')
   const [isConvertingImage, setIsConvertingImage] = useState(false)
 
+  const categoryNameById = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const c of categories) {
+      map.set(c.id, c.name)
+    }
+    return map
+  }, [categories])
+
   const loadProducts = () => {
     setStatus('loading')
     setErrorMessage('')
@@ -102,6 +116,9 @@ export function ProductsPage() {
         setErrorMessage(err instanceof Error ? err.message : 'Gagal memuat produk.')
         setStatus('error')
       })
+    getCategories()
+      .then((data) => setCategories(data))
+      .catch(() => setCategories([]))
   }
 
   useEffect(() => {
@@ -115,6 +132,7 @@ export function ProductsPage() {
     setEditingProduct(null)
     setSku('')
     setName('')
+    setCategoryInput('')
     setBaseUnit('pcs')
     setPurchasePrice('')
     setSellingPrice('')
@@ -135,6 +153,7 @@ export function ProductsPage() {
     setEditingProduct(p)
     setSku(p.sku)
     setName(p.name)
+    setCategoryInput(p.category_id ? (categoryNameById.get(p.category_id) ?? '') : '')
     setBaseUnit(p.base_unit)
     setPurchasePrice(formatNominalInput(String(p.purchase_price_idr)))
     setSellingPrice(formatNominalInput(String(p.selling_price_idr)))
@@ -218,6 +237,39 @@ export function ProductsPage() {
 
     setIsSubmitting(true)
     try {
+      // Resolve category name to id (create on the fly when new).
+      let categoryId: string | null = null
+      const cleanCategory = categoryInput.trim()
+      if (cleanCategory) {
+        const existing =
+          categories.find((c) => c.name.toLowerCase() === cleanCategory.toLowerCase()) ??
+          (await getCategories()
+            .then((fresh) => {
+              setCategories(fresh)
+              return fresh.find((c) => c.name.toLowerCase() === cleanCategory.toLowerCase())
+            })
+            .catch(() => undefined))
+        if (existing) {
+          categoryId = existing.id
+        } else {
+          try {
+            const created = await createCategory(cleanCategory)
+            categoryId = created.id
+            setCategories((prev) =>
+              prev.some((c) => c.id === created.id) ? prev : [...prev, created].sort((a, b) => a.name.localeCompare(b.name)),
+            )
+          } catch (catErr) {
+            if (catErr instanceof ProductsApiError && catErr.code === 'CATEGORY_EXISTS') {
+              const fresh = await getCategories().catch(() => [] as Category[])
+              setCategories(fresh)
+              categoryId = fresh.find((c) => c.name.toLowerCase() === cleanCategory.toLowerCase())?.id ?? null
+            } else {
+              throw catErr
+            }
+          }
+        }
+      }
+
       if (editingProduct) {
         let imageUrl: string | null | undefined = editingProduct.image_url
         if (selectedImageFile) {
@@ -230,6 +282,7 @@ export function ProductsPage() {
         const updated = await updateProduct(editingProduct.id, {
           sku: sku.trim(),
           name: name.trim(),
+          category_id: categoryId,
           base_unit: baseUnit.trim(),
           purchase_price_idr: pPrice,
           selling_price_idr: sPrice,
@@ -250,6 +303,7 @@ export function ProductsPage() {
         const created = await createProduct({
           sku: sku.trim(),
           name: name.trim(),
+          category_id: categoryId,
           base_unit: baseUnit.trim(),
           purchase_price_idr: pPrice,
           selling_price_idr: sPrice,
@@ -302,7 +356,7 @@ export function ProductsPage() {
               fontSize: { xs: '1.6rem', md: '2.1rem' },
               fontWeight: 800,
               letterSpacing: '-0.03em',
-              color: '#1e293b',
+              color: 'text.primary',
               lineHeight: 1.2,
             }}
           >
@@ -343,10 +397,10 @@ export function ProductsPage() {
           <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
                   TOTAL PRODUK
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
                   {products.length} SKU
                 </Typography>
               </Box>
@@ -357,7 +411,7 @@ export function ProductsPage() {
           <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
                   PRODUK AKTIF
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 850, color: '#047857', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
@@ -371,10 +425,10 @@ export function ProductsPage() {
           <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
                   DILENGKAPI FOTO
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
                   {products.filter((p) => Boolean(p.image_url)).length} Item
                 </Typography>
               </Box>
@@ -385,10 +439,10 @@ export function ProductsPage() {
           <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
                   SATUAN DASAR
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
                   {new Set(products.map((p) => p.base_unit)).size} Varian
                 </Typography>
               </Box>
@@ -402,7 +456,7 @@ export function ProductsPage() {
       {status === 'loading' && (
         <Paper className="terminal-card" elevation={0} sx={{ p: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
           <RefreshOutlined className="loading-icon" />
-          <Typography sx={{ fontWeight: 650, color: '#334155' }}>Memuat katalog produk...</Typography>
+          <Typography sx={{ fontWeight: 650, color: 'text.secondary' }}>Memuat katalog produk...</Typography>
         </Paper>
       )}
 
@@ -438,8 +492,8 @@ export function ProductsPage() {
               width: 48,
               height: 48,
               borderRadius: '10px',
-              bgcolor: '#f1f5f9',
-              color: '#64748d',
+              bgcolor: 'action.hover',
+              color: 'text.secondary',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -449,7 +503,7 @@ export function ProductsPage() {
           >
             <StorefrontOutlined sx={{ fontSize: 24 }} />
           </Box>
-          <Typography variant="h6" sx={{ fontWeight: 750, color: '#1e293b', mb: 1, fontSize: '1.1rem' }}>
+          <Typography variant="h6" sx={{ fontWeight: 750, color: 'text.primary', mb: 1, fontSize: '1.1rem' }}>
             Katalog produk masih kosong
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 480, mx: 'auto', mb: 3, lineHeight: 1.6 }}>
@@ -490,7 +544,7 @@ export function ProductsPage() {
               gap: 1.5,
               alignItems: 'center',
               justifyContent: 'space-between',
-              bgcolor: '#f8fafc',
+              bgcolor: 'background.default',
             }}
           >
             <TextField
@@ -536,6 +590,7 @@ export function ProductsPage() {
                 <TableRow>
                   <TableCell sx={{ minWidth: 160, whiteSpace: 'nowrap' }}>SKU</TableCell>
                   <TableCell sx={{ minWidth: 260 }}>Nama Produk</TableCell>
+                  <TableCell sx={{ minWidth: 140 }}>Kategori</TableCell>
                   <TableCell sx={{ minWidth: 100 }}>Satuan</TableCell>
                   <TableCell align="right" sx={{ minWidth: 130 }}>Harga Beli</TableCell>
                   <TableCell align="right" sx={{ minWidth: 130 }}>Harga Jual</TableCell>
@@ -551,7 +606,7 @@ export function ProductsPage() {
                     hover
                     sx={{
                       transition: 'background-color 0.15s ease',
-                      '&:hover': { bgcolor: '#f8fafc' },
+                      '&:hover': { bgcolor: 'action.hover' },
                       '&:last-child td, &:last-child th': { border: 0 },
                     }}
                   >
@@ -560,7 +615,7 @@ export function ProductsPage() {
                         variant="body2"
                         sx={{
                           fontWeight: 750,
-                          bgcolor: '#f1f5f9',
+                          bgcolor: 'action.hover',
                           px: 1.25,
                           py: 0.35,
                           borderRadius: '8px',
@@ -568,8 +623,9 @@ export function ProductsPage() {
                           alignItems: 'center',
                           whiteSpace: 'nowrap',
                           fontSize: '0.82rem',
-                          color: '#0f172a',
-                          border: '1px solid rgba(203, 213, 225, 0.8)',
+                          color: 'text.primary',
+                          border: '1px solid',
+                          borderColor: 'divider',
                           letterSpacing: '0.02em',
                         }}
                       >
@@ -592,8 +648,9 @@ export function ProductsPage() {
                               height: 42,
                               borderRadius: '10px',
                               objectFit: 'cover',
-                              border: '1px solid rgba(226, 232, 240, 0.9)',
-                              bgcolor: '#f8fafc',
+                              border: '1px solid',
+                              borderColor: 'divider',
+                              bgcolor: 'background.default',
                               flexShrink: 0,
                             }}
                           />
@@ -604,9 +661,10 @@ export function ProductsPage() {
                               width: 42,
                               height: 42,
                               borderRadius: '10px',
-                              bgcolor: '#f1f5f9',
-                              color: '#64748d',
-                              border: '1px solid rgba(226, 232, 240, 0.9)',
+                              bgcolor: 'action.hover',
+                              color: 'text.secondary',
+                              border: '1px solid',
+                              borderColor: 'divider',
                               flexShrink: 0,
                             }}
                           >
@@ -614,7 +672,7 @@ export function ProductsPage() {
                           </Avatar>
                         )}
                         <Box sx={{ minWidth: 0 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 750, color: '#0f172a', lineHeight: 1.3, fontSize: '0.92rem', letterSpacing: '-0.015em' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 750, color: 'text.primary', lineHeight: 1.3, fontSize: '0.92rem', letterSpacing: '-0.015em' }}>
                             {p.name}
                           </Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.74rem', fontWeight: 550 }}>
@@ -624,10 +682,19 @@ export function ProductsPage() {
                       </Stack>
                     </TableCell>
                     <TableCell>
+                      {p.category_id && categoryNameById.get(p.category_id) ? (
+                        <Chip label={categoryNameById.get(p.category_id)} size="small" variant="outlined" sx={{ fontWeight: 650, maxWidth: 160 }} />
+                      ) : (
+                        <Typography variant="caption" color="text.disabled">
+                          —
+                        </Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <Chip label={p.base_unit} size="small" variant="outlined" sx={{ textTransform: 'lowercase', fontWeight: 650 }} />
                     </TableCell>
                     <TableCell align="right">
-                      <Typography variant="body2" sx={{ color: '#64748d', fontWeight: 600, fontSize: '0.86rem' }} className="tnum">
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.86rem' }} className="tnum">
                         {formatCurrency(p.purchase_price_idr)}
                       </Typography>
                     </TableCell>
@@ -637,7 +704,7 @@ export function ProductsPage() {
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
-                      <Typography variant="body2" className="tnum" sx={{ fontWeight: 750, color: '#0f172a', fontSize: '0.88rem' }}>
+                      <Typography variant="body2" className="tnum" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '0.88rem' }}>
                         {p.minimum_stock}
                       </Typography>
                     </TableCell>
@@ -661,7 +728,7 @@ export function ProductsPage() {
                             aria-label={`Edit ${p.name}`}
                             onClick={() => handleOpenEdit(p)}
                             sx={{
-                              color: '#64748d',
+                              color: 'text.secondary',
                               '&:hover': { color: '#ff8042', bgcolor: '#fff7f2' },
                             }}
                           >
@@ -674,7 +741,7 @@ export function ProductsPage() {
                             aria-label={`Hapus ${p.name}`}
                             onClick={() => handleOpenDelete(p)}
                             sx={{
-                              color: '#64748d',
+                              color: 'text.secondary',
                               '&:hover': { color: '#ef4444', bgcolor: '#fef2f2' },
                             }}
                           >
@@ -719,7 +786,7 @@ export function ProductsPage() {
             }}
           >
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b', letterSpacing: '-0.02em', fontSize: '1.1rem' }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em', fontSize: '1.1rem' }}>
                 {editingProduct ? 'Edit Data Produk' : 'Tambah Produk Baru'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -731,7 +798,7 @@ export function ProductsPage() {
             <IconButton
               aria-label="Tutup form"
               onClick={handleCloseDialog}
-              sx={{ position: 'absolute', right: 12, top: 12, color: '#64748d' }}
+              sx={{ position: 'absolute', right: 12, top: 12, color: 'text.secondary' }}
             >
               <CloseOutlined fontSize="small" />
             </IconButton>
@@ -764,7 +831,7 @@ export function ProductsPage() {
                   sx={{
                     fontWeight: 750,
                     letterSpacing: '0.04em',
-                    color: '#475569',
+                    color: 'text.secondary',
                     display: 'block',
                     mb: 1.25,
                     textTransform: 'uppercase',
@@ -790,7 +857,7 @@ export function ProductsPage() {
                       }}
                     />
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" noWrap sx={{ fontWeight: 700, color: '#1e293b' }}>
+                      <Typography variant="body2" noWrap sx={{ fontWeight: 700, color: 'text.primary' }}>
                         {selectedImageFile?.name}
                       </Typography>
                       {conversionBadge && (
@@ -826,9 +893,10 @@ export function ProductsPage() {
                     sx={{
                       py: 1.5,
                       borderStyle: 'dashed',
-                      borderColor: 'rgba(203, 213, 225, 0.85)',
+                      borderColor: 'divider',
                       borderRadius: '12px',
-                      bgcolor: '#ffffff',
+                      bgcolor: 'background.paper',
+                      color: 'text.primary',
                     }}
                   >
                     {isConvertingImage
@@ -885,6 +953,24 @@ export function ProductsPage() {
                 error={Boolean(fieldErrors.name)}
                 helperText={fieldErrors.name}
                 disabled={isSubmitting}
+              />
+
+              <Autocomplete
+                freeSolo
+                fullWidth
+                options={categories.map((c) => c.name)}
+                value={categoryInput}
+                onChange={(_, value) => setCategoryInput(value ?? '')}
+                onInputChange={(_, value) => setCategoryInput(value)}
+                disabled={isSubmitting}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Kategori"
+                    placeholder="misal: Pakan Kucing (ketik baru untuk membuat)"
+                    helperText="Daftar kategori diambil dari database. Nama baru otomatis dibuat."
+                  />
+                )}
               />
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
@@ -984,7 +1070,7 @@ export function ProductsPage() {
         fullWidth
         aria-labelledby="hapus-produk-title"
       >
-        <DialogTitle id="hapus-produk-title" sx={{ fontWeight: 800, pb: 1, color: '#1e293b', fontSize: '1.05rem' }}>
+        <DialogTitle id="hapus-produk-title" sx={{ fontWeight: 800, pb: 1, color: 'text.primary', fontSize: '1.05rem' }}>
           Hapus Produk?
         </DialogTitle>
         <DialogContent sx={{ pb: 1 }}>
@@ -993,14 +1079,14 @@ export function ProductsPage() {
               {deleteError}
             </Alert>
           )}
-          <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.5 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.5 }}>
             Apakah Anda yakin ingin menghapus produk{' '}
-            <Box component="strong" sx={{ color: '#1e293b' }}>
+            <Box component="strong" sx={{ color: 'text.primary' }}>
               {deletingProduct?.name}
             </Box>{' '}
             ({deletingProduct?.sku})?
           </Typography>
-          <Typography variant="caption" sx={{ color: '#64748d', display: 'block', mt: 1.25 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1.25 }}>
             Produk ini tidak akan ditampilkan lagi di katalog aktif maupun register kasir POS.
           </Typography>
         </DialogContent>
@@ -1009,7 +1095,7 @@ export function ProductsPage() {
             variant="outlined"
             onClick={handleCloseDelete}
             disabled={isDeleting}
-            sx={{ borderRadius: '8px', color: '#64748d', borderColor: '#cbd5e1' }}
+            sx={{ borderRadius: '8px', color: 'text.secondary', borderColor: '#cbd5e1' }}
           >
             Batal
           </Button>

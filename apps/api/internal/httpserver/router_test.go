@@ -409,3 +409,289 @@ func TestRouterShiftsLifecycle(t *testing.T) {
 		t.Fatalf("expected 200 OK for list shifts, got %d", listRec.Code)
 	}
 }
+
+func TestRouterAuthEndpoints(t *testing.T) {
+	router := NewRouter(nil, nil, nil)
+
+	// Test POST /api/v1/auth/login with demo credentials (memory seed)
+	loginRec := httptest.NewRecorder()
+	loginReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login",
+		bytes.NewReader([]byte(`{"email":"kasir@pawpos.id","password":"kasir123"}`)))
+	router.ServeHTTP(loginRec, loginReq)
+
+	if loginRec.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK, got %d: %s", loginRec.Code, loginRec.Body.String())
+	}
+	var loginRes struct {
+		Data struct {
+			Token string `json:"token"`
+			User  struct {
+				Role string `json:"role"`
+			} `json:"user"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(loginRec.Body).Decode(&loginRes); err != nil {
+		t.Fatalf("failed to decode login json: %v", err)
+	}
+	if loginRes.Data.Token == "" || loginRes.Data.User.Role != "cashier" {
+		t.Fatalf("unexpected login payload = %+v", loginRes.Data)
+	}
+
+	// Test POST /api/v1/auth/login with wrong password
+	badRec := httptest.NewRecorder()
+	badReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login",
+		bytes.NewReader([]byte(`{"email":"kasir@pawpos.id","password":"salah"}`)))
+	router.ServeHTTP(badRec, badReq)
+	if badRec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401, got %d", badRec.Code)
+	}
+
+	// Test POST /api/v1/auth/pin
+	pinRec := httptest.NewRecorder()
+	pinReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/pin",
+		bytes.NewReader([]byte(`{"role":"owner","pin":"9999"}`)))
+	router.ServeHTTP(pinRec, pinReq)
+	if pinRec.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK for pin, got %d: %s", pinRec.Code, pinRec.Body.String())
+	}
+
+	// Test GET /api/v1/auth/me with token
+	meRec := httptest.NewRecorder()
+	meReq := httptest.NewRequest(http.MethodGet, "/api/v1/auth/me", nil)
+	meReq.Header.Set("Authorization", "Bearer "+loginRes.Data.Token)
+	router.ServeHTTP(meRec, meReq)
+	if meRec.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK for me, got %d: %s", meRec.Code, meRec.Body.String())
+	}
+
+	// Test POST /api/v1/auth/logout revokes the token
+	logoutRec := httptest.NewRecorder()
+	logoutReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/logout", nil)
+	logoutReq.Header.Set("Authorization", "Bearer "+loginRes.Data.Token)
+	router.ServeHTTP(logoutRec, logoutReq)
+	if logoutRec.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK for logout, got %d: %s", logoutRec.Code, logoutRec.Body.String())
+	}
+
+	meRec2 := httptest.NewRecorder()
+	meReq2 := httptest.NewRequest(http.MethodGet, "/api/v1/auth/me", nil)
+	meReq2.Header.Set("Authorization", "Bearer "+loginRes.Data.Token)
+	router.ServeHTTP(meRec2, meReq2)
+	if meRec2.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 after logout, got %d", meRec2.Code)
+	}
+}
+
+func TestRouterCategoryEndpoints(t *testing.T) {
+	router := NewRouter(nil, nil, nil)
+
+	// Empty list initially (no dummy seeds)
+	listRec := httptest.NewRecorder()
+	listReq := httptest.NewRequest(http.MethodGet, "/api/v1/categories", nil)
+	router.ServeHTTP(listRec, listReq)
+	if listRec.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK, got %d", listRec.Code)
+	}
+	var listRes struct {
+		Data []map[string]interface{} `json:"data"`
+	}
+	if err := json.NewDecoder(listRec.Body).Decode(&listRes); err != nil {
+		t.Fatalf("failed to decode json: %v", err)
+	}
+	if len(listRes.Data) != 0 {
+		t.Fatalf("expected 0 categories, got %d", len(listRes.Data))
+	}
+
+	// Create a category
+	createRec := httptest.NewRecorder()
+	createReq := httptest.NewRequest(http.MethodPost, "/api/v1/categories",
+		bytes.NewReader([]byte(`{"name":"Pakan Kucing"}`)))
+	router.ServeHTTP(createRec, createReq)
+	if createRec.Code != http.StatusCreated {
+		t.Fatalf("expected 201 Created, got %d: %s", createRec.Code, createRec.Body.String())
+	}
+
+	// Duplicate (case-insensitive) -> 409
+	dupRec := httptest.NewRecorder()
+	dupReq := httptest.NewRequest(http.MethodPost, "/api/v1/categories",
+		bytes.NewReader([]byte(`{"name":"pakan kucing"}`)))
+	router.ServeHTTP(dupRec, dupReq)
+	if dupRec.Code != http.StatusConflict {
+		t.Fatalf("expected 409, got %d", dupRec.Code)
+	}
+
+	// List shows the new category
+	listRec2 := httptest.NewRecorder()
+	listReq2 := httptest.NewRequest(http.MethodGet, "/api/v1/categories", nil)
+	router.ServeHTTP(listRec2, listReq2)
+	var listRes2 struct {
+		Data []struct {
+			Name string `json:"name"`
+		} `json:"data"`
+	}
+	_ = json.NewDecoder(listRec2.Body).Decode(&listRes2)
+	if len(listRes2.Data) != 1 || listRes2.Data[0].Name != "Pakan Kucing" {
+		t.Fatalf("expected 1 category, got %+v", listRes2.Data)
+	}
+}
+
+func TestRouterCustomerPetEndpoints(t *testing.T) {
+	router := NewRouter(nil, nil, nil)
+
+	// Create a customer
+	createRec := httptest.NewRecorder()
+	createReq := httptest.NewRequest(http.MethodPost, "/api/v1/customers",
+		bytes.NewReader([]byte(`{"name":"Andi Wijaya","phone":"08123456789"}`)))
+	router.ServeHTTP(createRec, createReq)
+	if createRec.Code != http.StatusCreated {
+		t.Fatalf("expected 201 Created, got %d: %s", createRec.Code, createRec.Body.String())
+	}
+	var createRes struct {
+		Data struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"data"`
+	}
+	_ = json.NewDecoder(createRec.Body).Decode(&createRes)
+	if createRes.Data.Name != "Andi Wijaya" {
+		t.Fatalf("unexpected customer = %+v", createRes.Data)
+	}
+
+	// Validation: empty name -> 400
+	badRec := httptest.NewRecorder()
+	badReq := httptest.NewRequest(http.MethodPost, "/api/v1/customers",
+		bytes.NewReader([]byte(`{"name":""}`)))
+	router.ServeHTTP(badRec, badReq)
+	if badRec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", badRec.Code)
+	}
+
+	// Create a pet for the customer
+	petRec := httptest.NewRecorder()
+	petReq := httptest.NewRequest(http.MethodPost, "/api/v1/pets",
+		bytes.NewReader([]byte(`{"customer_id":"`+createRes.Data.ID+`","name":"Mochi","species":"Kucing","weight_kg":4.5}`)))
+	router.ServeHTTP(petRec, petReq)
+	if petRec.Code != http.StatusCreated {
+		t.Fatalf("expected 201 Created for pet, got %d: %s", petRec.Code, petRec.Body.String())
+	}
+
+	// Orphan pet -> 422
+	orphanRec := httptest.NewRecorder()
+	orphanReq := httptest.NewRequest(http.MethodPost, "/api/v1/pets",
+		bytes.NewReader([]byte(`{"customer_id":"ghost","name":"X"}`)))
+	router.ServeHTTP(orphanRec, orphanReq)
+	if orphanRec.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("expected 422, got %d", orphanRec.Code)
+	}
+
+	// List pets filtered by customer
+	listRec := httptest.NewRecorder()
+	listReq := httptest.NewRequest(http.MethodGet, "/api/v1/pets?customer_id="+createRes.Data.ID, nil)
+	router.ServeHTTP(listRec, listReq)
+	var listRes struct {
+		Data []struct {
+			Name         string `json:"name"`
+			CustomerName string `json:"customer_name"`
+		} `json:"data"`
+	}
+	_ = json.NewDecoder(listRec.Body).Decode(&listRes)
+	if len(listRes.Data) != 1 || listRes.Data[0].CustomerName != "Andi Wijaya" {
+		t.Fatalf("expected 1 pet with owner, got %+v", listRes.Data)
+	}
+}
+
+func TestRouterServiceBookingFlow(t *testing.T) {
+	router := NewRouter(nil, nil, nil)
+	post := func(path, body string) (int, map[string]any) {
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, path, bytes.NewReader([]byte(body)))
+		router.ServeHTTP(rec, req)
+		var payload map[string]any
+		_ = json.NewDecoder(rec.Body).Decode(&payload)
+		return rec.Code, payload
+	}
+
+	// Seed customer + pet + service
+	code, custRes := post("/api/v1/customers", `{"name":"Budi","phone":"0800"}`)
+	if code != http.StatusCreated {
+		t.Fatalf("customer status = %d", code)
+	}
+	custID := custRes["data"].(map[string]any)["id"].(string)
+	code, petRes := post("/api/v1/pets", `{"customer_id":"`+custID+`","name":"Kitty"}`)
+	if code != http.StatusCreated {
+		t.Fatalf("pet status = %d", code)
+	}
+	petID := petRes["data"].(map[string]any)["id"].(string)
+	code, svcRes := post("/api/v1/services", `{"name":"Grooming Komplit","category":"grooming","price_idr":80000,"duration_minutes":60}`)
+	if code != http.StatusCreated {
+		t.Fatalf("service status = %d (%v)", code, svcRes)
+	}
+	svcID := svcRes["data"].(map[string]any)["id"].(string)
+
+	// Duplicate service -> 409
+	if code, _ := post("/api/v1/services", `{"name":"Grooming Komplit"}`); code != http.StatusConflict {
+		t.Fatalf("dup service status = %d", code)
+	}
+
+	// Package with ghost service -> 422
+	if code, _ := post("/api/v1/packages", `{"name":"Paket X","price_idr":100000,"items":[{"service_id":"ghost","sessions_included":2}]}`); code != http.StatusUnprocessableEntity {
+		t.Fatalf("ghost package status = %d", code)
+	}
+	code, pkgRes := post("/api/v1/packages", `{"name":"Paket Grooming 2x","price_idr":150000,"items":[{"service_id":"`+svcID+`","sessions_included":2}]}`)
+	if code != http.StatusCreated {
+		t.Fatalf("package status = %d (%v)", code, pkgRes)
+	}
+
+	// Booking without service/package -> 422
+	if code, _ := post("/api/v1/bookings", `{"customer_id":"`+custID+`","pet_id":"`+petID+`","location_id":"loc-main","scheduled_at":"2026-09-07T10:00:00Z"}`); code != http.StatusUnprocessableEntity {
+		t.Fatalf("empty booking status = %d", code)
+	}
+
+	// Valid booking
+	code, bookRes := post("/api/v1/bookings", `{"customer_id":"`+custID+`","pet_id":"`+petID+`","service_id":"`+svcID+`","location_id":"loc-main","scheduled_at":"2026-09-07T10:00:00Z"}`)
+	if code != http.StatusCreated {
+		t.Fatalf("booking status = %d (%v)", code, bookRes)
+	}
+	bookID := bookRes["data"].(map[string]any)["id"].(string)
+
+	// antre -> proses
+	if code, _ := post("/api/v1/bookings/"+bookID+"/status", `{"status":"proses"}`); code != http.StatusOK {
+		t.Fatalf("proses status = %d", code)
+	}
+
+	// Complete with cash -> jasa order, no stock touched
+	code, doneRes := post("/api/v1/bookings/"+bookID+"/complete", `{"payment_method":"cash","paid_amount_idr":80000}`)
+	if code != http.StatusOK {
+		t.Fatalf("complete status = %d (%v)", code, doneRes)
+	}
+	done := doneRes["data"].(map[string]any)
+	booking := done["booking"].(map[string]any)
+	order := done["order"].(map[string]any)
+	if booking["status"] != "selesai" || booking["order_id"] == nil {
+		t.Fatalf("booking not settled = %+v", booking)
+	}
+	items := order["items"].([]any)
+	if len(items) != 1 || items[0].(map[string]any)["item_kind"] != "jasa" {
+		t.Fatalf("order items = %+v", items)
+	}
+	if order["total_idr"].(float64) != 80000 {
+		t.Fatalf("order total = %+v", order)
+	}
+
+	// Double complete -> 409
+	if code, _ := post("/api/v1/bookings/"+bookID+"/complete", `{"payment_method":"cash","paid_amount_idr":80000}`); code != http.StatusConflict {
+		t.Fatalf("double complete status = %d", code)
+	}
+
+	// Filter bookings by status
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/bookings?status=selesai", nil)
+	router.ServeHTTP(rec, req)
+	var listRes struct {
+		Data []map[string]any `json:"data"`
+	}
+	_ = json.NewDecoder(rec.Body).Decode(&listRes)
+	if len(listRes.Data) != 1 {
+		t.Fatalf("expected 1 selesai booking, got %+v", listRes.Data)
+	}
+}

@@ -13,9 +13,12 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/assistant"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/auth"
+	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/bookings"
+	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/customers"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/inventory"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/orders"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/products"
+	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/services"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/shifts"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/tenant"
 	"github.com/muhri/ai-operational-pos/apps/api/internal/modules/uploads"
@@ -33,6 +36,10 @@ func NewRouter(log *slog.Logger, ready health.Check, db *sql.DB, configurations 
 	var tenantRepo tenant.Repository
 	var shiftRepo shifts.Repository
 	var authRepo auth.Repository
+	var categoryRepo products.CategoryRepository
+	var customerRepo customers.Repository
+	var serviceRepo services.Repository
+	var bookingRepo bookings.Repository
 	if db != nil {
 		productRepo = products.NewPostgresRepository(db)
 		inventoryRepo = inventory.NewPostgresRepository(db)
@@ -40,6 +47,10 @@ func NewRouter(log *slog.Logger, ready health.Check, db *sql.DB, configurations 
 		tenantRepo = tenant.NewPostgresRepository(db)
 		shiftRepo = shifts.NewPostgresRepository(db)
 		authRepo = auth.NewPostgresRepository(db)
+		categoryRepo = products.NewPostgresCategoryRepository(db)
+		customerRepo = customers.NewPostgresRepository(db)
+		serviceRepo = services.NewPostgresRepository(db)
+		bookingRepo = bookings.NewPostgresRepository(db)
 	} else {
 		productRepo = products.NewMemoryRepository()
 		inventoryRepo = inventory.NewMemoryRepository()
@@ -47,8 +58,12 @@ func NewRouter(log *slog.Logger, ready health.Check, db *sql.DB, configurations 
 		tenantRepo = tenant.NewMemoryRepository()
 		shiftRepo = shifts.NewMemoryRepository()
 		authRepo = auth.NewMemoryRepository()
+		categoryRepo = products.NewMemoryCategoryRepository()
+		customerRepo = customers.NewMemoryRepository()
+		serviceRepo = services.NewMemoryRepository()
+		bookingRepo = bookings.NewMemoryRepository()
 	}
-	return NewRouterWithAuthRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, authRepo, configurations...)
+	return NewRouterWithAuthRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, authRepo, categoryRepo, customerRepo, serviceRepo, bookingRepo, configurations...)
 }
 
 func NewRouterWithRepo(log *slog.Logger, ready health.Check, productRepo products.Repository, configurations ...config.Config) http.Handler {
@@ -61,10 +76,10 @@ func NewRouterWithRepos(log *slog.Logger, ready health.Check, productRepo produc
 }
 
 func NewRouterWithAllRepos(log *slog.Logger, ready health.Check, productRepo products.Repository, inventoryRepo inventory.Repository, orderRepo orders.Repository, tenantRepo tenant.Repository, shiftRepo shifts.Repository, configurations ...config.Config) http.Handler {
-	return NewRouterWithAuthRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, auth.NewMemoryRepository(), configurations...)
+	return NewRouterWithAuthRepos(log, ready, productRepo, inventoryRepo, orderRepo, tenantRepo, shiftRepo, auth.NewMemoryRepository(), products.NewMemoryCategoryRepository(), customers.NewMemoryRepository(), services.NewMemoryRepository(), bookings.NewMemoryRepository(), configurations...)
 }
 
-func NewRouterWithAuthRepos(log *slog.Logger, ready health.Check, productRepo products.Repository, inventoryRepo inventory.Repository, orderRepo orders.Repository, tenantRepo tenant.Repository, shiftRepo shifts.Repository, authRepo auth.Repository, configurations ...config.Config) http.Handler {
+func NewRouterWithAuthRepos(log *slog.Logger, ready health.Check, productRepo products.Repository, inventoryRepo inventory.Repository, orderRepo orders.Repository, tenantRepo tenant.Repository, shiftRepo shifts.Repository, authRepo auth.Repository, categoryRepo products.CategoryRepository, customerRepo customers.Repository, serviceRepo services.Repository, bookingRepo bookings.Repository, configurations ...config.Config) http.Handler {
 	cfg := config.Load()
 	if len(configurations) > 0 {
 		cfg = configurations[0]
@@ -114,6 +129,18 @@ func NewRouterWithAuthRepos(log *slog.Logger, ready health.Check, productRepo pr
 	if authRepo == nil {
 		authRepo = auth.NewMemoryRepository()
 	}
+	if categoryRepo == nil {
+		categoryRepo = products.NewMemoryCategoryRepository()
+	}
+	if customerRepo == nil {
+		customerRepo = customers.NewMemoryRepository()
+	}
+	if serviceRepo == nil {
+		serviceRepo = services.NewMemoryRepository()
+	}
+	if bookingRepo == nil {
+		bookingRepo = bookings.NewMemoryRepository()
+	}
 
 	// Link order repo with shift repo to record cashier sales automatically
 	if sr, ok := orderRepo.(interface{ SetSaleRecorder(orders.SaleRecorder) }); ok {
@@ -134,6 +161,10 @@ func NewRouterWithAuthRepos(log *slog.Logger, ready health.Check, productRepo pr
 	tenantHandler := tenant.NewHandler(tenantRepo)
 	shiftHandler := shifts.NewHandler(shiftRepo)
 	authHandler := auth.NewHandler(authRepo, time.Duration(cfg.SessionTTLHours)*time.Hour)
+	categoryHandler := products.NewCategoryHandler(categoryRepo)
+	customerHandler := customers.NewHandler(customerRepo)
+	serviceHandler := services.NewHandler(serviceRepo)
+	bookingHandler := bookings.NewHandler(bookingRepo, orderRepo, serviceRepo, customerRepo)
 	uploadHandler := uploads.NewHandler("./uploads")
 
 	router.Get("/health/live", healthHandler.Live)
@@ -162,10 +193,49 @@ func NewRouterWithAuthRepos(log *slog.Logger, ready health.Check, productRepo pr
 			tr.Get("/", tenantHandler.List)
 			tr.Get("/{id}", tenantHandler.GetByID)
 		})
+		r.Route("/auth", func(ar chi.Router) {
+			ar.Post("/login", authHandler.Login)
+			ar.Post("/pin", authHandler.PinLogin)
+			ar.Post("/logout", authHandler.Logout)
+			ar.Get("/me", authHandler.Me)
+		})
 		r.Get("/products", productHandler.List)
 		r.Post("/products", productHandler.Create)
 		r.Put("/products/{id}", productHandler.Update)
 		r.Delete("/products/{id}", productHandler.Delete)
+		r.Get("/categories", categoryHandler.ListCategories)
+		r.Post("/categories", categoryHandler.CreateCategory)
+		r.Route("/customers", func(cr chi.Router) {
+			cr.Get("/", customerHandler.ListCustomers)
+			cr.Post("/", customerHandler.CreateCustomer)
+			cr.Get("/{id}", customerHandler.GetCustomer)
+			cr.Put("/{id}", customerHandler.UpdateCustomer)
+		})
+		r.Route("/pets", func(pr chi.Router) {
+			pr.Get("/", customerHandler.ListPets)
+			pr.Post("/", customerHandler.CreatePet)
+			pr.Get("/{id}", customerHandler.GetPet)
+			pr.Put("/{id}", customerHandler.UpdatePet)
+		})
+		r.Route("/services", func(sr chi.Router) {
+			sr.Get("/", serviceHandler.ListServices)
+			sr.Post("/", serviceHandler.CreateService)
+			sr.Get("/{id}", serviceHandler.GetService)
+			sr.Put("/{id}", serviceHandler.UpdateService)
+		})
+		r.Route("/packages", func(pr chi.Router) {
+			pr.Get("/", serviceHandler.ListPackages)
+			pr.Post("/", serviceHandler.CreatePackage)
+			pr.Get("/{id}", serviceHandler.GetPackage)
+			pr.Put("/{id}", serviceHandler.UpdatePackage)
+		})
+		r.Route("/bookings", func(br chi.Router) {
+			br.Get("/", bookingHandler.List)
+			br.Post("/", bookingHandler.Create)
+			br.Get("/{id}", bookingHandler.GetByID)
+			br.Post("/{id}/status", bookingHandler.ChangeStatus)
+			br.Post("/{id}/complete", bookingHandler.Complete)
+		})
 		r.Route("/inventory", func(r chi.Router) {
 			r.Get("/stocks", inventoryHandler.ListStocks)
 			r.Get("/locations", inventoryHandler.ListLocations)

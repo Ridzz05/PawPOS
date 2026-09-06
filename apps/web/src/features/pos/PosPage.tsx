@@ -51,6 +51,8 @@ import { getLocations, getStockBalances } from '../inventory/inventoryApi'
 import type { InventoryLocation, ProductStockSummary } from '../inventory/inventoryApi'
 import { getProducts } from '../products/productsApi'
 import type { Product } from '../products/productsApi'
+import { getCategories } from '../products/productsApi'
+import type { Category } from '../products/productsApi'
 import { createOrder } from './ordersApi'
 import type { CreateOrderItemInput, OrderDetail } from './ordersApi'
 import { getCurrentShift } from '../shifts/shiftsApi'
@@ -82,19 +84,10 @@ interface HeldCart {
 
 const formatRupiah = (amount: number) => formatCurrency(amount)
 
-const POS_CATEGORIES = [
-  { label: 'Semua', key: 'all' },
-  { label: '🐱 Pakan Kucing', key: 'cat_food' },
-  { label: '🐶 Pakan Anjing', key: 'dog_food' },
-  { label: '🛁 Grooming', key: 'grooming' },
-  { label: '💊 Obat & Vitamin', key: 'health' },
-  { label: '🎾 Aksesoris & Mainan', key: 'accessories' },
-  { label: '📦 Lainnya', key: 'other' },
-]
-
 export function PosPage() {
   const { lockScreen } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [stocks, setStocks] = useState<ProductStockSummary[]>([])
   const [locations, setLocations] = useState<InventoryLocation[]>([])
   const [selectedLocationId, setSelectedLocationId] = useState<string>('loc-main')
@@ -103,7 +96,7 @@ export function PosPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('Semua')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
 
   // Cart state
   const [cart, setCart] = useState<CartItem[]>([])
@@ -159,13 +152,15 @@ export function PosPage() {
     setLoading(true)
     setLoadError(null)
     try {
-      const [prodRes, stockRes, locRes, shiftRes] = await Promise.all([
+      const [prodRes, stockRes, locRes, shiftRes, catRes] = await Promise.all([
         getProducts(),
         getStockBalances(selectedLocationId),
         getLocations(),
         getCurrentShift().catch(() => null),
+        getCategories().catch(() => [] as Category[]),
       ])
       setProducts(prodRes.filter((p) => p.is_active))
+      setCategories(catRes)
       setStocks(stockRes)
       setLocations(locRes)
       setActiveShift(shiftRes)
@@ -223,39 +218,30 @@ export function PosPage() {
     return map
   }, [stocks])
 
-  // Filtered product catalog with Olsera-style category tabs
+  // Filtered product catalog by actual database category
+  const categoryNameById = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const c of categories) {
+      map.set(c.id, c.name)
+    }
+    return map
+  }, [categories])
+
+  const productCountByCategory = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const p of products) {
+      if (!p.category_id) continue
+      map.set(p.category_id, (map.get(p.category_id) ?? 0) + 1)
+    }
+    return map
+  }, [products])
+
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
     let list = products
 
-    if (selectedCategory !== 'Semua') {
-      list = list.filter((p) => {
-        const name = (p.name + ' ' + (p.category_id || '')).toLowerCase()
-        if (selectedCategory === '🐱 Pakan Kucing') {
-          return name.includes('kucing') || name.includes('cat') || name.includes('kitten') || name.includes('whiskas') || name.includes('royal canin') || name.includes('me-o')
-        }
-        if (selectedCategory === '🐶 Pakan Anjing') {
-          return name.includes('anjing') || name.includes('dog') || name.includes('puppy') || name.includes('pedigree') || name.includes('pro plan')
-        }
-        if (selectedCategory === '🛁 Grooming') {
-          return name.includes('shampoo') || name.includes('sabun') || name.includes('grooming') || name.includes('sisir') || name.includes('sikat') || name.includes('towel') || name.includes('bedak')
-        }
-        if (selectedCategory === '💊 Obat & Vitamin') {
-          return name.includes('obat') || name.includes('vitamin') || name.includes('suplemen') || name.includes('kalsium') || name.includes('salep') || name.includes('tetes') || name.includes('vaksin')
-        }
-        if (selectedCategory === '🎾 Aksesoris & Mainan') {
-          return name.includes('mainan') || name.includes('tali') || name.includes('leash') || name.includes('collar') || name.includes('kandang') || name.includes('pasir') || name.includes('litter') || name.includes('mangkok') || name.includes('tempat')
-        }
-        if (selectedCategory === '📦 Lainnya') {
-          const isCat = name.includes('kucing') || name.includes('cat') || name.includes('whiskas')
-          const isDog = name.includes('anjing') || name.includes('dog') || name.includes('pedigree')
-          const isGroom = name.includes('shampoo') || name.includes('sabun') || name.includes('grooming')
-          const isHealth = name.includes('obat') || name.includes('vitamin')
-          const isAcc = name.includes('mainan') || name.includes('pasir') || name.includes('kandang')
-          return !isCat && !isDog && !isGroom && !isHealth && !isAcc
-        }
-        return true
-      })
+    if (selectedCategory !== 'all') {
+      list = list.filter((p) => p.category_id === selectedCategory)
     }
 
     if (!query) return list
@@ -693,14 +679,15 @@ export function PosPage() {
           '&::-webkit-scrollbar-thumb': { bgcolor: '#cbd5e1', borderRadius: 4 },
         }}
       >
-        {POS_CATEGORIES.map((cat) => {
-          const isSelected = selectedCategory === cat.label
+        {[{ id: 'all', name: 'Semua' }, ...categories].map((cat) => {
+          const isSelected = selectedCategory === cat.id
+          const count = cat.id === 'all' ? products.length : (productCountByCategory.get(cat.id) ?? 0)
           return (
             <Chip
-              key={cat.key}
-              label={cat.label}
+              key={cat.id}
+              label={`${cat.name} (${count})`}
               clickable
-              onClick={() => setSelectedCategory(cat.label)}
+              onClick={() => setSelectedCategory(cat.id)}
               color={isSelected ? 'primary' : 'default'}
               variant={isSelected ? 'filled' : 'outlined'}
               sx={{
@@ -859,7 +846,7 @@ export function PosPage() {
                             variant="caption"
                             sx={{
                               fontSize: '0.74rem',
-                              color: '#64748d',
+                              color: 'text.secondary',
                               fontWeight: 650,
                               whiteSpace: 'nowrap',
                               textOverflow: 'ellipsis',
@@ -869,6 +856,26 @@ export function PosPage() {
                           >
                             {p.sku}
                           </Typography>
+                          {p.category_id && categoryNameById.get(p.category_id) && (
+                            <>
+                              <Typography variant="caption" sx={{ color: '#cbd5e1', fontSize: '0.72rem', flexShrink: 0 }}>
+                                •
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontSize: '0.72rem',
+                                  color: 'warning.main',
+                                  fontWeight: 700,
+                                  whiteSpace: 'nowrap',
+                                  textOverflow: 'ellipsis',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                {categoryNameById.get(p.category_id)}
+                              </Typography>
+                            </>
+                          )}
                           <Typography variant="caption" sx={{ color: '#cbd5e1', fontSize: '0.72rem', flexShrink: 0 }}>
                             •
                           </Typography>
@@ -892,7 +899,7 @@ export function PosPage() {
                               variant="caption"
                               sx={{
                                 fontSize: '0.74rem',
-                                color: stock <= (p.minimum_stock ?? 2) ? '#b45309' : '#64748d',
+                                color: stock <= (p.minimum_stock ?? 2) ? 'warning.main' : 'text.secondary',
                                 fontWeight: stock <= (p.minimum_stock ?? 2) ? 800 : 600,
                                 whiteSpace: 'nowrap',
                                 flexShrink: 0,
@@ -939,8 +946,9 @@ export function PosPage() {
                             className="terminal-stepper"
                             onClick={(e) => e.stopPropagation()}
                             sx={{
-                              bgcolor: '#ffffff',
-                              border: '1px solid #ffd8c2',
+                              bgcolor: 'background.default',
+                              border: '1px solid',
+                              borderColor: 'divider',
                               borderRadius: '8px',
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -952,7 +960,7 @@ export function PosPage() {
                               size="small"
                               aria-label={`Kurangi ${p.name}`}
                               onClick={() => handleUpdateQuantity(p.id, -1)}
-                              sx={{ p: 0.25, color: '#64748d', '&:hover': { color: '#ef4444' } }}
+                              sx={{ p: 0.25, color: 'text.secondary', '&:hover': { color: '#ef4444' } }}
                             >
                               <RemoveOutlined sx={{ fontSize: 13 }} />
                             </IconButton>
@@ -961,7 +969,7 @@ export function PosPage() {
                                 px: 0.75,
                                 fontSize: '0.84rem',
                                 fontWeight: 850,
-                                color: '#0f172a',
+                                color: 'text.primary',
                                 minWidth: 18,
                                 textAlign: 'center',
                               }}
@@ -997,9 +1005,6 @@ export function PosPage() {
                               fontSize: '0.74rem',
                               fontWeight: 650,
                               whiteSpace: 'nowrap',
-                              borderColor: '#e2e8f0 !important',
-                              color: '#94a3b8 !important',
-                              bgcolor: '#f8fafc !important',
                             }}
                           >
                             Stok Habis
@@ -1007,7 +1012,7 @@ export function PosPage() {
                         </>
                       ) : (
                         <>
-                          <Typography variant="caption" sx={{ color: '#64748d', fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
                             Tersedia {stock} {p.base_unit}
                           </Typography>
 
@@ -1026,9 +1031,8 @@ export function PosPage() {
                               fontSize: '0.74rem',
                               fontWeight: 700,
                               whiteSpace: 'nowrap',
-                              borderColor: '#e2e8f0',
-                              color: '#334155',
-                              bgcolor: '#ffffff',
+                              borderColor: 'divider',
+                              color: 'text.secondary',
                               transition: 'all 120ms ease',
                               '&:hover': {
                                 borderColor: '#ff8042',
@@ -1348,7 +1352,7 @@ export function PosPage() {
           }}
         >
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '1.2rem', letterSpacing: '-0.025em' }}>
+            <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', fontSize: '1.2rem', letterSpacing: '-0.025em' }}>
               Penyelesaian Pembayaran
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.78rem', fontWeight: 550 }}>
@@ -1359,7 +1363,7 @@ export function PosPage() {
             size="small"
             onClick={() => setCheckoutOpen(false)}
             disabled={submitting}
-            sx={{ color: '#64748d' }}
+            sx={{ color: 'text.secondary' }}
           >
             <CloseOutlined fontSize="small" />
           </IconButton>
@@ -1423,7 +1427,7 @@ export function PosPage() {
 
             {/* Payment Method Selector */}
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 0.75, fontWeight: 750, color: '#0f172a', fontSize: '0.85rem' }}>
+              <Typography variant="subtitle2" sx={{ mb: 0.75, fontWeight: 750, color: 'text.primary', fontSize: '0.85rem' }}>
                 Metode Pembayaran
               </Typography>
               <Tabs
@@ -1431,9 +1435,10 @@ export function PosPage() {
                 onChange={(_, val) => setPaymentMethod(val)}
                 variant="fullWidth"
                 sx={{
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   borderRadius: '10px',
-                  bgcolor: '#ffffff',
+                  bgcolor: 'background.default',
                 }}
               >
                 <Tab icon={<LocalAtmOutlined sx={{ fontSize: 18 }} />} iconPosition="start" label="Tunai" value="cash" sx={{ fontWeight: 700 }} />
@@ -1450,11 +1455,12 @@ export function PosPage() {
                   sx={{
                     p: 1.75,
                     borderRadius: '10px',
-                    bgcolor: '#f0fdf4',
-                    border: '1px solid #bbf7d0',
+                    bgcolor: 'success.light',
+                    border: '1px solid',
+                    borderColor: 'divider',
                   }}
                 >
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#166534', mb: 0.25, fontSize: '0.86rem' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'success.main', mb: 0.25, fontSize: '0.86rem' }}>
                     Pembayaran Gabungan (Split Payment)
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
@@ -1465,7 +1471,7 @@ export function PosPage() {
                 <Stack spacing={1.75}>
                   <Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 750, color: '#1e293b' }}>
+                      <Typography variant="caption" sx={{ fontWeight: 750, color: 'text.primary' }}>
                         1. Porsi Uang Tunai (Cash)
                       </Typography>
                       <Button
@@ -1510,7 +1516,7 @@ export function PosPage() {
 
                   <Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 750, color: '#1e293b' }}>
+                      <Typography variant="caption" sx={{ fontWeight: 750, color: 'text.primary' }}>
                         2. Porsi QRIS / Non-Tunai
                       </Typography>
                       <Button
@@ -1552,9 +1558,9 @@ export function PosPage() {
                   sx={{
                     p: 1.5,
                     borderRadius: '10px',
-                    bgcolor: splitCashTender + splitNonCashAmount >= total ? '#ecfdf5' : '#fef2f2',
+                    bgcolor: splitCashTender + splitNonCashAmount >= total ? 'success.light' : 'error.light',
                     border: '1px solid',
-                    borderColor: splitCashTender + splitNonCashAmount >= total ? '#a7f3d0' : '#fecaca',
+                    borderColor: 'divider',
                   }}
                 >
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -1563,7 +1569,7 @@ export function PosPage() {
                         variant="body2"
                         sx={{
                           fontWeight: 750,
-                          color: splitCashTender + splitNonCashAmount >= total ? '#047857' : '#b91c1c',
+                          color: splitCashTender + splitNonCashAmount >= total ? 'success.main' : 'error.main',
                           fontSize: '0.85rem',
                         }}
                       >
@@ -1579,7 +1585,7 @@ export function PosPage() {
                       variant="subtitle2"
                       sx={{
                         fontWeight: 850,
-                        color: splitCashTender + splitNonCashAmount >= total ? '#047857' : '#b91c1c',
+                        color: splitCashTender + splitNonCashAmount >= total ? 'success.main' : 'error.main',
                       }}
                       className="tnum"
                     >
@@ -1652,14 +1658,14 @@ export function PosPage() {
                   }}
                 >
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="body2" sx={{ fontWeight: 750, color: paidAmount >= total ? '#047857' : '#64748d', fontSize: '0.9rem' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 750, color: paidAmount >= total ? 'success.main' : 'text.secondary', fontSize: '0.9rem' }}>
                       Kembalian
                     </Typography>
                     <Typography
                       variant="h6"
                       sx={{
                         fontWeight: 850,
-                        color: paidAmount >= total ? '#047857' : '#0f172a',
+                        color: paidAmount >= total ? 'success.main' : 'text.primary',
                         fontSize: '1.35rem',
                         letterSpacing: '-0.02em',
                       }}
@@ -1671,7 +1677,7 @@ export function PosPage() {
                 </Box>
               </Stack>
             ) : (
-              <Box sx={{ p: 2, textAlign: 'center', borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+              <Box sx={{ p: 2, textAlign: 'center', borderRadius: '10px', bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="body2" color="text.secondary">
                   {paymentMethod === 'qris'
                     ? 'Tunjukkan QRIS dinamis pada layar pelanggan atau terminal EDC.'
@@ -1740,21 +1746,21 @@ export function PosPage() {
           }}
         >
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 850, color: '#0f172a', fontSize: '1.1rem' }}>
+            <Typography variant="h6" sx={{ fontWeight: 850, color: 'text.primary', fontSize: '1.1rem' }}>
               Pilih / Pasang Diskon
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Terapkan potongan harga persentase atau nominal rupiah
             </Typography>
           </Box>
-          <IconButton size="small" onClick={() => setDiscountModalOpen(false)} sx={{ color: '#64748d' }}>
+          <IconButton size="small" onClick={() => setDiscountModalOpen(false)} sx={{ color: 'text.secondary' }}>
             <CloseOutlined fontSize="small" />
           </IconButton>
         </DialogTitle>
         <Divider sx={{ borderColor: '#e2e8f0' }} />
         <DialogContent sx={{ p: 2.5 }}>
           <Stack spacing={2}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: '#1e293b', fontSize: '0.85rem' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '0.85rem' }}>
               Pintasan Diskon Persentase
             </Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
@@ -1776,7 +1782,7 @@ export function PosPage() {
 
             <Divider sx={{ my: 0.5, borderColor: '#f1f5f9' }} />
 
-            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: '#1e293b', fontSize: '0.85rem' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '0.85rem' }}>
               Atau Masukkan Diskon Nominal (Rp)
             </Typography>
             <TextField
@@ -1861,7 +1867,7 @@ export function PosPage() {
           >
             <CheckCircleOutline sx={{ fontSize: 22 }} />
           </Box>
-          <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b', fontSize: '1.05rem' }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', fontSize: '1.05rem' }}>
             Transaksi Berhasil
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -1876,12 +1882,13 @@ export function PosPage() {
               sx={{
                 p: 2,
                 borderRadius: '10px',
-                bgcolor: '#fafbfc',
-                border: '1px dashed #cbd5e1',
+                bgcolor: 'background.default',
+                border: '1px dashed',
+                borderColor: 'divider',
                 fontFamily: 'monospace',
               }}
             >
-              <Box sx={{ textAlign: 'center', pb: 1, borderBottom: '1px dashed #cbd5e1', mb: 1 }}>
+              <Box sx={{ textAlign: 'center', pb: 1, borderBottom: '1px dashed', borderColor: 'divider', mb: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#ff8042' }}>
                   PURR'COFFEE POS
                 </Typography>
@@ -1892,7 +1899,7 @@ export function PosPage() {
                   variant="body2"
                   sx={{
                     fontWeight: 750,
-                    color: '#1e293b',
+                    color: 'text.primary',
                     mt: 0.5,
                   }}
                 >
@@ -1937,10 +1944,10 @@ export function PosPage() {
 
                 {completedOrder.discount_idr > 0 && (
                   <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="body2" sx={{ color: '#dc2626' }}>
+                    <Typography variant="body2" sx={{ color: 'error.main' }}>
                       Diskon
                     </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#dc2626' }} className="tnum">
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'error.main' }} className="tnum">
                       - {formatRupiah(completedOrder.discount_idr)}
                     </Typography>
                   </Stack>
@@ -1957,7 +1964,7 @@ export function PosPage() {
                   </Stack>
                 )}
 
-                <Divider sx={{ borderStyle: 'dashed', borderColor: '#e2e8f0', my: 0.5 }} />
+                <Divider sx={{ borderStyle: 'dashed', borderColor: 'divider', my: 0.5 }} />
 
                 <Stack direction="row" justifyContent="space-between">
                   <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>

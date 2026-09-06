@@ -73,12 +73,18 @@ func main() {
 		}
 
 		sqlContent := string(content)
-		// Clean up goose directives
+		// Clean up goose directives. The custom runner only applies Up
+		// migrations, so everything from a Down marker onward is skipped.
+		// (Down bodies must never execute: fresh databases would otherwise
+		// create-then-immediately-drop schema objects.)
 		lines := strings.Split(sqlContent, "\n")
 		var cleaned []string
 		for _, line := range lines {
 			trimmed := strings.TrimSpace(line)
 			if strings.HasPrefix(trimmed, "-- +goose") {
+				if strings.HasPrefix(trimmed, "-- +goose Down") {
+					break
+				}
 				continue
 			}
 			cleaned = append(cleaned, line)

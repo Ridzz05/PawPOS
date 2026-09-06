@@ -391,6 +391,770 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/login:
+    post:
+      operationId: loginWithPassword
+      summary: Login with email and password
+      description: Verifies staff credentials with bcrypt and issues an opaque session token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated session with user identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessAuth'
+        '400':
+          description: Email or password missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/pin:
+    post:
+      operationId: loginWithPin
+      summary: Fast cashier terminal login with role and PIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PinLoginRequest'
+      responses:
+        '200':
+          description: Authenticated session with user identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessAuth'
+        '401':
+          description: Invalid role or PIN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Role or PIN payload invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/me:
+    get:
+      operationId: getSessionUser
+      summary: Resolve the current session token to a user
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer opaque session token.
+      responses:
+        '200':
+          description: Session user with role and permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessAuthUser'
+        '401':
+          description: Missing, revoked, or expired session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/logout:
+    post:
+      operationId: revokeSession
+      summary: Revoke the current session token
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer opaque session token.
+      responses:
+        '200':
+          description: Session revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessLogout'
+        '401':
+          description: Missing or unknown session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/categories:
+    get:
+      operationId: listCategories
+      summary: List active product categories for the tenant
+      responses:
+        '200':
+          description: Tenant category list ordered by name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessCategoryList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: createCategory
+      summary: Create a product category
+      description: Category names are unique per tenant (case-insensitive).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoryRequest'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessCategoryCreated'
+        '400':
+          description: Category name missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Category name already exists for the tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/customers:
+    get:
+      operationId: listCustomers
+      summary: List active customers for the tenant
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by name, phone, or email (case-insensitive).
+      responses:
+        '200':
+          description: Tenant customer list ordered by name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessCustomerList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: createCustomer
+      summary: Register a new customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertCustomerRequest'
+      responses:
+        '201':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessCustomer'
+        '400':
+          description: Customer name missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/customers/{id}:
+    get:
+      operationId: getCustomerById
+      summary: Get a customer by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customer detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessCustomer'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updateCustomer
+      summary: Update a customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertCustomerRequest'
+      responses:
+        '200':
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessCustomer'
+        '400':
+          description: Payload invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/pets:
+    get:
+      operationId: listPets
+      summary: List active pets for the tenant
+      parameters:
+        - name: customer_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by owner customer ID.
+      responses:
+        '200':
+          description: Tenant pet list ordered by name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPetList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: createPet
+      summary: Register a new pet for a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertPetRequest'
+      responses:
+        '201':
+          description: Pet created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPet'
+        '422':
+          description: Payload invalid or owner not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/pets/{id}:
+    get:
+      operationId: getPetById
+      summary: Get a pet by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pet detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPet'
+        '404':
+          description: Pet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updatePet
+      summary: Update a pet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertPetRequest'
+      responses:
+        '200':
+          description: Pet updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPet'
+        '404':
+          description: Pet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Payload invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/services:
+    get:
+      operationId: listServices
+      summary: List active services for the tenant
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [grooming, klinik, penitipan, lainnya]
+      responses:
+        '200':
+          description: Tenant service list ordered by name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessServiceList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: createService
+      summary: Register a new service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertServiceRequest'
+      responses:
+        '201':
+          description: Service created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessService'
+        '400':
+          description: Payload invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Service name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/services/{id}:
+    get:
+      operationId: getServiceById
+      summary: Get a service by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Service detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessService'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updateService
+      summary: Update a service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertServiceRequest'
+      responses:
+        '200':
+          description: Service updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessService'
+        '400':
+          description: Payload invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/packages:
+    get:
+      operationId: listPackages
+      summary: List active service packages for the tenant
+      responses:
+        '200':
+          description: Tenant package list ordered by name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPackageList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: createPackage
+      summary: Create a service bundle package
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertPackageRequest'
+      responses:
+        '201':
+          description: Package created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPackage'
+        '409':
+          description: Package name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Payload invalid or service not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/packages/{id}:
+    get:
+      operationId: getPackageById
+      summary: Get a package by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Package detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPackage'
+        '404':
+          description: Package not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updatePackage
+      summary: Update a package
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertPackageRequest'
+      responses:
+        '200':
+          description: Package updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessPackage'
+        '404':
+          description: Package not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Payload invalid or service not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/bookings:
+    get:
+      operationId: listBookings
+      summary: List bookings for the tenant
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [antre, proses, selesai, batal]
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter by scheduled date (YYYY-MM-DD).
+      responses:
+        '200':
+          description: Booking list ordered by schedule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessBookingList'
+        '404':
+          description: Route not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: createBooking
+      summary: Schedule a new booking for exactly one service or package
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertBookingRequest'
+      responses:
+        '201':
+          description: Booking created in antre status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessBooking'
+        '422':
+          description: Payload invalid or reference not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/bookings/{id}:
+    get:
+      operationId: getBookingById
+      summary: Get a booking by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Booking detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessBooking'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/bookings/{id}/status:
+    post:
+      operationId: changeBookingStatus
+      summary: Move a booking to proses or batal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingStatusRequest'
+      responses:
+        '200':
+          description: Booking status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessBooking'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Booking already closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Transition invalid (selesai requires payment)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/bookings/{id}/complete:
+    post:
+      operationId: completeBooking
+      summary: Settle a booking into a POS order with jasa lines
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteBookingRequest'
+      responses:
+        '200':
+          description: Booking settled with linked order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessBookingCompleted'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Booking already closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Payment or reference invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     SuccessHealth:
@@ -744,12 +1508,12 @@ components:
       required:
         - id
         - order_id
-        - product_id
         - product_name
         - sku
         - unit_price_idr
         - quantity
         - subtotal_idr
+        - item_kind
       properties:
         id:
           type: string
@@ -767,6 +1531,11 @@ components:
           type: number
         subtotal_idr:
           type: integer
+        item_kind:
+          type: string
+          enum: [barang, jasa]
+        service_id:
+          type: string
     OrderDetail:
       allOf:
         - $ref: '#/components/schemas/Order'
@@ -780,7 +1549,6 @@ components:
     CreateOrderItemRequest:
       type: object
       required:
-        - product_id
         - product_name
         - sku
         - unit_price_idr
@@ -788,6 +1556,7 @@ components:
       properties:
         product_id:
           type: string
+          description: Wajib untuk item barang, kosongkan untuk item jasa.
         product_name:
           type: string
         sku:
@@ -798,6 +1567,13 @@ components:
         quantity:
           type: number
           exclusiveMinimum: 0
+        item_kind:
+          type: string
+          enum: [barang, jasa]
+          default: barang
+        service_id:
+          type: string
+          description: Referensi layanan untuk item jasa.
     CreateOrderRequest:
       type: object
       required:
@@ -858,6 +1634,482 @@ components:
               type: integer
             content_type:
               type: string
+        request_id:
+          type: string
+    AuthUser:
+      type: object
+      required: [id, email, display_name, role, avatar, tenant_id, is_active, permissions]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        display_name:
+          type: string
+        role:
+          type: string
+          enum: [owner, manager, cashier, warehouse]
+        avatar:
+          type: string
+        tenant_id:
+          type: string
+        is_active:
+          type: boolean
+        permissions:
+          type: array
+          items:
+            type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    PinLoginRequest:
+      type: object
+      required: [role, pin]
+      properties:
+        role:
+          type: string
+          enum: [owner, manager, cashier, warehouse]
+        pin:
+          type: string
+    SuccessAuth:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: object
+          required: [token, expires_at, user]
+          properties:
+            token:
+              type: string
+            expires_at:
+              type: string
+              format: date-time
+            user:
+              $ref: '#/components/schemas/AuthUser'
+        request_id:
+          type: string
+    SuccessAuthUser:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/AuthUser'
+        request_id:
+          type: string
+    SuccessLogout:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: object
+          required: [revoked]
+          properties:
+            revoked:
+              type: boolean
+        request_id:
+          type: string
+    Category:
+      type: object
+      required: [id, tenant_id, name, is_active]
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        is_active:
+          type: boolean
+    CreateCategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    SuccessCategoryList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        request_id:
+          type: string
+    SuccessCategoryCreated:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/Category'
+        request_id:
+          type: string
+    Customer:
+      type: object
+      required: [id, tenant_id, name, is_active]
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        notes:
+          type: string
+        is_active:
+          type: boolean
+    UpsertCustomerRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        notes:
+          type: string
+    SuccessCustomerList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Customer'
+        request_id:
+          type: string
+    SuccessCustomer:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/Customer'
+        request_id:
+          type: string
+    Pet:
+      type: object
+      required: [id, tenant_id, customer_id, name, is_active]
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        customer_id:
+          type: string
+        customer_name:
+          type: string
+        name:
+          type: string
+        species:
+          type: string
+        breed:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        gender:
+          type: string
+        weight_kg:
+          type: number
+        color:
+          type: string
+        allergies:
+          type: string
+        notes:
+          type: string
+        is_active:
+          type: boolean
+    UpsertPetRequest:
+      type: object
+      required: [customer_id, name]
+      properties:
+        customer_id:
+          type: string
+        name:
+          type: string
+        species:
+          type: string
+        breed:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        gender:
+          type: string
+        weight_kg:
+          type: number
+        color:
+          type: string
+        allergies:
+          type: string
+        notes:
+          type: string
+    SuccessPetList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pet'
+        request_id:
+          type: string
+    SuccessPet:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/Pet'
+        request_id:
+          type: string
+    Service:
+      type: object
+      required: [id, tenant_id, name, category, price_idr, is_active]
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          enum: [grooming, klinik, penitipan, lainnya]
+        price_idr:
+          type: integer
+        duration_minutes:
+          type: integer
+        description:
+          type: string
+        is_active:
+          type: boolean
+    UpsertServiceRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum: [grooming, klinik, penitipan, lainnya]
+        price_idr:
+          type: integer
+        duration_minutes:
+          type: integer
+        description:
+          type: string
+    SuccessServiceList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
+        request_id:
+          type: string
+    SuccessService:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/Service'
+        request_id:
+          type: string
+    PackageItem:
+      type: object
+      required: [service_id, sessions_included]
+      properties:
+        service_id:
+          type: string
+        service_name:
+          type: string
+        sessions_included:
+          type: integer
+        duration_minutes:
+          type: integer
+    Package:
+      type: object
+      required: [id, tenant_id, name, price_idr, items, is_active]
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        name:
+          type: string
+        price_idr:
+          type: integer
+        description:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageItem'
+        is_active:
+          type: boolean
+    UpsertPackageRequest:
+      type: object
+      required: [name, items]
+      properties:
+        name:
+          type: string
+        price_idr:
+          type: integer
+        description:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            required: [service_id, sessions_included]
+            properties:
+              service_id:
+                type: string
+              sessions_included:
+                type: integer
+    SuccessPackageList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Package'
+        request_id:
+          type: string
+    SuccessPackage:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/Package'
+        request_id:
+          type: string
+    Booking:
+      type: object
+      required: [id, tenant_id, customer_id, pet_id, location_id, scheduled_at, status]
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        customer_id:
+          type: string
+        pet_id:
+          type: string
+        service_id:
+          type: string
+        package_id:
+          type: string
+        location_id:
+          type: string
+        scheduled_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [antre, proses, selesai, batal]
+        staff_name:
+          type: string
+        notes:
+          type: string
+        order_id:
+          type: string
+    UpsertBookingRequest:
+      type: object
+      required: [customer_id, pet_id, location_id, scheduled_at]
+      properties:
+        customer_id:
+          type: string
+        pet_id:
+          type: string
+        service_id:
+          type: string
+        package_id:
+          type: string
+        location_id:
+          type: string
+        scheduled_at:
+          type: string
+          format: date-time
+        staff_name:
+          type: string
+        notes:
+          type: string
+    BookingStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [proses, batal]
+        notes:
+          type: string
+    CompleteBookingRequest:
+      type: object
+      required: [payment_method, paid_amount_idr]
+      properties:
+        payment_method:
+          type: string
+          enum: [cash, qris, debit_card, credit_card, split]
+        paid_amount_idr:
+          type: integer
+        cash_amount_idr:
+          type: integer
+        non_cash_amount_idr:
+          type: integer
+        notes:
+          type: string
+    SuccessBookingList:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Booking'
+        request_id:
+          type: string
+    SuccessBooking:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          $ref: '#/components/schemas/Booking'
+        request_id:
+          type: string
+    SuccessBookingCompleted:
+      type: object
+      required: [data, request_id]
+      properties:
+        data:
+          type: object
+          required: [booking, order]
+          properties:
+            booking:
+              $ref: '#/components/schemas/Booking'
+            order:
+              $ref: '#/components/schemas/OrderDetail'
         request_id:
           type: string
 

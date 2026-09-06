@@ -4,8 +4,6 @@ import {
   Avatar,
   Box,
   Button,
-  Card,
-  CardActionArea,
   Chip,
   Container,
   Divider,
@@ -21,9 +19,7 @@ import {
 } from '@mui/material'
 import {
   ArrowBackOutlined,
-  ArrowForwardOutlined,
   BackspaceOutlined,
-  CheckCircleOutline,
   FlashOnOutlined,
   KeyOutlined,
   LockOutlined,
@@ -50,15 +46,15 @@ export function LoginPage() {
   const [selectedStaffRole, setSelectedStaffRole] = useState<StaffRole>('cashier')
   const [pinInput, setPinInput] = useState('')
 
-  // Credential mode state
-  const [email, setEmail] = useState('owner@pawpos.id')
-  const [password, setPassword] = useState('pawpos123')
-  const [showPassword, setShowPassword] = useState(false)
-
   // Status & Feedback
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const demoEnabled = isDemoLoginEnabled()
+
+  // Credential mode state (prefill demo hanya saat mode demo aktif)
+  const [email, setEmail] = useState(demoEnabled ? 'owner@pawpos.id' : '')
+  const [password, setPassword] = useState(demoEnabled ? 'pawpos123' : '')
+  const [showPassword, setShowPassword] = useState(false)
 
   // Quick 1-Click Demo (hanya DEV / ?demo=1 untuk presentasi lead)
   const handleInstantDemoLogin = (role: StaffRole) => {
@@ -80,7 +76,7 @@ export function LoginPage() {
 
   // Keypad Handlers
   const handleKeypadPress = (num: string) => {
-    if (pinInput.length < 6) {
+    if (pinInput.length < 4) {
       const nextPin = pinInput + num
       setPinInput(nextPin)
       setErrorMsg(null)
@@ -101,33 +97,42 @@ export function LoginPage() {
     setErrorMsg(null)
   }
 
-  const executePinLogin = (role: StaffRole, pin: string) => {
+  const executePinLogin = async (role: StaffRole, pin: string) => {
     setIsSubmitting(true)
     setErrorMsg(null)
-    const res = loginWithPin(role, pin)
-    if (res.success && res.initialRoute) {
-      navigate(res.initialRoute, { replace: true })
-    } else {
-      setErrorMsg(res.error || 'PIN kasir tidak sesuai.')
+    try {
+      const res = await loginWithPin(role, pin)
+      if (res.success && res.initialRoute) {
+        navigate(res.initialRoute, { replace: true })
+      } else {
+        setErrorMsg(res.error || 'PIN kasir tidak sesuai.')
+        setPinInput('')
+        setIsSubmitting(false)
+      }
+    } catch {
+      setErrorMsg('Gagal menghubungi server login.')
       setPinInput('')
       setIsSubmitting(false)
     }
   }
 
-  const handleCredentialSubmit = (e: React.FormEvent) => {
+  const handleCredentialSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     setErrorMsg(null)
-    const res = login(email, password)
-    if (res.success && res.initialRoute) {
-      navigate(res.initialRoute, { replace: true })
-    } else {
-      setErrorMsg(res.error || 'Email atau password tidak sesuai.')
+    try {
+      const res = await login(email, password)
+      if (res.success && res.initialRoute) {
+        navigate(res.initialRoute, { replace: true })
+      } else {
+        setErrorMsg(res.error || 'Email atau password tidak sesuai.')
+        setIsSubmitting(false)
+      }
+    } catch {
+      setErrorMsg('Gagal menghubungi server login.')
       setIsSubmitting(false)
     }
   }
-
-  const activeStaffMeta = DEMO_ACCOUNTS.find((a) => a.role === selectedStaffRole) || DEMO_ACCOUNTS[1]
 
   return (
     <Box
@@ -296,43 +301,13 @@ export function LoginPage() {
                           {acc.name.split(' ')[0]}
                         </Typography>
                         <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
-                          {demoEnabled ? `PIN: ${acc.pin}` : 'PIN: ••••'}
+                          PIN: ••••
                         </Typography>
                       </Box>
                     </Paper>
                   )
                 })}
               </Stack>
-
-              {/* Active Operator Banner */}
-              <Box
-                sx={{
-                  p: 1.5,
-                  mb: 2,
-                  borderRadius: '12px',
-                  bgcolor: isDark ? '#0E1626' : '#F8FAFC',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Stack direction="row" spacing={1.25} alignItems="center">
-                  <Avatar sx={{ bgcolor: activeStaffMeta.badgeBg, color: activeStaffMeta.badgeColor, width: 34, height: 34 }}>
-                    {activeStaffMeta.avatar}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, fontSize: '0.88rem' }}>
-                      {activeStaffMeta.name}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {activeStaffMeta.roleTitle} (PIN: <strong>{demoEnabled ? activeStaffMeta.pin : '••••'}</strong>)
-                    </Typography>
-                  </Box>
-                </Stack>
-                <Chip label={activeStaffMeta.role.toUpperCase()} size="small" sx={{ height: 20, fontSize: '0.62rem', fontWeight: 800 }} />
-              </Box>
 
               {/* Masked PIN Dot Indicators */}
               <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ mb: 2.5 }}>
@@ -347,7 +322,7 @@ export function LoginPage() {
                         borderRadius: '50%',
                         bgcolor: isFilled ? '#FF8A3D' : 'transparent',
                         border: '2px solid',
-                        borderColor: isFilled ? '#FF8A3D' : 'divider',
+                        borderColor: isFilled ? '#FF8A3D' : 'text.disabled',
                         transition: 'all 120ms ease',
                       }}
                     />
@@ -494,7 +469,6 @@ export function LoginPage() {
                   size="large"
                   fullWidth
                   disabled={isSubmitting}
-                  endIcon={<ArrowForwardOutlined />}
                   sx={{
                     py: 1.25,
                     borderRadius: '10px',

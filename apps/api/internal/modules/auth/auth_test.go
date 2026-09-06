@@ -2,6 +2,7 @@ package auth
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +12,7 @@ import (
 
 func TestMemoryAuthenticatePassword(t *testing.T) {
 	repo := NewMemoryRepository()
-	ctx := t.Context()
+	ctx := context.Background()
 
 	user, err := repo.AuthenticatePassword(ctx, "tenant-1", "OWNER@pawpos.id", "pawpos123")
 	if err != nil {
@@ -31,7 +32,7 @@ func TestMemoryAuthenticatePassword(t *testing.T) {
 
 func TestMemoryAuthenticatePIN(t *testing.T) {
 	repo := NewMemoryRepository()
-	ctx := t.Context()
+	ctx := context.Background()
 
 	user, err := repo.AuthenticatePIN(ctx, "tenant-1", "cashier", "1234")
 	if err != nil {
@@ -51,7 +52,7 @@ func TestMemoryAuthenticatePIN(t *testing.T) {
 
 func TestMemorySessionLifecycle(t *testing.T) {
 	repo := NewMemoryRepository()
-	ctx := t.Context()
+	ctx := context.Background()
 
 	token, _, err := repo.CreateSession(ctx, "staff-cashier", time.Hour)
 	if err != nil || token == "" {

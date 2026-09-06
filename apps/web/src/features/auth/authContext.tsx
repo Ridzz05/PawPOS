@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { StaffRole } from './rbac'
-import { setActiveStaff } from './rbac'
+import { ROLE_DEFINITIONS, setActiveStaff } from './rbac'
+import type { BackendUser } from './authApi'
+import { AuthApiError, loginPinWithBackend, loginWithBackend, revokeBackendSession } from './authApi'
 
 export interface DemoAccount {
   email: string
@@ -80,14 +82,23 @@ export interface AuthUser {
   role: StaffRole
   roleTitle: string
   avatar: string
+  /** Opaque session token dari backend; undefined saat login demo lokal. */
+  token?: string
+}
+
+export interface AuthResult {
+  success: boolean
+  error?: string
+  user?: AuthUser
+  initialRoute?: string
 }
 
 interface AuthContextType {
   user: AuthUser | null
   isAuthenticated: boolean
   isScreenLocked: boolean
-  login: (email: string, pass: string) => { success: boolean; error?: string; user?: AuthUser; initialRoute?: string }
-  loginWithPin: (role: StaffRole, pin: string) => { success: boolean; error?: string; user?: AuthUser; initialRoute?: string }
+  login: (email: string, pass: string) => Promise<AuthResult>
+  loginWithPin: (role: StaffRole, pin: string) => Promise<AuthResult>
   loginAsDemo: (role: StaffRole) => { user: AuthUser; initialRoute: string }
   lockScreen: () => void
   unlockScreen: (pin: string) => { success: boolean; error?: string }
@@ -202,6 +213,44 @@ function clearSession(): void {
   }
 }
 
+function initialRouteFor(role: StaffRole): string {
+  if (role === 'cashier') return '/pos'
+  if (role === 'warehouse') return '/inventory/stocks'
+  return '/dashboard'
+}
+
+/** Petakan user backend ke AuthUser lokal (PIN unlock diambil dari persona demo se-peran). */
+function toAuthUser(backend: BackendUser, token: string): AuthUser {
+  const role = (backend.role in ROLE_DEFINITIONS ? backend.role : 'cashier') as StaffRole
+  const demoPin = DEMO_ACCOUNTS.find((a) => a.role === role)?.pin ?? ''
+  return {
+    id: backend.id,
+    email: backend.email,
+    pin: demoPin,
+    name: backend.display_name,
+    role,
+    roleTitle: ROLE_DEFINITIONS[role].title,
+    avatar: backend.avatar || ROLE_DEFINITIONS[role].label.charAt(0),
+    token,
+  }
+}
+
+function establishSession(authUser: AuthUser): AuthResult {
+  return { success: true, user: authUser, initialRoute: initialRouteFor(authUser.role) }
+}
+
+function applySession(
+  setUser: (u: AuthUser) => void,
+  setLocked: (v: boolean) => void,
+  authUser: AuthUser,
+): void {
+  setUser(authUser)
+  setLocked(false)
+  localStorage.removeItem(LOCK_STORAGE_KEY)
+  persistSession(authUser)
+  setActiveStaff({ id: authUser.id, name: authUser.name, role: authUser.role })
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
     try {
@@ -232,15 +281,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   })
 
-  const login = (email: string, pass: string) => {
+  // Backend dulu (bcrypt server-side); jatuh ke demo lokal hanya jika backend tak terjangkau.
+  const login = async (email: string, pass: string): Promise<AuthResult> => {
     const cleanEmail = email.trim().toLowerCase()
     const cleanPass = pass.trim()
+    if (!cleanEmail || !cleanPass) {
+      return { success: false, error: 'Email dan kata sandi wajib diisi.' }
+    }
+    const lockKey = `email-${cleanEmail}`
+    const remaining = lockoutRemainingMs(lockKey)
+    if (remaining > 0) {
+      return { success: false, error: `Terlalu banyak percobaan. Coba lagi dalam ${Math.ceil(remaining / 1000)} detik.` }
+    }
+    try {
+      const backend = await loginWithBackend(cleanEmail, cleanPass)
+      clearLockout(lockKey)
+      const authUser = toAuthUser(backend.user, backend.token)
+      applySession(setUser, setIsScreenLocked, authUser)
+      return establishSession(authUser)
+    } catch (error) {
+      if (error instanceof AuthApiError && error.code !== 'NETWORK_ERROR') {
+        const lockedFor = recordPinFailure(lockKey)
+        if (lockedFor > 0) {
+          return { success: false, error: `Kredensial salah 5x. Coba lagi dalam ${Math.ceil(lockedFor / 1000)} detik.` }
+        }
+        return { success: false, error: error.message }
+      }
+    }
     const match = DEMO_ACCOUNTS.find(
       (acc) => acc.email.toLowerCase() === cleanEmail && acc.password === cleanPass
     )
     if (!match) {
+      const lockedFor = recordPinFailure(lockKey)
+      if (lockedFor > 0) {
+        return { success: false, error: `Kredensial salah 5x. Coba lagi dalam ${Math.ceil(lockedFor / 1000)} detik.` }
+      }
       return { success: false, error: 'Email atau password akun tidak sesuai. Periksa kembali kredensial Anda.' }
     }
+    clearLockout(lockKey)
     const authUser: AuthUser = {
       id: `staff-${match.role}`,
       email: match.email,
@@ -250,19 +328,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       roleTitle: match.roleTitle,
       avatar: match.avatar,
     }
-    setUser(authUser)
-    setIsScreenLocked(false)
-    localStorage.removeItem(LOCK_STORAGE_KEY)
-    persistSession(authUser)
-    setActiveStaff({ id: authUser.id, name: authUser.name, role: authUser.role })
-    return { success: true, user: authUser, initialRoute: match.initialRoute }
+    applySession(setUser, setIsScreenLocked, authUser)
+    return establishSession(authUser)
   }
 
-  const loginWithPin = (role: StaffRole, pin: string) => {
+  const loginWithPin = async (role: StaffRole, pin: string): Promise<AuthResult> => {
     const cleanPin = pin.trim()
     const remaining = lockoutRemainingMs(role)
     if (remaining > 0) {
       return { success: false, error: `Terlalu banyak percobaan. Coba lagi dalam ${Math.ceil(remaining / 1000)} detik.` }
+    }
+    try {
+      const backend = await loginPinWithBackend(role, cleanPin)
+      clearLockout(role)
+      const authUser = toAuthUser(backend.user, backend.token)
+      applySession(setUser, setIsScreenLocked, authUser)
+      return establishSession(authUser)
+    } catch (error) {
+      if (error instanceof AuthApiError && error.code !== 'NETWORK_ERROR') {
+        const lockedFor = recordPinFailure(role)
+        if (lockedFor > 0) {
+          return { success: false, error: `PIN salah 5x. Terminal dikunci ${Math.ceil(lockedFor / 1000)} detik.` }
+        }
+        return { success: false, error: error.message }
+      }
     }
     const match = DEMO_ACCOUNTS.find((acc) => acc.role === role)
     if (!match) {
@@ -285,12 +374,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       roleTitle: match.roleTitle,
       avatar: match.avatar,
     }
-    setUser(authUser)
-    setIsScreenLocked(false)
-    localStorage.removeItem(LOCK_STORAGE_KEY)
-    persistSession(authUser)
-    setActiveStaff({ id: authUser.id, name: authUser.name, role: authUser.role })
-    return { success: true, user: authUser, initialRoute: match.initialRoute }
+    applySession(setUser, setIsScreenLocked, authUser)
+    return establishSession(authUser)
   }
 
   const loginAsDemo = (role: StaffRole) => {
@@ -353,6 +438,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = () => {
+    if (user?.token) {
+      revokeBackendSession(user.token)
+    }
     setUser(null)
     setIsScreenLocked(false)
     clearSession()
@@ -386,8 +474,8 @@ export function useAuth(): AuthContextType {
       user: null,
       isAuthenticated: false,
       isScreenLocked: false,
-      login: () => ({ success: false, error: 'Sesi tidak tersedia.' }),
-      loginWithPin: () => ({ success: false, error: 'Sesi tidak tersedia.' }),
+      login: async () => ({ success: false, error: 'Sesi tidak tersedia.' }),
+      loginWithPin: async () => ({ success: false, error: 'Sesi tidak tersedia.' }),
       loginAsDemo: () => {
         throw new Error('Sesi tidak tersedia.')
       },

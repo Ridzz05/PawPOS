@@ -81,8 +81,8 @@ export function StaffSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
         sx={{
           borderRadius: '8px',
           borderColor: '#e2e8f0',
-          color: '#1e293b',
-          bgcolor: '#ffffff',
+          color: 'text.primary',
+          bgcolor: 'background.paper',
           width: fullWidth ? '100%' : 'auto',
           justifyContent: fullWidth ? 'space-between' : 'flex-start',
           px: 1.25,
@@ -90,7 +90,7 @@ export function StaffSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
           textTransform: 'none',
           '&:hover': {
             borderColor: '#cbd5e1',
-            bgcolor: '#f8fafc',
+            bgcolor: 'background.default',
           },
         }}
         startIcon={
@@ -115,7 +115,7 @@ export function StaffSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
             sx={{
               fontWeight: 700,
               fontSize: '0.78rem',
-              color: '#1e293b',
+              color: 'text.primary',
             }}
           >
             {activeStaff.name}
@@ -151,7 +151,7 @@ export function StaffSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
         }}
       >
         <form onSubmit={handleSave}>
-          <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.2rem', color: '#1e293b' }}>
+          <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.2rem', color: 'text.primary' }}>
             Ganti Operator & Peran Staf
           </DialogTitle>
           <DialogContent sx={{ pt: 1.5 }}>
@@ -182,7 +182,7 @@ export function StaffSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
                   <Stack direction="row" spacing={1.5} alignItems="center">
                     <AdminPanelSettingsOutlined sx={{ fontSize: 20, color: '#2563eb' }} />
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 750, color: '#0f172a' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 750, color: 'text.primary' }}>
                         {ROLE_DEFINITIONS.owner.title}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -196,7 +196,7 @@ export function StaffSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
                   <Stack direction="row" spacing={1.5} alignItems="center">
                     <SupervisorAccountOutlined sx={{ fontSize: 20, color: '#7c3aed' }} />
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 750, color: '#0f172a' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 750, color: 'text.primary' }}>
                         {ROLE_DEFINITIONS.manager.title}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -210,7 +210,7 @@ export function StaffSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
                   <Stack direction="row" spacing={1.5} alignItems="center">
                     <PointOfSaleOutlined sx={{ fontSize: 20, color: '#059669' }} />
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 750, color: '#0f172a' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 750, color: 'text.primary' }}>
                         {ROLE_DEFINITIONS.cashier.title}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -224,7 +224,7 @@ export function StaffSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
                   <Stack direction="row" spacing={1.5} alignItems="center">
                     <WarehouseOutlined sx={{ fontSize: 20, color: '#ea580c' }} />
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 750, color: '#0f172a' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 750, color: 'text.primary' }}>
                         {ROLE_DEFINITIONS.warehouse.title}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -324,7 +324,7 @@ export function StaffSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
           </DialogContent>
 
           <DialogActions sx={{ px: 3, pb: 2.5, pt: 1.5, borderTop: '1px solid #f1f5f9' }}>
-            <Button onClick={() => setModalOpen(false)} sx={{ fontWeight: 650, color: '#64748d' }}>
+            <Button onClick={() => setModalOpen(false)} sx={{ fontWeight: 650, color: 'text.secondary' }}>
               Batal
             </Button>
             <Button type="submit" variant="contained" sx={{ fontWeight: 700, borderRadius: '8px', px: 2.5 }}>

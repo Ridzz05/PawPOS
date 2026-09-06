@@ -45,6 +45,8 @@ type OrderItem struct {
 	UnitPriceIDR int64   `json:"unit_price_idr"`
 	Quantity     float64 `json:"quantity"`
 	SubtotalIDR  int64   `json:"subtotal_idr"`
+	ItemKind     string  `json:"item_kind"`
+	ServiceID    *string `json:"service_id,omitempty"`
 }
 
 type OrderDetail struct {
@@ -58,6 +60,8 @@ type CreateOrderItemRequest struct {
 	SKU          string  `json:"sku"`
 	UnitPriceIDR int64   `json:"unit_price_idr"`
 	Quantity     float64 `json:"quantity"`
+	ItemKind     string  `json:"item_kind,omitempty"`
+	ServiceID    *string `json:"service_id,omitempty"`
 }
 
 type CreateOrderRequest struct {
@@ -82,7 +86,25 @@ var (
 	ErrInsufficientStock    = errors.New("insufficient stock for order item")
 	ErrInvalidItemQuantity  = errors.New("item quantity must be greater than zero")
 	ErrInvalidItemPrice     = errors.New("item unit price cannot be negative")
+	ErrInvalidItem          = errors.New("order item is invalid: barang needs product_id, jasa needs a name")
 )
+
+const (
+	ItemKindBarang = "barang"
+	ItemKindJasa   = "jasa"
+)
+
+// normalizeItemKind defaults empty kinds to barang and reports validity.
+func normalizeItemKind(kind string) (string, bool) {
+	k := strings.TrimSpace(kind)
+	if k == "" {
+		return ItemKindBarang, true
+	}
+	if k == ItemKindBarang || k == ItemKindJasa {
+		return k, true
+	}
+	return k, false
+}
 
 var validPaymentMethods = map[string]bool{
 	"cash":        true,
@@ -131,7 +153,7 @@ func NewMemoryRepository(invRepo inventory.Repository) *MemoryRepository {
 }
 
 func (m *MemoryRepository) CreateOrder(ctx context.Context, req CreateOrderRequest) (OrderDetail, error) {
-	if err := validateCreateRequest(req); err != nil {
+	if err := validateCreateRequest(&req); err != nil {
 		return OrderDetail{}, err
 	}
 
@@ -207,8 +229,12 @@ func (m *MemoryRepository) CreateOrder(ctx context.Context, req CreateOrderReque
 	refType := "order"
 	reason := fmt.Sprintf("Sale via POS order %s", orderNum)
 
-	// Verify and record inventory deduction for each item
+	// Verify and record inventory deduction for stock items only.
+	// Jasa lines carry no inventory and skip deduction entirely.
 	for _, it := range req.Items {
+		if it.ItemKind == ItemKindJasa {
+			continue
+		}
 		movReq := inventory.RecordMovementRequest{
 			ProductID:     it.ProductID,
 			LocationID:    req.LocationID,
@@ -257,6 +283,8 @@ func (m *MemoryRepository) CreateOrder(ctx context.Context, req CreateOrderReque
 			UnitPriceIDR: it.UnitPriceIDR,
 			Quantity:     it.Quantity,
 			SubtotalIDR:  itemSubtotal,
+			ItemKind:     it.ItemKind,
+			ServiceID:    it.ServiceID,
 		}
 		items = append(items, orderItem)
 	}
@@ -324,7 +352,7 @@ func (p *PostgresRepository) SetSaleRecorder(sr SaleRecorder) {
 }
 
 func (p *PostgresRepository) CreateOrder(ctx context.Context, req CreateOrderRequest) (OrderDetail, error) {
-	if err := validateCreateRequest(req); err != nil {
+	if err := validateCreateRequest(&req); err != nil {
 		return OrderDetail{}, err
 	}
 
@@ -397,8 +425,11 @@ func (p *PostgresRepository) CreateOrder(ctx context.Context, req CreateOrderReq
 	}
 	defer tx.Rollback()
 
-	// 1. Lock and verify stock for all items
+	// 1. Lock and verify stock for stock items only (jasa skips deduction)
 	for _, it := range req.Items {
+		if it.ItemKind == ItemKindJasa {
+			continue
+		}
 		var currentStock float64
 		err := tx.QueryRowContext(ctx,
 			`SELECT quantity FROM product_stocks WHERE tenant_id = $1 AND product_id = $2 AND location_id = $3 FOR UPDATE`,
@@ -439,19 +470,38 @@ func (p *PostgresRepository) CreateOrder(ctx context.Context, req CreateOrderReq
 	for _, it := range req.Items {
 		itemSubtotal := int64(float64(it.UnitPriceIDR) * it.Quantity)
 		var item OrderItem
+		var productID, serviceID any
+		if it.ProductID != "" {
+			productID = it.ProductID
+		}
+		if it.ServiceID != nil && *it.ServiceID != "" {
+			serviceID = *it.ServiceID
+		}
+		var gotProductID, gotServiceID sql.NullString
 		err := tx.QueryRowContext(ctx,
-			`INSERT INTO order_items (order_id, product_id, product_name, sku, unit_price_idr, quantity, subtotal_idr)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
-			RETURNING id, order_id, product_id, product_name, sku, unit_price_idr, quantity, subtotal_idr`,
-			order.ID, it.ProductID, it.ProductName, it.SKU, it.UnitPriceIDR, it.Quantity, itemSubtotal,
+			`INSERT INTO order_items (order_id, product_id, product_name, sku, unit_price_idr, quantity, subtotal_idr, item_kind, service_id)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			RETURNING id, order_id, product_id, product_name, sku, unit_price_idr, quantity, subtotal_idr, item_kind, service_id`,
+			order.ID, productID, it.ProductName, it.SKU, it.UnitPriceIDR, it.Quantity, itemSubtotal, it.ItemKind, serviceID,
 		).Scan(
-			&item.ID, &item.OrderID, &item.ProductID, &item.ProductName,
-			&item.SKU, &item.UnitPriceIDR, &item.Quantity, &item.SubtotalIDR,
+			&item.ID, &item.OrderID, &gotProductID, &item.ProductName,
+			&item.SKU, &item.UnitPriceIDR, &item.Quantity, &item.SubtotalIDR, &item.ItemKind, &gotServiceID,
 		)
 		if err != nil {
 			return OrderDetail{}, fmt.Errorf("insert order_item failed: %w", err)
 		}
+		if gotProductID.Valid {
+			item.ProductID = gotProductID.String
+		}
+		if gotServiceID.Valid {
+			svc := gotServiceID.String
+			item.ServiceID = &svc
+		}
 		items = append(items, item)
+
+		if it.ItemKind == ItemKindJasa {
+			continue
+		}
 
 		// Deduct stock balance
 		_, err = tx.ExecContext(ctx,
@@ -538,7 +588,7 @@ func (p *PostgresRepository) GetOrderByID(ctx context.Context, id string) (Order
 	}
 
 	rows, err := p.db.QueryContext(ctx,
-		`SELECT id, order_id, product_id, product_name, sku, unit_price_idr, quantity, subtotal_idr
+		`SELECT id, order_id, product_id, product_name, sku, unit_price_idr, quantity, subtotal_idr, item_kind, service_id
 		FROM order_items WHERE order_id = $1 ORDER BY id`,
 		o.ID,
 	)
@@ -550,11 +600,19 @@ func (p *PostgresRepository) GetOrderByID(ctx context.Context, id string) (Order
 	items := make([]OrderItem, 0)
 	for rows.Next() {
 		var it OrderItem
+		var gotProductID, gotServiceID sql.NullString
 		if err := rows.Scan(
-			&it.ID, &it.OrderID, &it.ProductID, &it.ProductName, &it.SKU,
-			&it.UnitPriceIDR, &it.Quantity, &it.SubtotalIDR,
+			&it.ID, &it.OrderID, &gotProductID, &it.ProductName, &it.SKU,
+			&it.UnitPriceIDR, &it.Quantity, &it.SubtotalIDR, &it.ItemKind, &gotServiceID,
 		); err != nil {
 			return OrderDetail{}, fmt.Errorf("scan order item failed: %w", err)
+		}
+		if gotProductID.Valid {
+			it.ProductID = gotProductID.String
+		}
+		if gotServiceID.Valid {
+			svc := gotServiceID.String
+			it.ServiceID = &svc
 		}
 		items = append(items, it)
 	}
@@ -565,7 +623,7 @@ func (p *PostgresRepository) GetOrderByID(ctx context.Context, id string) (Order
 	}, rows.Err()
 }
 
-func validateCreateRequest(req CreateOrderRequest) error {
+func validateCreateRequest(req *CreateOrderRequest) error {
 	if strings.TrimSpace(req.LocationID) == "" {
 		return ErrInvalidLocation
 	}
@@ -575,9 +633,22 @@ func validateCreateRequest(req CreateOrderRequest) error {
 	if len(req.Items) == 0 {
 		return ErrEmptyItems
 	}
-	for _, it := range req.Items {
-		if strings.TrimSpace(it.ProductID) == "" || strings.TrimSpace(it.ProductName) == "" {
-			return errors.New("product_id and product_name are required for all items")
+	for i := range req.Items {
+		it := &req.Items[i]
+		kind, ok := normalizeItemKind(it.ItemKind)
+		if !ok {
+			return ErrInvalidItem
+		}
+		it.ItemKind = kind
+		if kind == ItemKindJasa {
+			if strings.TrimSpace(it.ProductName) == "" {
+				return ErrInvalidItem
+			}
+			if strings.TrimSpace(it.SKU) == "" {
+				it.SKU = "JASA"
+			}
+		} else if strings.TrimSpace(it.ProductID) == "" || strings.TrimSpace(it.ProductName) == "" {
+			return ErrInvalidItem
 		}
 		if it.Quantity <= 0 {
 			return ErrInvalidItemQuantity
@@ -615,7 +686,7 @@ func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, ErrInvalidLocation) || errors.Is(err, ErrInvalidPaymentMethod) ||
 			errors.Is(err, ErrEmptyItems) || errors.Is(err, ErrInvalidItemQuantity) ||
 			errors.Is(err, ErrInvalidItemPrice) || errors.Is(err, ErrInsufficientPayment) ||
-			errors.Is(err, ErrInvalidSplitAmount) {
+			errors.Is(err, ErrInvalidSplitAmount) || errors.Is(err, ErrInvalidItem) {
 			envelope.WriteError(w, r, http.StatusUnprocessableEntity, "VALIDATION_FAILED", err.Error(), nil)
 			return
 		}

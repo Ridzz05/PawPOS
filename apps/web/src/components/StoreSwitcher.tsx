@@ -235,8 +235,8 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
               sx={{
                 borderRadius: '8px',
                 my: 0.25,
-                bgcolor: isSelected ? '#fff7ed' : 'transparent',
-                '&:hover': { bgcolor: isSelected ? '#fed7aa' : '#f8fafc' },
+                bgcolor: isSelected ? 'warning.light' : 'transparent',
+                '&:hover': { bgcolor: 'action.hover' },
               }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
@@ -252,9 +252,9 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
                 primaryTypographyProps={{
                   fontSize: '0.86rem',
                   fontWeight: isSelected ? 700 : 500,
-                  color: isSelected ? '#9a3412' : '#1e293b',
+                  color: isSelected ? 'primary.main' : 'text.primary',
                 }}
-                secondaryTypographyProps={{ fontSize: '0.72rem', color: '#64748b' }}
+                secondaryTypographyProps={{ fontSize: '0.72rem', color: 'text.secondary' }}
               />
             </MenuItem>
           )
@@ -316,10 +316,10 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
         }}
       >
         <form onSubmit={handleRegisterSubmit}>
-          <DialogTitle sx={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b', pb: 0.5 }}>
+          <DialogTitle sx={{ fontWeight: 800, fontSize: '1.2rem', color: 'text.primary', pb: 0.5 }}>
             Daftarkan Toko / Merchant Baru
           </DialogTitle>
-          <Typography variant="body2" sx={{ px: 3, color: '#64748b', fontSize: '0.84rem' }}>
+          <Typography variant="body2" sx={{ px: 3, color: 'text.secondary', fontSize: '0.84rem' }}>
             Tambahkan workspace toko terisolasi pada platform SaaS PawPOS.
           </Typography>
 
@@ -354,7 +354,7 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
               />
 
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', mb: 1, display: 'block' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', mb: 1, display: 'block' }}>
                   PAKET LANGGANAN
                 </Typography>
                 <Stack direction="row" spacing={1.5}>
@@ -368,10 +368,10 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
                       borderRadius: '8px',
                       fontWeight: 700,
                       bgcolor: registerPlan === 'starter' ? '#ff8042' : 'transparent',
-                      color: registerPlan === 'starter' ? '#ffffff' : '#475569',
-                      borderColor: registerPlan === 'starter' ? '#ff8042' : '#cbd5e1',
+                      color: registerPlan === 'starter' ? '#ffffff' : 'text.primary',
+                      borderColor: registerPlan === 'starter' ? '#ff8042' : 'divider',
                       '&:hover': {
-                        bgcolor: registerPlan === 'starter' ? '#e06b2f' : '#f8fafc',
+                        bgcolor: registerPlan === 'starter' ? '#e06b2f' : 'action.hover',
                       },
                     }}
                   >
@@ -387,10 +387,10 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
                       borderRadius: '8px',
                       fontWeight: 700,
                       bgcolor: registerPlan === 'pro' ? '#ff8042' : 'transparent',
-                      color: registerPlan === 'pro' ? '#ffffff' : '#475569',
-                      borderColor: registerPlan === 'pro' ? '#ff8042' : '#cbd5e1',
+                      color: registerPlan === 'pro' ? '#ffffff' : 'text.primary',
+                      borderColor: registerPlan === 'pro' ? '#ff8042' : 'divider',
                       '&:hover': {
-                        bgcolor: registerPlan === 'pro' ? '#e06b2f' : '#f8fafc',
+                        bgcolor: registerPlan === 'pro' ? '#e06b2f' : 'action.hover',
                       },
                     }}
                   >
@@ -406,7 +406,7 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
               type="button"
               disabled={submitting}
               onClick={() => setRegisterOpen(false)}
-              sx={{ textTransform: 'none', color: '#64748b', fontWeight: 650 }}
+              sx={{ textTransform: 'none', color: 'text.secondary', fontWeight: 650 }}
             >
               Batal
             </Button>

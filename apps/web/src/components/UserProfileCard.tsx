@@ -145,12 +145,12 @@ export function UserProfileCard({ fullWidth = false }: { fullWidth?: boolean } =
           },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 800, color: '#0F172A', pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle sx={{ fontWeight: 800, color: 'text.primary', pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
           <LockOutlined sx={{ color: '#FF8A3D' }} />
           Keluar dari Sesi {meta.title}?
         </DialogTitle>
         <DialogContent sx={{ py: 1 }}>
-          <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.6 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
             Anda akan keluar dari akun <strong>{user.name}</strong> ({meta.label}). Untuk mengakses hak akses atau peran lain (seperti Kasir atau Owner), silakan login kembali di halaman masuk.
           </Typography>
         </DialogContent>
@@ -158,7 +158,7 @@ export function UserProfileCard({ fullWidth = false }: { fullWidth?: boolean } =
           <Button
             onClick={() => setConfirmOpen(false)}
             variant="text"
-            sx={{ color: '#64748B', fontWeight: 700, textTransform: 'none' }}
+            sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'none' }}
           >
             Batal
           </Button>
