@@ -1,5 +1,4 @@
-// scripts/seed-demo-data.mjs
-const API_BASE = 'http://localhost:8080'
+const API_BASE = process.env.API_BASE_URL || 'http://localhost:8080'
 const TENANT_ID = '00000000-0000-0000-0000-000000000001'
 const LOCATION_ID = 'loc-main'
 
