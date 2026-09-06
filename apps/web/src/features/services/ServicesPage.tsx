@@ -53,6 +53,7 @@ import {
   type ServiceCategory,
   type ServicePackage,
 } from './servicesApi'
+import { PawLoading } from '../../components/PawLoading'
 import { formatCurrency } from '../../utils/currency'
 import { ModalSlideTransition } from '../../components/ModalSlideTransition'
 import { useRbac } from '../auth/rbac'
@@ -369,7 +370,7 @@ export function ServicesPage() {
         </Box>
 
         {status === 'loading' ? (
-          <Box sx={{ p: 5, textAlign: 'center', color: 'text.secondary' }}>Memuat data...</Box>
+          <PawLoading label="Memuat data layanan..." variant="card" />
         ) : status === 'error' ? (
           <Box sx={{ p: 3 }}>
             <Alert severity="error" sx={{ borderRadius: '8px' }}>{errorMessage}</Alert>

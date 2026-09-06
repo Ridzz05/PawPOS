@@ -103,7 +103,8 @@ export function LandingPage() {
         elevation={0}
         sx={{
           bgcolor: '#ffffff',
-          borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+          border: 'none',
+          boxShadow: 'none',
           color: '#1E293B',
           py: 0.8,
         }}

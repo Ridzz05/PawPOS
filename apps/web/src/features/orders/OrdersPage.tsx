@@ -39,6 +39,7 @@ import {
   Typography,
 } from '@mui/material'
 import { ModalSlideTransition } from '../../components/ModalSlideTransition'
+import { PawLoading } from '../../components/PawLoading'
 import { formatCurrency, formatThousand } from '../../utils/currency'
 import { getOrders, getOrderById, type Order, type OrderDetail } from '../pos/ordersApi'
 
@@ -389,7 +390,7 @@ export function OrdersPage() {
               onClick={() => setSelectedMethod('all')}
               color={selectedMethod === 'all' ? 'primary' : 'default'}
               variant={selectedMethod === 'all' ? 'filled' : 'outlined'}
-              sx={{ fontWeight: 700, cursor: 'pointer' }}
+              sx={{ fontWeight: 700, cursor: 'pointer', height: { xs: 36, sm: 24 } }}
             />
             <Chip
               label="Tunai"
@@ -397,7 +398,7 @@ export function OrdersPage() {
               onClick={() => setSelectedMethod('cash')}
               color={selectedMethod === 'cash' ? 'primary' : 'default'}
               variant={selectedMethod === 'cash' ? 'filled' : 'outlined'}
-              sx={{ fontWeight: 700, cursor: 'pointer' }}
+              sx={{ fontWeight: 700, cursor: 'pointer', height: { xs: 36, sm: 24 } }}
             />
             <Chip
               label="QRIS"
@@ -405,7 +406,7 @@ export function OrdersPage() {
               onClick={() => setSelectedMethod('qris')}
               color={selectedMethod === 'qris' ? 'primary' : 'default'}
               variant={selectedMethod === 'qris' ? 'filled' : 'outlined'}
-              sx={{ fontWeight: 700, cursor: 'pointer' }}
+              sx={{ fontWeight: 700, cursor: 'pointer', height: { xs: 36, sm: 24 } }}
             />
             <Chip
               label="Debit"
@@ -413,7 +414,7 @@ export function OrdersPage() {
               onClick={() => setSelectedMethod('debit_card')}
               color={selectedMethod === 'debit_card' ? 'primary' : 'default'}
               variant={selectedMethod === 'debit_card' ? 'filled' : 'outlined'}
-              sx={{ fontWeight: 700, cursor: 'pointer' }}
+              sx={{ fontWeight: 700, cursor: 'pointer', height: { xs: 36, sm: 24 } }}
             />
             <Chip
               label="Split"
@@ -421,7 +422,7 @@ export function OrdersPage() {
               onClick={() => setSelectedMethod('split')}
               color={selectedMethod === 'split' ? 'primary' : 'default'}
               variant={selectedMethod === 'split' ? 'filled' : 'outlined'}
-              sx={{ fontWeight: 700, cursor: 'pointer' }}
+              sx={{ fontWeight: 700, cursor: 'pointer', height: { xs: 36, sm: 24 } }}
             />
           </Stack>
 
@@ -433,33 +434,28 @@ export function OrdersPage() {
               size="small"
               onClick={() => setDateRange('all')}
               variant={dateRange === 'all' ? 'filled' : 'outlined'}
-              sx={{ fontWeight: 650, cursor: 'pointer' }}
+              sx={{ fontWeight: 650, cursor: 'pointer', height: { xs: 36, sm: 24 } }}
             />
             <Chip
               label="Hari Ini"
               size="small"
               onClick={() => setDateRange('today')}
               variant={dateRange === 'today' ? 'filled' : 'outlined'}
-              sx={{ fontWeight: 650, cursor: 'pointer' }}
+              sx={{ fontWeight: 650, cursor: 'pointer', height: { xs: 36, sm: 24 } }}
             />
             <Chip
               label="7 Hari"
               size="small"
               onClick={() => setDateRange('7days')}
               variant={dateRange === '7days' ? 'filled' : 'outlined'}
-              sx={{ fontWeight: 650, cursor: 'pointer' }}
+              sx={{ fontWeight: 650, cursor: 'pointer', height: { xs: 36, sm: 24 } }}
             />
           </Stack>
         </Box>
 
         {/* Loading State */}
         {loading && (
-          <Box sx={{ p: 5, textAlign: 'center' }}>
-            <CircularProgress size={28} />
-            <Typography variant="body2" sx={{ mt: 1.5, color: 'text.secondary', fontWeight: 650 }}>
-              Memuat data riwayat transaksi...
-            </Typography>
-          </Box>
+          <PawLoading label="Memuat data riwayat transaksi..." variant="icon" sx={{ py: 4 }} />
         )}
 
         {/* Empty State */}
@@ -645,12 +641,7 @@ export function OrdersPage() {
 
         <DialogContent sx={{ p: 2.5 }}>
           {loadingDetail ? (
-            <Box sx={{ py: 6, textAlign: 'center' }}>
-              <CircularProgress size={28} />
-              <Typography variant="body2" sx={{ mt: 1.5, color: 'text.secondary', fontWeight: 600 }}>
-                Mengambil rincian item transaksi...
-              </Typography>
-            </Box>
+            <PawLoading label="Mengambil rincian item transaksi..." variant="icon" sx={{ py: 4 }} />
           ) : !selectedOrder ? null : (
             <Stack spacing={2.25}>
               {detailError && (

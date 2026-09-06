@@ -54,6 +54,7 @@ import {
   type Pet,
 } from './customersApi'
 import { ModalSlideTransition } from '../../components/ModalSlideTransition'
+import { PawLoading } from '../../components/PawLoading'
 import { useRbac } from '../auth/rbac'
 
 const SPECIES_OPTIONS = ['Kucing', 'Anjing', 'Kelinci', 'Burung', 'Hamster', 'Ikan', 'Reptil', 'Lainnya']
@@ -377,7 +378,7 @@ export function CustomersPage({ initialTab = 'customers' }: { initialTab?: 'cust
         </Box>
 
         {status === 'loading' ? (
-          <Box sx={{ p: 5, textAlign: 'center', color: 'text.secondary' }}>Memuat data...</Box>
+          <PawLoading label="Memuat data pelanggan..." variant="card" />
         ) : status === 'error' ? (
           <Box sx={{ p: 3 }}>
             <Alert severity="error" sx={{ borderRadius: '8px' }}>{errorMessage}</Alert>

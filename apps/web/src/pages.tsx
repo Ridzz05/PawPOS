@@ -28,6 +28,7 @@ import {
   Typography,
 } from '@mui/material'
 import { getActiveTenant } from './features/tenant/tenantApi'
+import { PawLoading } from './components/PawLoading'
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -142,23 +143,8 @@ export function EmptyState({
   )
 }
 
-function LoadingState({ label }: { label: string }) {
-  return (
-    <Paper
-      className="terminal-card"
-      elevation={0}
-      sx={{
-        p: 4,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 2,
-      }}
-    >
-      <RefreshOutlined className="loading-icon" />
-      <Typography sx={{ fontWeight: 600, color: 'text.secondary' }}>{label}</Typography>
-    </Paper>
-  )
+export function LoadingState({ label }: { label: string }) {
+  return <PawLoading label={label} variant="card" />
 }
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {

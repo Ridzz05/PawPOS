@@ -40,6 +40,7 @@ import {
   Typography,
 } from '@mui/material'
 import { convertImageToWebp, formatFileSize } from './imageConverter'
+import { PawLoading } from '../../components/PawLoading'
 import {
   createCategory,
   createProduct,
@@ -454,10 +455,7 @@ export function ProductsPage() {
 
       {/* Loading state */}
       {status === 'loading' && (
-        <Paper className="terminal-card" elevation={0} sx={{ p: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
-          <RefreshOutlined className="loading-icon" />
-          <Typography sx={{ fontWeight: 650, color: 'text.secondary' }}>Memuat katalog produk...</Typography>
-        </Paper>
+        <PawLoading label="Memuat katalog produk..." variant="card" />
       )}
 
       {/* Error state */}

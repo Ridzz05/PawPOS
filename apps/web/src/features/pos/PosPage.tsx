@@ -58,6 +58,7 @@ import type { CreateOrderItemInput, OrderDetail } from './ordersApi'
 import { getCurrentShift } from '../shifts/shiftsApi'
 import type { Shift } from '../shifts/shiftsApi'
 import { ModalSlideTransition } from '../../components/ModalSlideTransition'
+import { PawLoading } from '../../components/PawLoading'
 import {
   formatCurrency,
   formatNominalInput,
@@ -693,7 +694,7 @@ export function PosPage() {
               sx={{
                 fontWeight: isSelected ? 750 : 550,
                 fontSize: '0.82rem',
-                height: 34,
+                height: { xs: 44, sm: 34 },
                 borderRadius: '8px',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
@@ -716,12 +717,7 @@ export function PosPage() {
         {/* Left Pane: Dense Product Grid (Section 8 & 9) */}
         <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
           {loading ? (
-            <Paper className="terminal-card" sx={{ p: 5, textAlign: 'center' }}>
-              <RefreshOutlined className="loading-icon" sx={{ fontSize: 28 }} />
-              <Typography sx={{ mt: 1, color: 'text.secondary', fontWeight: 650, fontSize: '0.88rem' }}>
-                Memuat katalog kasir...
-              </Typography>
-            </Paper>
+            <PawLoading label="Memuat katalog kasir..." variant="card" />
           ) : filteredProducts.length === 0 ? (
             <Paper className="terminal-card" sx={{ p: 5, textAlign: 'center', border: '1px dashed', borderColor: 'divider' }}>
               <StorefrontOutlined sx={{ fontSize: 36, color: 'text.disabled', mb: 1 }} />

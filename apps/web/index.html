@@ -54,41 +54,35 @@
         user-select: none;
         box-sizing: border-box;
       }
-      .native-splash-icon {
-        width: 64px;
-        height: 64px;
-        border-radius: 16px;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
+      .native-splash-brand {
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
+        margin-bottom: 22px;
         animation: splashPulse 1.8s ease-in-out infinite;
       }
-      html[data-theme='dark'] .native-splash-icon {
-        background: #131b2e;
-        border-color: #1e293b;
+      .native-splash-logo {
+        height: 52px;
+        width: auto;
+        max-width: 85vw;
+        object-fit: contain;
+        display: block;
       }
-      .native-splash-icon svg {
-        width: 36px;
-        height: 36px;
+      .splash-dark {
+        display: none;
       }
-      .native-splash-title {
-        font-size: 1.25rem;
-        font-weight: 800;
-        color: #0f172a;
-        letter-spacing: -0.02em;
-        margin: 0 0 6px 0;
+      html[data-theme='dark'] .splash-light {
+        display: none;
       }
-      html[data-theme='dark'] .native-splash-title {
-        color: #f8fafc;
+      html[data-theme='dark'] .splash-dark {
+        display: block;
       }
       .native-splash-subtitle {
         font-size: 0.82rem;
         color: #64748d;
-        font-weight: 500;
-        margin: 0 0 24px 0;
+        font-weight: 550;
+        margin: 16px 0 0 0;
+        letter-spacing: -0.01em;
       }
       html[data-theme='dark'] .native-splash-subtitle {
         color: #94a3b8;
@@ -119,8 +113,8 @@
         100% { transform: translateX(250%); }
       }
       @keyframes splashPulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.03); }
+        0%, 100% { transform: scale(1); opacity: 0.95; }
+        50% { transform: scale(1.025); opacity: 1; }
       }
     </style>
   </head>
@@ -128,21 +122,14 @@
     <div id="root">
       <!-- Native Mobile App Loading Screen (replaces immediately when React mounts) -->
       <div class="native-splash-container">
-        <div class="native-splash-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ff8042" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5c.67 0 1.2.9 1.2 2s-.53 2-1.2 2-1.2-.9-1.2-2 .53-2 1.2-2z"/>
-            <path d="M19 8c.67 0 1.2.9 1.2 2s-.53 2-1.2 2-1.2-.9-1.2-2 .53-2 1.2-2z"/>
-            <path d="M5 8c.67 0 1.2.9 1.2 2s-.53 2-1.2 2-1.2-.9-1.2-2 .53-2 1.2-2z"/>
-            <path d="M16.5 13.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5z"/>
-            <path d="M4.5 13.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5z"/>
-            <path d="M12 11c-2.5 0-4.5 1.5-4.5 3.5 0 2 2 3.5 4.5 3.5s4.5-1.5 4.5-3.5c0-2-2-3.5-4.5-3.5z"/>
-          </svg>
+        <div class="native-splash-brand">
+          <img src="/branding/branding.png" alt="PawPOS" class="native-splash-logo splash-light" />
+          <img src="/branding/branding-dark.png" alt="PawPOS" class="native-splash-logo splash-dark" />
         </div>
-        <div class="native-splash-title">PawPOS</div>
-        <div class="native-splash-subtitle">Terminal Kasir Operasional</div>
         <div class="native-splash-bar">
           <div class="native-splash-progress"></div>
         </div>
+        <div class="native-splash-subtitle">Terminal Kasir Operasional</div>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>

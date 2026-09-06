@@ -32,12 +32,10 @@ import { PawLogo } from '../../components/PawLogo'
 import { DEMO_ACCOUNTS, isDemoLoginEnabled, useAuth } from './authContext'
 import type { StaffRole } from './rbac'
 import { ThemeToggle } from '../../components/ThemeToggle'
-import { useThemeMode } from '../../themeContext'
 
 export function LoginPage() {
   const navigate = useNavigate()
   const { login, loginWithPin, loginAsDemo } = useAuth()
-  const { isDark } = useThemeMode()
 
   // Tab mode: 'pin' (Terminal Kasir Cepat) vs 'credential' (Email & Sandi)
   const [loginTab, setLoginTab] = useState<'pin' | 'credential'>('pin')
@@ -195,7 +193,7 @@ export function LoginPage() {
             sx={{
               mb: 3,
               minHeight: 40,
-              bgcolor: isDark ? '#0E1626' : '#F1F5F9',
+              bgcolor: 'action.hover',
               p: 0.5,
               borderRadius: '10px',
               '& .MuiTabs-indicator': {
@@ -281,7 +279,7 @@ export function LoginPage() {
                         minWidth: 130,
                         border: '1px solid',
                         borderColor: isSelected ? '#FF8A3D' : 'divider',
-                        bgcolor: isSelected ? (isDark ? '#2D1A10' : '#FFF9F5') : 'background.paper',
+                        bgcolor: isSelected ? 'primary.light' : 'background.paper',
                         transition: 'all 120ms ease',
                       }}
                     >
@@ -499,7 +497,7 @@ export function LoginPage() {
                   borderRadius: '10px',
                   border: '1px solid',
                   borderColor: 'divider',
-                  bgcolor: isDark ? '#0E1626' : '#FAFAFA',
+                  bgcolor: 'background.default',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',

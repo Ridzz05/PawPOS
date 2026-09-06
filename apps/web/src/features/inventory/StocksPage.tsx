@@ -55,6 +55,7 @@ import {
 } from './inventoryApi'
 import { getProducts, type Product } from '../products/productsApi'
 import { ModalSlideTransition } from '../../components/ModalSlideTransition'
+import { PawLoading } from '../../components/PawLoading'
 import { useRbac } from '../auth/rbac'
 
 const OUTBOUND_REASONS = [
@@ -661,10 +662,7 @@ export function StocksPage() {
 
       {/* Loading state */}
       {status === 'loading' && (
-        <Paper className="terminal-card" elevation={0} sx={{ p: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
-          <RefreshOutlined className="loading-icon" />
-          <Typography sx={{ fontWeight: 650, color: 'text.secondary' }}>Memuat data stok inventori...</Typography>
-        </Paper>
+        <PawLoading label="Memuat data stok inventori..." variant="card" />
       )}
 
       {/* Error state */}

@@ -40,6 +40,7 @@ import {
   Typography,
 } from '@mui/material'
 import { ModalSlideTransition } from '../../components/ModalSlideTransition'
+import { PawLoading } from '../../components/PawLoading'
 import { formatNominalInput, formatThousand, parseThousand } from '../../utils/currency'
 import { getActiveTenant } from '../tenant/tenantApi'
 import {
@@ -535,12 +536,7 @@ export function ShiftsPage() {
           }}
         >
           {loading ? (
-            <Box sx={{ p: 4, textAlign: 'center' }}>
-              <CircularProgress size={28} />
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
-                Memuat riwayat shift...
-              </Typography>
-            </Box>
+            <PawLoading label="Memuat riwayat shift..." variant="icon" sx={{ py: 3 }} />
           ) : history.length === 0 ? (
             <Box sx={{ p: 5, textAlign: 'center' }}>
               <ReceiptLongOutlined sx={{ fontSize: 40, color: '#94a3b8', mb: 1 }} />

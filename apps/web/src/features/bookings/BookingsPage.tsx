@@ -53,6 +53,7 @@ import { getPackages, getServices, type Service, type ServicePackage } from '../
 import { getLocations, type InventoryLocation } from '../inventory/inventoryApi'
 import { formatCurrency } from '../../utils/currency'
 import { ModalSlideTransition } from '../../components/ModalSlideTransition'
+import { PawLoading } from '../../components/PawLoading'
 import { useRbac } from '../auth/rbac'
 
 const STATUS_META: Record<BookingStatus, { label: string; color: 'warning' | 'info' | 'success' | 'default' }> = {
@@ -355,7 +356,7 @@ export function BookingsPage() {
         </Box>
 
         {status === 'loading' ? (
-          <Box sx={{ p: 5, textAlign: 'center', color: 'text.secondary' }}>Memuat antrean...</Box>
+          <PawLoading label="Memuat antrean..." variant="card" />
         ) : status === 'error' ? (
           <Box sx={{ p: 3 }}>
             <Alert severity="error" sx={{ borderRadius: '8px' }}>{errorMessage}</Alert>
