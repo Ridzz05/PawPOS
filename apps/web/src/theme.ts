@@ -258,14 +258,45 @@ export function getTheme(mode: 'light' | 'dark' = 'light'): Theme {
       MuiDialog: {
         defaultProps: {
           TransitionComponent: ModalSlideTransition,
-          transitionDuration: 180,
+          transitionDuration: { enter: 300, exit: 220 },
         },
         styleOverrides: {
+          container: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            '@media (max-width: 599px)': {
+              alignItems: 'flex-end',
+              padding: 0,
+            },
+          },
           paper: {
-            borderRadius: 14,
+            borderRadius: 20,
             border: `1px solid ${dividerColor}`,
             backgroundColor: bgPaper,
             boxShadow: isDark ? '0 10px 30px rgba(0,0,0,0.5)' : '0 10px 25px rgba(0,0,0,0.06)',
+            overflow: 'hidden',
+            '@media (max-width: 599px)': {
+              margin: 0,
+              width: '100%',
+              maxWidth: '100% !important',
+              maxHeight: '90vh',
+              borderRadius: '24px 24px 0 0',
+              borderBottom: 'none',
+              boxShadow: isDark
+                ? '0 -10px 30px rgba(0,0,0,0.5)'
+                : '0 -10px 30px rgba(0,0,0,0.08)',
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+              '&::before': {
+                content: '""',
+                display: 'block',
+                width: 40,
+                height: 4.5,
+                borderRadius: 9999,
+                backgroundColor: isDark ? '#334155' : '#cbd5e1',
+                margin: '10px auto 2px auto',
+                flexShrink: 0,
+              },
+            },
           },
         },
       },

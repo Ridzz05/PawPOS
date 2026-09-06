@@ -1,36 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
+import { HelpOutline } from '@mui/icons-material'
 import {
-  CheckCircleOutline,
-  PointOfSaleOutlined,
-  Inventory2Outlined,
-  StorefrontOutlined,
-  RefreshOutlined,
-  ArrowForwardOutlined,
-  LockOpenOutlined,
-  TuneOutlined,
-  HelpOutline,
-  SwapHorizOutlined,
-  ReceiptLongOutlined,
-} from '@mui/icons-material'
-import {
-  Alert,
   Box,
   Button,
-  Card,
-  CardContent,
-  Chip,
   Divider,
   Paper,
   Stack,
   Switch,
   Typography,
 } from '@mui/material'
-import { getActiveTenant } from './features/tenant/tenantApi'
 import { PawLoading } from './components/PawLoading'
-
-const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
 export function PageHeader({
   eyebrow,
@@ -147,21 +128,7 @@ export function LoadingState({ label }: { label: string }) {
   return <PawLoading label={label} variant="card" />
 }
 
-function ErrorState({ onRetry }: { onRetry: () => void }) {
-  return (
-    <Alert
-      severity="error"
-      action={
-        <Button color="inherit" size="small" startIcon={<RefreshOutlined />} onClick={onRetry} sx={{ borderRadius: '8px' }}>
-          Coba lagi
-        </Button>
-      }
-      sx={{ borderRadius: '10px' }}
-    >
-      Data belum dapat dimuat. Pastikan API berjalan, lalu coba lagi.
-    </Alert>
-  )
-}
+
 
 export { DashboardPage } from './features/dashboard/DashboardPage'
 

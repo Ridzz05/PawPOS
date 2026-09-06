@@ -673,14 +673,6 @@ export function ShiftsPage() {
         TransitionComponent={ModalSlideTransition}
         maxWidth="xs"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: '12px',
-            border: '1px solid',
-            borderColor: 'divider',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-          },
-        }}
       >
         <form onSubmit={handleOpenShiftSubmit}>
           <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.2rem', color: 'text.primary' }}>
@@ -782,14 +774,6 @@ export function ShiftsPage() {
         TransitionComponent={ModalSlideTransition}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: '12px',
-            border: '1px solid',
-            borderColor: 'divider',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-          },
-        }}
       >
         <form onSubmit={handleCloseShiftSubmit}>
           <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.25rem', color: 'text.primary' }}>
@@ -1095,12 +1079,6 @@ export function ShiftsPage() {
         TransitionComponent={ModalSlideTransition}
         maxWidth="xs"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: '12px',
-            boxShadow: 'none',
-          },
-        }}
       >
         <DialogTitle sx={{ pb: 1, fontWeight: 800, fontSize: '1.15rem', color: 'text.primary' }}>
           Struk Z-Report Shift Kasir

@@ -294,10 +294,10 @@ html[data-theme='dark'] .heading-tight {
   }
 }
 
-/* Modal Professional Directional Slide & Independent Backdrop Fade */
+/* Modal Universal Bottom Sheet & Independent Backdrop Fade */
 .modal-backdrop,
 .MuiBackdrop-root {
-  transition: opacity 180ms ease !important;
+  transition: opacity 220ms ease !important;
 }
 
 /* Modern Minimalist Scrollbars */

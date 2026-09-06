@@ -139,7 +139,6 @@ export function UserProfileCard({ fullWidth = false }: { fullWidth?: boolean } =
         onClose={() => setConfirmOpen(false)}
         PaperProps={{
           sx: {
-            borderRadius: '16px',
             p: 1,
             maxWidth: 400,
           },

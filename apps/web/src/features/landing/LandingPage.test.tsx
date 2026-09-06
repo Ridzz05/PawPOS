@@ -209,4 +209,24 @@ describe('LandingPage component', () => {
     expect(screen.getByText(/PawPOS adalah platform SaaS Point of Sale dan Copilot AI cerdas/i)).toBeInTheDocument()
     expect(screen.getByText(/support@pawpos\.id/i)).toBeInTheDocument()
   })
+
+  it('is completely decoupled from app dark mode and contains no theme toggle controls', () => {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    const { unmount } = render(
+      <MemoryRouter>
+        <LandingPage />
+      </MemoryRouter>
+    )
+
+    // Landing page must set data-theme to light while mounted
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+
+    // Theme toggle button must not exist anywhere in the landing page
+    expect(document.getElementById('btn-theme-toggle')).toBeNull()
+    expect(screen.queryByLabelText(/Beralih ke Tema/i)).not.toBeInTheDocument()
+
+    // When unmounted, previous theme preference should be restored for the app
+    unmount()
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+  })
 })

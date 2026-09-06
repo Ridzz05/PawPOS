@@ -4,12 +4,21 @@ import type { TransitionProps } from '@mui/material/transitions'
 
 /**
  * Professional Modal Motion Constants
- * Fast, deliberate, directional motion (Opening: -24px -> 0, Closing: 0 -> +24px)
+ * Silky-smooth, directional bottom-sheet motion (Opening: slide up -> 0, Closing: 0 -> slide down)
  */
 export const MODAL_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)'
 export const MODAL_ENTER_DURATION = 300
 export const MODAL_EXIT_DURATION = 220
 export const BACKDROP_FADE_DURATION = 180
+
+export type DeviceMotionTier = 'high' | 'low' | 'reduced'
+
+export interface DeviceMotionProfile {
+  tier: DeviceMotionTier
+  enterDuration: number
+  exitDuration: number
+  easing: string
+}
 
 function checkReducedMotion(): boolean {
   if (typeof window === 'undefined' || !window.matchMedia) return false
@@ -17,21 +26,64 @@ function checkReducedMotion(): boolean {
 }
 
 /**
- * Reusable Professional Directional Slide Transition for Dialogs & Modals.
+ * Dynamically detects device performance tier to tailor transition curves.
+ * Low-spec devices (<=4 cores, <=4GB RAM) receive lighter, snappy transitions to eliminate dropped frames.
+ */
+export function getDeviceMotionProfile(): DeviceMotionProfile {
+  if (typeof window === 'undefined') {
+    return {
+      tier: 'high',
+      enterDuration: MODAL_ENTER_DURATION,
+      exitDuration: MODAL_EXIT_DURATION,
+      easing: MODAL_EASING,
+    }
+  }
+
+  // 1. Accessibility check
+  if (checkReducedMotion()) {
+    return {
+      tier: 'reduced',
+      enterDuration: 120,
+      exitDuration: 100,
+      easing: 'linear',
+    }
+  }
+
+  // 2. Hardware constraints check (standard navigator.hardwareConcurrency)
+  const isLowTier = typeof navigator !== 'undefined' && (navigator.hardwareConcurrency ?? 4) <= 4
+
+  if (isLowTier) {
+    return {
+      tier: 'low',
+      enterDuration: 220,
+      exitDuration: 170,
+      easing: 'cubic-bezier(0, 0, 0.2, 1)',
+    }
+  }
+
+  return {
+    tier: 'high',
+    enterDuration: MODAL_ENTER_DURATION,
+    exitDuration: MODAL_EXIT_DURATION,
+    easing: MODAL_EASING,
+  }
+}
+
+function isMobileViewport(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.innerWidth < 600
+}
+
+/**
+ * Reusable Universal Modal Bottom Sheet Transition for Dialogs & Modals.
  *
- * Entrance:
- *   opacity: 0 -> 1
- *   translateY: -24px -> 0
- *   scale: 0.98 -> 1
- *   duration: 300ms
- *   easing: cubic-bezier(.16, 1, .3, 1)
+ * Mobile (Bottom Sheet):
+ *   Entrance: translate3d(0, 100%, 0) -> translate3d(0, 0, 0), opacity: 0 -> 1
+ *   Exit:     translate3d(0, 0, 0) -> translate3d(0, 100%, 0), opacity: 1 -> 0
  *
- * Exit:
- *   opacity: 1 -> 0
- *   translateY: 0 -> 24px
- *   scale: 1 -> 0.98
- *   duration: 220ms
- *   easing: cubic-bezier(.16, 1, .3, 1)
+ * Desktop/Tablet (Elevated Sheet):
+ *   Entrance: translate3d(0, 36px, 0) scale(0.98) -> translate3d(0, 0, 0) scale(1), opacity: 0 -> 1
+ *   Exit:     translate3d(0, 0, 0) scale(1) -> translate3d(0, 36px, 0) scale(0.98), opacity: 1 -> 0
  */
 export const ModalSlideTransition = React.forwardRef<
   HTMLDivElement,
@@ -47,7 +99,7 @@ export const ModalSlideTransition = React.forwardRef<
     onExiting,
     onExited,
     addEndListener,
-    timeout = { enter: MODAL_ENTER_DURATION, exit: MODAL_EXIT_DURATION },
+    timeout,
     ...other
   } = props
 
@@ -67,14 +119,18 @@ export const ModalSlideTransition = React.forwardRef<
     const node = nodeRef.current
     if (!node) return
 
-    const reduced = checkReducedMotion()
-    if (reduced) {
+    const motion = getDeviceMotionProfile()
+    const isMobile = isMobileViewport()
+
+    if (motion.tier === 'reduced') {
       node.style.opacity = '1'
       node.style.transform = 'none'
       node.style.transition = 'none'
     } else {
       node.style.opacity = '0'
-      node.style.transform = 'translateY(-24px) scale(0.98)'
+      node.style.transform = isMobile
+        ? 'translate3d(0, 100%, 0)'
+        : 'translate3d(0, 36px, 0) scale(0.98)'
       node.style.transition = 'none'
       node.style.willChange = 'transform, opacity'
     }
@@ -88,14 +144,15 @@ export const ModalSlideTransition = React.forwardRef<
     const node = nodeRef.current
     if (!node) return
 
-    const reduced = checkReducedMotion()
-    // Force DOM reflow to guarantee transition triggers from initial values
+    const motion = getDeviceMotionProfile()
+
+    // Force DOM reflow to guarantee transition triggers cleanly from initial values
     void node.offsetHeight
 
-    if (!reduced) {
-      node.style.transition = `opacity 220ms ease, transform ${MODAL_ENTER_DURATION}ms ${MODAL_EASING}`
+    if (motion.tier !== 'reduced') {
+      node.style.transition = `opacity ${Math.round(motion.enterDuration * 0.7)}ms ease, transform ${motion.enterDuration}ms ${motion.easing}`
       node.style.opacity = '1'
-      node.style.transform = 'translateY(0) scale(1)'
+      node.style.transform = 'translate3d(0, 0, 0) scale(1)'
     }
 
     if (onEntering) {
@@ -120,10 +177,10 @@ export const ModalSlideTransition = React.forwardRef<
     const node = nodeRef.current
     if (!node) return
 
-    const reduced = checkReducedMotion()
-    if (!reduced) {
+    const motion = getDeviceMotionProfile()
+    if (motion.tier !== 'reduced') {
       node.style.opacity = '1'
-      node.style.transform = 'translateY(0) scale(1)'
+      node.style.transform = 'translate3d(0, 0, 0) scale(1)'
       node.style.willChange = 'transform, opacity'
     }
 
@@ -136,13 +193,17 @@ export const ModalSlideTransition = React.forwardRef<
     const node = nodeRef.current
     if (!node) return
 
-    const reduced = checkReducedMotion()
+    const motion = getDeviceMotionProfile()
+    const isMobile = isMobileViewport()
+
     void node.offsetHeight
 
-    if (!reduced) {
-      node.style.transition = `opacity 200ms ease, transform ${MODAL_EXIT_DURATION}ms ${MODAL_EASING}`
+    if (motion.tier !== 'reduced') {
+      node.style.transition = `opacity ${motion.exitDuration}ms ease, transform ${motion.exitDuration}ms ${motion.easing}`
       node.style.opacity = '0'
-      node.style.transform = 'translateY(24px) scale(0.98)'
+      node.style.transform = isMobile
+        ? 'translate3d(0, 100%, 0)'
+        : 'translate3d(0, 36px, 0) scale(0.98)'
     } else {
       node.style.opacity = '0'
       node.style.transition = 'none'
@@ -166,11 +227,16 @@ export const ModalSlideTransition = React.forwardRef<
     }
   }
 
+  const effectiveTimeout = timeout ?? {
+    enter: MODAL_ENTER_DURATION,
+    exit: MODAL_EXIT_DURATION,
+  }
+
   return (
     <Transition
       nodeRef={nodeRef}
       in={inProp}
-      timeout={timeout}
+      timeout={effectiveTimeout}
       onEnter={handleEnter}
       onEntering={handleEntering}
       onEntered={handleEntered}
@@ -196,3 +262,4 @@ export const ModalSlideTransition = React.forwardRef<
     </Transition>
   )
 })
+

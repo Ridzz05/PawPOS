@@ -6,6 +6,7 @@ import {
   MODAL_EASING,
   MODAL_ENTER_DURATION,
   MODAL_EXIT_DURATION,
+  getDeviceMotionProfile,
 } from './ModalSlideTransition'
 
 describe('ModalSlideTransition', () => {
@@ -13,6 +14,33 @@ describe('ModalSlideTransition', () => {
     expect(MODAL_EASING).toBe('cubic-bezier(0.16, 1, 0.3, 1)')
     expect(MODAL_ENTER_DURATION).toBe(300)
     expect(MODAL_EXIT_DURATION).toBe(220)
+  })
+
+  it('determines device motion profile adaptively', () => {
+    // Default high-tier environment
+    const profile = getDeviceMotionProfile()
+    expect(profile.enterDuration).toBeGreaterThan(0)
+    expect(profile.exitDuration).toBeGreaterThan(0)
+    expect(['high', 'low', 'reduced']).toContain(profile.tier)
+  })
+
+  it('adapts profile for reduced motion', () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query.includes('prefers-reduced-motion: reduce'),
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }))
+
+    const profile = getDeviceMotionProfile()
+    expect(profile.tier).toBe('reduced')
+    expect(profile.easing).toBe('linear')
+
+    vi.unstubAllGlobals()
   })
 
   it('renders children within a dialog and supports opening/closing lifecycles', async () => {
@@ -49,7 +77,7 @@ describe('ModalSlideTransition', () => {
     })
   })
 
-  it('honors reduced motion preferences', () => {
+  it('honors reduced motion preferences in render', () => {
     vi.stubGlobal('matchMedia', (query: string) => ({
       matches: query.includes('prefers-reduced-motion: reduce'),
       media: query,
@@ -77,3 +105,4 @@ describe('ModalSlideTransition', () => {
     vi.unstubAllGlobals()
   })
 })
+

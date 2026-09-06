@@ -310,7 +310,6 @@ export function StoreSwitcher({ fullWidth = false }: { fullWidth?: boolean } = {
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '16px',
             p: { xs: 1, sm: 2 },
           },
         }}
