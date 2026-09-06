@@ -1365,7 +1365,7 @@ export function PosPage() {
           </IconButton>
         </DialogTitle>
 
-        <Divider sx={{ borderColor: '#e2e8f0' }} />
+        <Divider sx={{ borderColor: 'divider' }} />
 
         <DialogContent sx={{ p: 2.5 }}>
           <Stack spacing={2.25}>
@@ -1648,9 +1648,19 @@ export function PosPage() {
                   sx={{
                     p: 1.5,
                     borderRadius: '10px',
-                    bgcolor: paidAmount >= total ? '#ecfdf5' : '#f8fafc',
+                    bgcolor: (theme) =>
+                      paidAmount >= total
+                        ? theme.palette.mode === 'dark'
+                          ? 'rgba(16, 185, 129, 0.15)'
+                          : '#ecfdf5'
+                        : 'background.default',
                     border: '1px solid',
-                    borderColor: paidAmount >= total ? '#a7f3d0' : '#e2e8f0',
+                    borderColor: (theme) =>
+                      paidAmount >= total
+                        ? theme.palette.mode === 'dark'
+                          ? '#059669'
+                          : '#a7f3d0'
+                        : 'divider',
                   }}
                 >
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -1696,7 +1706,7 @@ export function PosPage() {
           </Stack>
         </DialogContent>
 
-        <Divider sx={{ borderColor: '#e2e8f0' }} />
+        <Divider sx={{ borderColor: 'divider' }} />
 
         <DialogActions sx={{ p: 2, gap: 1 }}>
           <Button
@@ -1753,7 +1763,7 @@ export function PosPage() {
             <CloseOutlined fontSize="small" />
           </IconButton>
         </DialogTitle>
-        <Divider sx={{ borderColor: '#e2e8f0' }} />
+        <Divider sx={{ borderColor: 'divider' }} />
         <DialogContent sx={{ p: 2.5 }}>
           <Stack spacing={2}>
             <Typography variant="subtitle2" sx={{ fontWeight: 750, color: 'text.primary', fontSize: '0.85rem' }}>

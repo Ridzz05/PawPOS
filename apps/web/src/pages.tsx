@@ -187,7 +187,8 @@ export function SettingsPage() {
         className="terminal-card"
         sx={{
           p: { xs: 2, sm: 3 },
-          border: '1px solid #e2e8f0',
+          border: '1px solid',
+          borderColor: 'divider',
           borderRadius: '12px',
         }}
       >
@@ -229,7 +230,7 @@ export function SettingsPage() {
             </Button>
           </Stack>
 
-          <Divider sx={{ borderColor: '#e2e8f0' }} />
+          <Divider sx={{ borderColor: 'divider' }} />
 
           <Stack
             direction="row"
@@ -254,7 +255,7 @@ export function SettingsPage() {
           </Stack>
         </Stack>
 
-        <Divider sx={{ my: 3, borderColor: '#e2e8f0' }} />
+        <Divider sx={{ my: 3, borderColor: 'divider' }} />
 
         <Typography variant="h6" sx={{ fontWeight: 750, color: 'text.primary', mb: 0.5, fontSize: '1.05rem' }}>
           Integrasi & Provider Pembayaran

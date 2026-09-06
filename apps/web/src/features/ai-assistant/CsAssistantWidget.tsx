@@ -291,8 +291,13 @@ export function CsAssistantWidget() {
         size="small"
         sx={{
           borderRadius: '999px',
-          borderColor: isOpen ? '#FF8A3D' : '#e2e8f0',
-          bgcolor: isOpen ? '#FFF5ED' : '#ffffff',
+          borderColor: isOpen ? '#FF8A3D' : 'divider',
+          bgcolor: (theme) =>
+            isOpen
+              ? theme.palette.mode === 'dark'
+                ? 'rgba(255, 138, 61, 0.15)'
+                : '#FFF5ED'
+              : 'background.paper',
           color: 'text.primary',
           px: { xs: 0.6, sm: 1.25 },
           py: 0.4,
@@ -302,7 +307,8 @@ export function CsAssistantWidget() {
           transition: 'all 0.15s ease',
           '&:hover': {
             borderColor: '#FF8A3D',
-            bgcolor: '#FFF5ED',
+            bgcolor: (theme) =>
+              theme.palette.mode === 'dark' ? 'rgba(255, 138, 61, 0.12)' : '#FFF5ED',
           },
         }}
       >
@@ -315,7 +321,7 @@ export function CsAssistantWidget() {
               '& .MuiBadge-badge': {
                 bgcolor: '#10b981',
                 color: '#10b981',
-                boxShadow: '0 0 0 1.5px #fff',
+                boxShadow: (theme) => `0 0 0 1.5px ${theme.palette.background.paper}`,
               },
             }}
           >
@@ -326,7 +332,7 @@ export function CsAssistantWidget() {
                 width: 28,
                 height: 28,
                 border: '1.5px solid #FF8A3D',
-                bgcolor: '#ffffff',
+                bgcolor: 'background.paper',
               }}
             />
           </Badge>
@@ -377,10 +383,14 @@ export function CsAssistantWidget() {
               display: 'flex',
               flexDirection: 'column',
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid',
+              borderColor: 'divider',
               overflow: 'hidden',
-              boxShadow: '0 16px 40px rgba(0, 0, 0, 0.18)',
-              bgcolor: '#ffffff',
+              boxShadow: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? '0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+                  : '0 16px 40px rgba(0, 0, 0, 0.14)',
+              bgcolor: 'background.paper',
             }}
           >
             {/* Header */}
@@ -388,8 +398,9 @@ export function CsAssistantWidget() {
               sx={{
                 p: 1.5,
                 px: 2,
-                bgcolor: '#FFF5ED',
-                borderBottom: '1px solid #FFE3CC',
+                bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#172238' : '#FFF5ED'),
+                borderBottom: '1px solid',
+                borderColor: (theme) => (theme.palette.mode === 'dark' ? '#22304D' : '#FFE3CC'),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -404,7 +415,7 @@ export function CsAssistantWidget() {
                     '& .MuiBadge-badge': {
                       bgcolor: '#10b981',
                       color: '#10b981',
-                      boxShadow: '0 0 0 2px #fff',
+                      boxShadow: (theme) => `0 0 0 2px ${theme.palette.mode === 'dark' ? '#172238' : '#fff'}`,
                     },
                   }}
                 >
@@ -415,13 +426,13 @@ export function CsAssistantWidget() {
                       width: 38,
                       height: 38,
                       border: '2px solid #FF8A3D',
-                      bgcolor: '#ffffff',
+                      bgcolor: 'background.paper',
                     }}
                   />
                 </Badge>
                 <Box>
                   <Stack direction="row" alignItems="center" spacing={0.75}>
-                    <Typography sx={{ fontWeight: 850, fontSize: '0.94rem', color: '#2D2D2D' }}>
+                    <Typography sx={{ fontWeight: 850, fontSize: '0.94rem', color: 'text.primary' }}>
                       Paw<span style={{ color: '#FF8A3D' }}>POS</span> AI Assistant
                     </Typography>
                     <Chip
@@ -449,7 +460,13 @@ export function CsAssistantWidget() {
                     size="small"
                     onClick={handleClearChat}
                     aria-label="Bersihkan riwayat chat"
-                    sx={{ color: 'text.secondary', '&:hover': { bgcolor: '#FFE3CC', color: '#ea580c' } }}
+                    sx={{
+                      color: 'text.secondary',
+                      '&:hover': {
+                        bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255, 138, 61, 0.15)' : '#FFE3CC'),
+                        color: '#FF8A3D',
+                      },
+                    }}
                   >
                     <DeleteOutline fontSize="small" />
                   </IconButton>
@@ -459,7 +476,13 @@ export function CsAssistantWidget() {
                     size="small"
                     onClick={() => setIsOpen(false)}
                     aria-label="Tutup asisten"
-                    sx={{ color: 'text.secondary', '&:hover': { bgcolor: '#FFE3CC', color: '#dc2626' } }}
+                    sx={{
+                      color: 'text.secondary',
+                      '&:hover': {
+                        bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(239, 68, 68, 0.15)' : '#FEE2E2'),
+                        color: '#EF4444',
+                      },
+                    }}
                   >
                     <CloseOutlined fontSize="small" />
                   </IconButton>
@@ -472,13 +495,17 @@ export function CsAssistantWidget() {
               sx={{
                 p: 1,
                 px: 1.5,
-                bgcolor: '#fafafa',
-                borderBottom: '1px solid #f1f5f9',
+                bgcolor: 'background.default',
+                borderBottom: '1px solid',
+                borderColor: 'divider',
                 display: 'flex',
                 gap: 0.75,
                 overflowX: 'auto',
                 '&::-webkit-scrollbar': { height: 4 },
-                '&::-webkit-scrollbar-thumb': { bgcolor: '#e2e8f0', borderRadius: 2 },
+                '&::-webkit-scrollbar-thumb': {
+                  bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#22304D' : '#e2e8f0'),
+                  borderRadius: 2,
+                },
               }}
             >
               {QUICK_PROMPTS.map((qp, idx) => (
@@ -491,13 +518,15 @@ export function CsAssistantWidget() {
                   sx={{
                     fontSize: '0.7rem',
                     fontWeight: 650,
-                    bgcolor: '#ffffff',
-                    border: '1px solid #e2e8f0',
+                    bgcolor: 'background.paper',
+                    border: '1px solid',
+                    borderColor: 'divider',
                     color: 'text.secondary',
                     cursor: 'pointer',
                     flexShrink: 0,
                     '&:hover': {
-                      bgcolor: '#FFF5ED',
+                      bgcolor: (theme) =>
+                        theme.palette.mode === 'dark' ? 'rgba(255, 138, 61, 0.12)' : '#FFF5ED',
                       borderColor: '#FF8A3D',
                       color: '#FF8A3D',
                     },
@@ -515,7 +544,7 @@ export function CsAssistantWidget() {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 1.5,
-                bgcolor: '#f8fafc',
+                bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#0B0F19' : '#f8fafc'),
               }}
             >
               {messages.map((msg, idx) => {
@@ -538,6 +567,7 @@ export function CsAssistantWidget() {
                           width: 28,
                           height: 28,
                           border: '1px solid #FF8A3D',
+                          bgcolor: 'background.paper',
                           flexShrink: 0,
                           mt: 0.5,
                         }}
@@ -550,9 +580,24 @@ export function CsAssistantWidget() {
                           p: 1.25,
                           px: 1.5,
                           borderRadius: isUser ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
-                          bgcolor: isUser ? '#2D2D2D' : '#ffffff',
-                          color: isUser ? '#ffffff' : '#1e293b',
-                          border: isUser ? 'none' : '1px solid #e2e8f0',
+                          bgcolor: (theme) =>
+                            isUser
+                              ? theme.palette.mode === 'dark'
+                                ? '#243452'
+                                : '#2D2D2D'
+                              : theme.palette.mode === 'dark'
+                              ? '#172238'
+                              : '#ffffff',
+                          color: isUser ? '#ffffff' : 'text.primary',
+                          border: '1px solid',
+                          borderColor: (theme) =>
+                            isUser
+                              ? theme.palette.mode === 'dark'
+                                ? '#33486E'
+                                : 'transparent'
+                              : theme.palette.mode === 'dark'
+                              ? '#22304D'
+                              : '#e2e8f0',
                           fontSize: '0.84rem',
                           lineHeight: 1.5,
                           wordBreak: 'break-word',
@@ -583,7 +628,7 @@ export function CsAssistantWidget() {
                                 disabled={audioLoadingId === (msg.id ?? `${idx}`)}
                                 onClick={() => toggleSpeech(msg.id ?? `${idx}`, msg.content)}
                                 aria-label={speakingId === (msg.id ?? `${idx}`) ? 'Matikan suara' : 'Dengarkan suara'}
-                                sx={{ p: 0.25, color: speakingId === (msg.id ?? `${idx}`) ? '#FF8A3D' : '#94a3b8' }}
+                                sx={{ p: 0.25, color: speakingId === (msg.id ?? `${idx}`) ? '#FF8A3D' : 'text.secondary' }}
                               >
                                 {audioLoadingId === (msg.id ?? `${idx}`) ? (
                                   <CircularProgress size={14} sx={{ color: '#FF8A3D' }} />
@@ -596,7 +641,7 @@ export function CsAssistantWidget() {
                             </span>
                           </Tooltip>
                         )}
-                        <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.64rem' }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.64rem' }}>
                           {msg.timestamp}
                         </Typography>
                       </Stack>
@@ -607,22 +652,33 @@ export function CsAssistantWidget() {
 
               {(loading || transcribing) && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Avatar src={MASCOT_IMG} alt="Mascot" sx={{ width: 28, height: 28, border: '1px solid #FF8A3D' }} />
+                  <Avatar
+                    src={MASCOT_IMG}
+                    alt="Mascot"
+                    sx={{ width: 28, height: 28, border: '1px solid #FF8A3D', bgcolor: 'background.paper' }}
+                  />
                   <Paper
                     elevation={0}
                     sx={{
                       p: 1.25,
                       px: 1.5,
                       borderRadius: '14px 14px 14px 2px',
-                      bgcolor: '#FFF5ED',
-                      border: '1px solid #FFE3CC',
+                      bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#172238' : '#FFF5ED'),
+                      border: '1px solid',
+                      borderColor: (theme) => (theme.palette.mode === 'dark' ? '#22304D' : '#FFE3CC'),
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1,
                     }}
                   >
                     <CircularProgress size={14} sx={{ color: '#FF8A3D' }} />
-                    <Typography sx={{ fontSize: '0.78rem', color: '#D95D10', fontWeight: 650 }}>
+                    <Typography
+                      sx={{
+                        fontSize: '0.78rem',
+                        color: (theme) => (theme.palette.mode === 'dark' ? '#FF8A3D' : '#D95D10'),
+                        fontWeight: 650,
+                      }}
+                    >
                       {transcribing ? 'Mentranskripsi suara...' : 'AI is Thinking (Groq GPT-OSS 120B)...'}
                     </Typography>
                   </Paper>
@@ -632,15 +688,24 @@ export function CsAssistantWidget() {
             </Box>
 
             {/* Input Bar */}
-            <Box sx={{ p: 1.25, px: 1.5, borderTop: '1px solid #e2e8f0', bgcolor: '#ffffff' }}>
+            <Box
+              sx={{
+                p: 1.25,
+                px: 1.5,
+                borderTop: '1px solid',
+                borderColor: 'divider',
+                bgcolor: 'background.paper',
+              }}
+            >
               {isRecording ? (
                 <Paper
                   elevation={0}
                   sx={{
                     p: 1,
                     px: 1.5,
-                    bgcolor: '#fee2e2',
-                    border: '1px solid #fca5a5',
+                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#3B1A1A' : '#fee2e2'),
+                    border: '1px solid',
+                    borderColor: (theme) => (theme.palette.mode === 'dark' ? '#7F1D1D' : '#fca5a5'),
                     borderRadius: '10px',
                     display: 'flex',
                     alignItems: 'center',
@@ -662,7 +727,13 @@ export function CsAssistantWidget() {
                         },
                       }}
                     />
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#991b1b' }}>
+                    <Typography
+                      sx={{
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        color: (theme) => (theme.palette.mode === 'dark' ? '#FCA5A5' : '#991b1b'),
+                      }}
+                    >
                       Mendengarkan ucapan kasir...
                     </Typography>
                   </Stack>
@@ -695,7 +766,17 @@ export function CsAssistantWidget() {
                     sx: {
                       fontSize: '0.84rem',
                       borderRadius: '10px',
-                      bgcolor: '#f8fafc',
+                      bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#0B0F19' : '#f8fafc'),
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      color: 'text.primary',
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        border: 'none',
+                      },
+                      '& input::placeholder': {
+                        color: 'text.secondary',
+                        opacity: 0.8,
+                      },
                     },
                     endAdornment: (
                       <InputAdornment position="end">
@@ -718,7 +799,7 @@ export function CsAssistantWidget() {
                           aria-label="Kirim pesan"
                           sx={{
                             bgcolor: inputMessage.trim() ? '#FF8A3D' : 'transparent',
-                            color: inputMessage.trim() ? '#ffffff' : '#94a3b8',
+                            color: inputMessage.trim() ? '#ffffff' : 'text.secondary',
                             '&:hover': {
                               bgcolor: '#E66E20',
                               color: '#ffffff',
@@ -845,7 +926,11 @@ function renderInlineMarkdown(text: string, isUser: boolean): React.ReactNode[] 
         <Box
           key={match.index}
           component="strong"
-          sx={{ fontWeight: 750, color: isUser ? '#ffffff' : '#0f172a' }}
+          sx={{
+            fontWeight: 750,
+            color: (theme) =>
+              isUser ? '#ffffff' : theme.palette.mode === 'dark' ? '#ffffff' : '#0f172a',
+          }}
         >
           {boldText}
         </Box>,
@@ -856,7 +941,11 @@ function renderInlineMarkdown(text: string, isUser: boolean): React.ReactNode[] 
         <Box
           key={match.index}
           component="span"
-          sx={{ fontStyle: 'italic', color: isUser ? '#f1f5f9' : '#334155' }}
+          sx={{
+            fontStyle: 'italic',
+            color: (theme) =>
+              isUser ? '#f1f5f9' : theme.palette.mode === 'dark' ? '#cbd5e1' : '#334155',
+          }}
         >
           {italicText}
         </Box>,
@@ -868,8 +957,20 @@ function renderInlineMarkdown(text: string, isUser: boolean): React.ReactNode[] 
           key={match.index}
           component="code"
           sx={{
-            bgcolor: isUser ? '#404040' : '#f1f5f9',
-            color: isUser ? '#fcd34d' : '#ea580c',
+            bgcolor: (theme) =>
+              isUser
+                ? 'rgba(0,0,0,0.35)'
+                : theme.palette.mode === 'dark'
+                ? '#1E293B'
+                : '#f1f5f9',
+            color: (theme) =>
+              isUser
+                ? '#fcd34d'
+                : theme.palette.mode === 'dark'
+                ? '#FF8A3D'
+                : '#ea580c',
+            border: (theme) =>
+              theme.palette.mode === 'dark' ? '1px solid #334155' : 'none',
             px: 0.6,
             py: 0.15,
             borderRadius: '4px',

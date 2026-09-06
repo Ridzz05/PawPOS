@@ -556,7 +556,7 @@ export function StocksPage() {
             gap: 2,
           }}
         >
-          <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+          <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -570,7 +570,7 @@ export function StocksPage() {
             </Stack>
           </Box>
 
-          <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+          <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -584,7 +584,7 @@ export function StocksPage() {
             </Stack>
           </Box>
 
-          <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+          <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -616,13 +616,40 @@ export function StocksPage() {
             gap: 2,
           }}
         >
-          <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px', bgcolor: '#f0fdf4' }}>
+          <Box
+            className="terminal-card"
+            sx={{
+              p: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: '12px',
+              bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(16, 185, 129, 0.12)' : '#f0fdf4'),
+            }}
+          >
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#15803d', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 800,
+                    color: (theme) => (theme.palette.mode === 'dark' ? '#34d399' : '#15803d'),
+                    letterSpacing: '0.06em',
+                    fontSize: '0.72rem',
+                  }}
+                >
                   TOTAL BARANG MASUK
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#15803d', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 850,
+                    color: (theme) => (theme.palette.mode === 'dark' ? '#34d399' : '#15803d'),
+                    mt: 0.25,
+                    fontSize: '1.35rem',
+                    letterSpacing: '-0.025em',
+                  }}
+                  className="tnum"
+                >
                   +{movementSummary.totalInbound.toLocaleString('id-ID')} unit
                 </Typography>
               </Box>
@@ -630,13 +657,40 @@ export function StocksPage() {
             </Stack>
           </Box>
 
-          <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px', bgcolor: '#fff1f2' }}>
+          <Box
+            className="terminal-card"
+            sx={{
+              p: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: '12px',
+              bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(239, 68, 68, 0.12)' : '#fff1f2'),
+            }}
+          >
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#be123c', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 800,
+                    color: (theme) => (theme.palette.mode === 'dark' ? '#f87171' : '#be123c'),
+                    letterSpacing: '0.06em',
+                    fontSize: '0.72rem',
+                  }}
+                >
                   TOTAL BARANG KELUAR
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 850, color: '#be123c', mt: 0.25, fontSize: '1.35rem', letterSpacing: '-0.025em' }} className="tnum">
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 850,
+                    color: (theme) => (theme.palette.mode === 'dark' ? '#f87171' : '#be123c'),
+                    mt: 0.25,
+                    fontSize: '1.35rem',
+                    letterSpacing: '-0.025em',
+                  }}
+                  className="tnum"
+                >
                   -{movementSummary.totalOutbound.toLocaleString('id-ID')} unit
                 </Typography>
               </Box>
@@ -644,7 +698,7 @@ export function StocksPage() {
             </Stack>
           </Box>
 
-          <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+          <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -734,7 +788,8 @@ export function StocksPage() {
               elevation={0}
               sx={{
                 overflow: 'hidden',
-                border: '1px solid #e2e8f0',
+                border: '1px solid',
+                borderColor: 'divider',
                 borderRadius: '12px',
               }}
             >
@@ -974,7 +1029,8 @@ export function StocksPage() {
               elevation={0}
               sx={{
                 overflow: 'hidden',
-                border: '1px solid #e2e8f0',
+                border: '1px solid',
+                borderColor: 'divider',
                 borderRadius: '12px',
               }}
             >
@@ -1414,10 +1470,29 @@ export function StocksPage() {
                         fontWeight: 650,
                         fontSize: '0.72rem',
                         height: 24,
-                        bgcolor: reason === preset ? '#eff6ff' : '#f8fafc',
-                        color: reason === preset ? '#1d4ed8' : '#475569',
-                        border: reason === preset ? '1px solid #93c5fd' : '1px solid #e2e8f0',
-                        '&:hover': { bgcolor: '#e0f2fe' },
+                        bgcolor: (theme) =>
+                          reason === preset
+                            ? theme.palette.mode === 'dark'
+                              ? 'rgba(59, 130, 246, 0.2)'
+                              : '#eff6ff'
+                            : theme.palette.mode === 'dark'
+                            ? '#0B0F19'
+                            : '#f8fafc',
+                        color: (theme) =>
+                          reason === preset
+                            ? theme.palette.mode === 'dark'
+                              ? '#93c5fd'
+                              : '#1d4ed8'
+                            : 'text.secondary',
+                        border: '1px solid',
+                        borderColor: (theme) =>
+                          reason === preset
+                            ? '#3b82f6'
+                            : 'divider',
+                        '&:hover': {
+                          bgcolor: (theme) =>
+                            theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.15)' : '#e0f2fe',
+                        },
                       }}
                     />
                   ))}

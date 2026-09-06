@@ -283,10 +283,11 @@ export function DashboardPage() {
           variant="outlined"
           sx={{
             borderRadius: '14px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
             bgcolor: 'background.paper',
             transition: 'border-color 120ms ease, background-color 120ms ease',
-            '&:hover': { borderColor: '#cbd5e1' },
+            '&:hover': { borderColor: 'primary.main' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
@@ -299,12 +300,13 @@ export function DashboardPage() {
                   width: 36,
                   height: 36,
                   borderRadius: '10px',
-                  bgcolor: '#FFF5ED',
+                  bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255, 138, 61, 0.15)' : '#FFF5ED'),
                   color: '#FF8A3D',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '1px solid #FFE3CC',
+                  border: '1px solid',
+                  borderColor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255, 138, 61, 0.3)' : '#FFE3CC'),
                 }}
               >
                 <TrendingUpOutlined sx={{ fontSize: 20 }} />
@@ -320,8 +322,22 @@ export function DashboardPage() {
                 label={`${totalTransactions} Struk`}
                 size="small"
                 sx={{
-                  bgcolor: totalTransactions > 0 ? '#ecfdf5' : '#f1f5f9',
-                  color: totalTransactions > 0 ? '#059669' : '#64748b',
+                  bgcolor: (theme) =>
+                    totalTransactions > 0
+                      ? theme.palette.mode === 'dark'
+                        ? 'rgba(16, 185, 129, 0.15)'
+                        : '#ecfdf5'
+                      : theme.palette.mode === 'dark'
+                      ? '#1E293B'
+                      : '#f1f5f9',
+                  color: (theme) =>
+                    totalTransactions > 0
+                      ? theme.palette.mode === 'dark'
+                        ? '#34d399'
+                        : '#059669'
+                      : theme.palette.mode === 'dark'
+                      ? '#94A3B8'
+                      : '#64748b',
                   fontWeight: 800,
                   fontSize: '0.68rem',
                   height: 20,
@@ -339,10 +355,11 @@ export function DashboardPage() {
           variant="outlined"
           sx={{
             borderRadius: '14px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
             bgcolor: 'background.paper',
             transition: 'border-color 120ms ease, background-color 120ms ease',
-            '&:hover': { borderColor: '#cbd5e1' },
+            '&:hover': { borderColor: 'primary.main' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
@@ -355,13 +372,32 @@ export function DashboardPage() {
                   width: 36,
                   height: 36,
                   borderRadius: '10px',
-                  bgcolor: isShiftActive ? '#ecfdf5' : '#f1f5f9',
-                  color: isShiftActive ? '#059669' : '#64748b',
+                  bgcolor: (theme) =>
+                    isShiftActive
+                      ? theme.palette.mode === 'dark'
+                        ? 'rgba(16, 185, 129, 0.15)'
+                        : '#ecfdf5'
+                      : theme.palette.mode === 'dark'
+                      ? '#1E293B'
+                      : '#f1f5f9',
+                  color: (theme) =>
+                    isShiftActive
+                      ? theme.palette.mode === 'dark'
+                        ? '#34d399'
+                        : '#059669'
+                      : theme.palette.mode === 'dark'
+                      ? '#94A3B8'
+                      : '#64748b',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   border: '1px solid',
-                  borderColor: isShiftActive ? '#bbf7d0' : '#e2e8f0',
+                  borderColor: (theme) =>
+                    isShiftActive
+                      ? theme.palette.mode === 'dark'
+                        ? 'rgba(16, 185, 129, 0.3)'
+                        : '#bbf7d0'
+                      : 'divider',
                 }}
               >
                 <AccountBalanceWalletOutlined sx={{ fontSize: 20 }} />
@@ -386,10 +422,11 @@ export function DashboardPage() {
           variant="outlined"
           sx={{
             borderRadius: '14px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
             bgcolor: 'background.paper',
             transition: 'border-color 120ms ease, background-color 120ms ease',
-            '&:hover': { borderColor: '#cbd5e1' },
+            '&:hover': { borderColor: 'primary.main' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
@@ -402,12 +439,13 @@ export function DashboardPage() {
                   width: 36,
                   height: 36,
                   borderRadius: '10px',
-                  bgcolor: '#eff6ff',
-                  color: '#2563eb',
+                  bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(37, 99, 235, 0.15)' : '#eff6ff'),
+                  color: (theme) => (theme.palette.mode === 'dark' ? '#60a5fa' : '#2563eb'),
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '1px solid #bfdbfe',
+                  border: '1px solid',
+                  borderColor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.3)' : '#bfdbfe'),
                 }}
               >
                 <StorefrontOutlined sx={{ fontSize: 20 }} />
@@ -423,8 +461,8 @@ export function DashboardPage() {
                 label={`${activeProductsCount} Siap Jual`}
                 size="small"
                 sx={{
-                  bgcolor: '#eff6ff',
-                  color: '#2563eb',
+                  bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(37, 99, 235, 0.15)' : '#eff6ff'),
+                  color: (theme) => (theme.palette.mode === 'dark' ? '#60a5fa' : '#2563eb'),
                   fontWeight: 800,
                   fontSize: '0.68rem',
                   height: 20,
@@ -442,10 +480,11 @@ export function DashboardPage() {
           variant="outlined"
           sx={{
             borderRadius: '14px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
             bgcolor: 'background.paper',
             transition: 'border-color 120ms ease, background-color 120ms ease',
-            '&:hover': { borderColor: '#cbd5e1' },
+            '&:hover': { borderColor: 'primary.main' },
           }}
         >
           <CardContent sx={{ p: 2.5 }}>
@@ -458,13 +497,34 @@ export function DashboardPage() {
                   width: 36,
                   height: 36,
                   borderRadius: '10px',
-                  bgcolor: lowStockItems.length > 0 ? '#fef2f2' : '#f0fdf4',
-                  color: lowStockItems.length > 0 ? '#dc2626' : '#16a34a',
+                  bgcolor: (theme) =>
+                    lowStockItems.length > 0
+                      ? theme.palette.mode === 'dark'
+                        ? 'rgba(239, 68, 68, 0.15)'
+                        : '#fef2f2'
+                      : theme.palette.mode === 'dark'
+                      ? 'rgba(16, 185, 129, 0.15)'
+                      : '#f0fdf4',
+                  color: (theme) =>
+                    lowStockItems.length > 0
+                      ? theme.palette.mode === 'dark'
+                        ? '#f87171'
+                        : '#dc2626'
+                      : theme.palette.mode === 'dark'
+                      ? '#34d399'
+                      : '#16a34a',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   border: '1px solid',
-                  borderColor: lowStockItems.length > 0 ? '#fecaca' : '#bbf7d0',
+                  borderColor: (theme) =>
+                    lowStockItems.length > 0
+                      ? theme.palette.mode === 'dark'
+                        ? 'rgba(239, 68, 68, 0.3)'
+                        : '#fecaca'
+                      : theme.palette.mode === 'dark'
+                      ? 'rgba(16, 185, 129, 0.3)'
+                      : '#bbf7d0',
                 }}
               >
                 <Inventory2Outlined sx={{ fontSize: 20 }} />
@@ -480,8 +540,22 @@ export function DashboardPage() {
                 label={lowStockItems.length > 0 ? `${lowStockItems.length} Perlu Restock` : 'Stok Aman'}
                 size="small"
                 sx={{
-                  bgcolor: lowStockItems.length > 0 ? '#fef2f2' : '#f0fdf4',
-                  color: lowStockItems.length > 0 ? '#dc2626' : '#16a34a',
+                  bgcolor: (theme) =>
+                    lowStockItems.length > 0
+                      ? theme.palette.mode === 'dark'
+                        ? 'rgba(239, 68, 68, 0.15)'
+                        : '#fef2f2'
+                      : theme.palette.mode === 'dark'
+                      ? 'rgba(16, 185, 129, 0.15)'
+                      : '#f0fdf4',
+                  color: (theme) =>
+                    lowStockItems.length > 0
+                      ? theme.palette.mode === 'dark'
+                        ? '#f87171'
+                        : '#dc2626'
+                      : theme.palette.mode === 'dark'
+                      ? '#34d399'
+                      : '#16a34a',
                   fontWeight: 800,
                   fontSize: '0.68rem',
                   height: 20,
@@ -513,7 +587,8 @@ export function DashboardPage() {
             sx={{
               p: { xs: 2.5, sm: 3 },
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid',
+              borderColor: 'divider',
               bgcolor: 'background.paper',
             }}
           >
@@ -594,10 +669,43 @@ export function DashboardPage() {
                                 height: 20,
                                 fontSize: '0.66rem',
                                 fontWeight: 800,
-                                bgcolor: isSplit ? '#eff6ff' : isQris ? '#fdf4ff' : '#f0fdf4',
-                                color: isSplit ? '#2563eb' : isQris ? '#c026d3' : '#16a34a',
+                                bgcolor: (theme) =>
+                                  isSplit
+                                    ? theme.palette.mode === 'dark'
+                                      ? 'rgba(59, 130, 246, 0.15)'
+                                      : '#eff6ff'
+                                    : isQris
+                                    ? theme.palette.mode === 'dark'
+                                      ? 'rgba(192, 38, 211, 0.15)'
+                                      : '#fdf4ff'
+                                    : theme.palette.mode === 'dark'
+                                    ? 'rgba(16, 185, 129, 0.15)'
+                                    : '#f0fdf4',
+                                color: (theme) =>
+                                  isSplit
+                                    ? theme.palette.mode === 'dark'
+                                      ? '#60a5fa'
+                                      : '#2563eb'
+                                    : isQris
+                                    ? theme.palette.mode === 'dark'
+                                      ? '#e879f9'
+                                      : '#c026d3'
+                                    : theme.palette.mode === 'dark'
+                                    ? '#34d399'
+                                    : '#16a34a',
                                 border: '1px solid',
-                                borderColor: isSplit ? '#bfdbfe' : isQris ? '#f5d0fe' : '#bbf7d0',
+                                borderColor: (theme) =>
+                                  isSplit
+                                    ? theme.palette.mode === 'dark'
+                                      ? 'rgba(59, 130, 246, 0.3)'
+                                      : '#bfdbfe'
+                                    : isQris
+                                    ? theme.palette.mode === 'dark'
+                                      ? 'rgba(192, 38, 211, 0.3)'
+                                      : '#f5d0fe'
+                                    : theme.palette.mode === 'dark'
+                                    ? 'rgba(16, 185, 129, 0.3)'
+                                    : '#bbf7d0',
                               }}
                             />
                           </TableCell>
@@ -839,11 +947,15 @@ export function DashboardPage() {
               sx={{
                 mt: 2,
                 borderRadius: '8px',
-                borderColor: '#cbd5e1',
+                borderColor: 'divider',
                 color: 'text.secondary',
                 fontWeight: 750,
                 textTransform: 'none',
-                '&:hover': { borderColor: '#FF8A3D', color: '#FF8A3D', bgcolor: '#FFF5ED' },
+                '&:hover': {
+                  borderColor: '#FF8A3D',
+                  color: '#FF8A3D',
+                  bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255, 138, 61, 0.12)' : '#FFF5ED'),
+                },
               }}
             >
               Audit & Rekonsiliasi Z-Report
@@ -857,7 +969,8 @@ export function DashboardPage() {
             sx={{
               p: 2.5,
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid',
+              borderColor: 'divider',
               bgcolor: 'background.paper',
             }}
           >
@@ -875,12 +988,16 @@ export function DashboardPage() {
                   flexDirection: 'column',
                   gap: 0.5,
                   borderRadius: '10px',
-                  borderColor: '#e2e8f0',
+                  borderColor: 'divider',
                   color: 'text.primary',
                   fontWeight: 750,
                   fontSize: '0.78rem',
                   textTransform: 'none',
-                  '&:hover': { borderColor: '#FF8A3D', bgcolor: '#FFF5ED', color: '#FF8A3D' },
+                  '&:hover': {
+                    borderColor: '#FF8A3D',
+                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255, 138, 61, 0.12)' : '#FFF5ED'),
+                    color: '#FF8A3D',
+                  },
                 }}
               >
                 <PointOfSaleOutlined sx={{ fontSize: 20, color: '#FF8A3D' }} />
@@ -896,12 +1013,16 @@ export function DashboardPage() {
                   flexDirection: 'column',
                   gap: 0.5,
                   borderRadius: '10px',
-                  borderColor: '#e2e8f0',
+                  borderColor: 'divider',
                   color: 'text.primary',
                   fontWeight: 750,
                   fontSize: '0.78rem',
                   textTransform: 'none',
-                  '&:hover': { borderColor: '#FF8A3D', bgcolor: '#FFF5ED', color: '#FF8A3D' },
+                  '&:hover': {
+                    borderColor: '#FF8A3D',
+                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255, 138, 61, 0.12)' : '#FFF5ED'),
+                    color: '#FF8A3D',
+                  },
                 }}
               >
                 <ReceiptLongOutlined sx={{ fontSize: 20, color: '#2563eb' }} />
@@ -917,12 +1038,16 @@ export function DashboardPage() {
                   flexDirection: 'column',
                   gap: 0.5,
                   borderRadius: '10px',
-                  borderColor: '#e2e8f0',
+                  borderColor: 'divider',
                   color: 'text.primary',
                   fontWeight: 750,
                   fontSize: '0.78rem',
                   textTransform: 'none',
-                  '&:hover': { borderColor: '#FF8A3D', bgcolor: '#FFF5ED', color: '#FF8A3D' },
+                  '&:hover': {
+                    borderColor: '#FF8A3D',
+                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255, 138, 61, 0.12)' : '#FFF5ED'),
+                    color: '#FF8A3D',
+                  },
                 }}
               >
                 <StorefrontOutlined sx={{ fontSize: 20, color: '#10b981' }} />
@@ -938,12 +1063,16 @@ export function DashboardPage() {
                   flexDirection: 'column',
                   gap: 0.5,
                   borderRadius: '10px',
-                  borderColor: '#e2e8f0',
+                  borderColor: 'divider',
                   color: 'text.primary',
                   fontWeight: 750,
                   fontSize: '0.78rem',
                   textTransform: 'none',
-                  '&:hover': { borderColor: '#FF8A3D', bgcolor: '#FFF5ED', color: '#FF8A3D' },
+                  '&:hover': {
+                    borderColor: '#FF8A3D',
+                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255, 138, 61, 0.12)' : '#FFF5ED'),
+                    color: '#FF8A3D',
+                  },
                 }}
               >
                 <LanguageOutlined sx={{ fontSize: 20, color: '#8b5cf6' }} />
@@ -961,7 +1090,8 @@ export function DashboardPage() {
           px: 2,
           py: 1,
           borderRadius: '8px',
-          border: '1px solid #e2e8f0',
+          border: '1px solid',
+          borderColor: 'divider',
           bgcolor: 'background.paper',
           display: 'flex',
           justifyContent: 'space-between',

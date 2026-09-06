@@ -406,7 +406,7 @@ export function ShiftsPage() {
                 gap: 2,
               }}
             >
-              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid #e2e8f0' }}>
+              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: '0.04em', fontSize: '0.72rem' }}>
                   MODAL AWAL KAS
                 </Typography>
@@ -418,7 +418,7 @@ export function ShiftsPage() {
                 </Typography>
               </Box>
 
-              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid #e2e8f0' }}>
+              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: '0.04em', fontSize: '0.72rem' }}>
                   PENJUALAN TUNAI (CASH)
                 </Typography>
@@ -430,7 +430,7 @@ export function ShiftsPage() {
                 </Typography>
               </Box>
 
-              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid #e2e8f0' }}>
+              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: '0.04em', fontSize: '0.72rem' }}>
                   NON-TUNAI (QRIS/EDC)
                 </Typography>
@@ -454,7 +454,7 @@ export function ShiftsPage() {
                 </Typography>
               </Box>
 
-              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid #e2e8f0' }}>
+              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: '0.04em', fontSize: '0.72rem' }}>
                   TOTAL TRANSAKSI
                 </Typography>
@@ -531,7 +531,8 @@ export function ShiftsPage() {
           variant="outlined"
           sx={{
             borderRadius: '12px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
             overflow: 'hidden',
           }}
         >
@@ -610,19 +611,34 @@ export function ShiftsPage() {
                             <Chip
                               label="Pas (Rp 0)"
                               size="small"
-                              sx={{ bgcolor: '#ecfdf5', color: '#065f46', fontWeight: 750, fontSize: '0.72rem' }}
+                              sx={{
+                                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(16, 185, 129, 0.15)' : '#ecfdf5',
+                                color: (theme) => theme.palette.mode === 'dark' ? '#34d399' : '#065f46',
+                                fontWeight: 750,
+                                fontSize: '0.72rem',
+                              }}
                             />
                           ) : isSurplus ? (
                             <Chip
                               label={`Lebih +Rp ${formatThousand(s.cash_difference_idr)}`}
                               size="small"
-                              sx={{ bgcolor: '#eff6ff', color: '#1d4ed8', fontWeight: 750, fontSize: '0.72rem' }}
+                              sx={{
+                                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(59, 130, 246, 0.15)' : '#eff6ff',
+                                color: (theme) => theme.palette.mode === 'dark' ? '#60a5fa' : '#1d4ed8',
+                                fontWeight: 750,
+                                fontSize: '0.72rem',
+                              }}
                             />
                           ) : (
                             <Chip
                               label={`Kurang -Rp ${formatThousand(Math.abs(s.cash_difference_idr))}`}
                               size="small"
-                              sx={{ bgcolor: '#fef2f2', color: '#b91c1c', fontWeight: 750, fontSize: '0.72rem' }}
+                              sx={{
+                                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(239, 68, 68, 0.15)' : '#fef2f2',
+                                color: (theme) => theme.palette.mode === 'dark' ? '#f87171' : '#b91c1c',
+                                fontWeight: 750,
+                                fontSize: '0.72rem',
+                              }}
                             />
                           )}
                         </TableCell>
@@ -660,7 +676,8 @@ export function ShiftsPage() {
         PaperProps={{
           sx: {
             borderRadius: '12px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
             boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
           },
         }}
@@ -738,7 +755,7 @@ export function ShiftsPage() {
             </Stack>
           </DialogContent>
 
-          <DialogActions sx={{ px: 3, pb: 2.5, pt: 1.5, borderTop: '1px solid #f1f5f9' }}>
+          <DialogActions sx={{ px: 3, pb: 2.5, pt: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
             <Button
               onClick={() => setOpenShiftModal(false)}
               disabled={openingSubmitting}
@@ -768,7 +785,8 @@ export function ShiftsPage() {
         PaperProps={{
           sx: {
             borderRadius: '12px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
             boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
           },
         }}

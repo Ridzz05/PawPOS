@@ -276,7 +276,7 @@ export function OrdersPage() {
           gap: 2,
         }}
       >
-        <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+        <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
             <Box>
               <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -290,7 +290,7 @@ export function OrdersPage() {
           </Stack>
         </Box>
 
-        <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+        <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
             <Box>
               <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -304,7 +304,7 @@ export function OrdersPage() {
           </Stack>
         </Box>
 
-        <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+        <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
             <Box>
               <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -318,7 +318,7 @@ export function OrdersPage() {
           </Stack>
         </Box>
 
-        <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+        <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
             <Box>
               <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -338,7 +338,8 @@ export function OrdersPage() {
         elevation={0}
         className="terminal-card"
         sx={{
-          border: '1px solid #e2e8f0',
+          border: '1px solid',
+          borderColor: 'divider',
           borderRadius: '12px',
           overflow: 'hidden',
         }}
@@ -637,7 +638,7 @@ export function OrdersPage() {
           </IconButton>
         </DialogTitle>
 
-        <Divider sx={{ borderColor: '#e2e8f0' }} />
+        <Divider sx={{ borderColor: 'divider' }} />
 
         <DialogContent sx={{ p: 2.5 }}>
           {loadingDetail ? (

@@ -439,7 +439,7 @@ function Navigation({ onNavigate }: { onNavigate: () => void }) {
         </Stack>
       </Box>
 
-      <Divider sx={{ mb: 1.5, borderColor: '#e2e8f0' }} />
+      <Divider sx={{ mb: 1.5, borderColor: 'divider' }} />
 
       {/* Grouped Navigation Links (Rail Navigation - Section 4) */}
       <Box sx={{ flex: 1, overflowY: 'auto' }}>

@@ -395,7 +395,7 @@ export function ProductsPage() {
             gap: 2,
           }}
         >
-          <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+          <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -409,7 +409,7 @@ export function ProductsPage() {
             </Stack>
           </Box>
 
-          <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+          <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -423,7 +423,7 @@ export function ProductsPage() {
             </Stack>
           </Box>
 
-          <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+          <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -437,7 +437,7 @@ export function ProductsPage() {
             </Stack>
           </Box>
 
-          <Box className="terminal-card" sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+          <Box className="terminal-card" sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '12px' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: '0.06em', fontSize: '0.72rem' }}>
@@ -528,7 +528,8 @@ export function ProductsPage() {
           elevation={0}
           sx={{
             overflow: 'hidden',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
             borderRadius: '12px',
           }}
         >
@@ -536,7 +537,8 @@ export function ProductsPage() {
           <Box
             sx={{
               p: 1.75,
-              borderBottom: '1px solid rgba(226, 232, 240, 0.85)',
+              borderBottom: '1px solid',
+              borderColor: 'divider',
               display: 'flex',
               flexWrap: 'wrap',
               gap: 1.5,
@@ -850,8 +852,9 @@ export function ProductsPage() {
                         height: 56,
                         objectFit: 'cover',
                         borderRadius: '10px',
-                        border: '1px solid rgba(226, 232, 240, 0.9)',
-                        bgcolor: '#ffffff',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: 'background.paper',
                       }}
                     />
                     <Box sx={{ flex: 1, minWidth: 0 }}>
